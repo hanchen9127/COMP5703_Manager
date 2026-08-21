@@ -4,6 +4,7 @@ import {
   getProjectsOverviewView as getMockProjectsOverviewView,
   type MockOrganization,
   type MockProject,
+  type MockTask,
 } from "@/lib/mock-data"
 
 type ApiOrganization = {
@@ -18,6 +19,17 @@ type ApiProject = {
   name: string
   description: string | null
   governance_model: MockProject["governanceModel"]
+  status: string
+}
+
+type ApiTask = {
+  id: string
+  project_id: string
+  title: string
+  judgment_question: string
+  annotation_mode: MockTask["executionMode"]
+  label_schema_ref: string
+  review_policy_ref: string | null
   status: string
 }
 
@@ -49,6 +61,23 @@ function mapProject(project: ApiProject): MockProject {
     description: project.description ?? "",
     governanceModel: project.governance_model,
     status: project.status,
+  }
+}
+
+function mapTask(task: ApiTask): MockTask {
+  return {
+    id: task.id,
+    projectId: task.project_id,
+    title: task.title,
+    judgmentQuestion: task.judgment_question,
+    taskClass: "annotation",
+    taskType: "",
+    executionMode: task.annotation_mode,
+    dataSourceLabel: "",
+    annotationRules: "",
+    outputSchemaRef: task.label_schema_ref,
+    reviewPolicyRef: task.review_policy_ref ?? "",
+    status: task.status,
   }
 }
 
@@ -94,9 +123,10 @@ export async function getProjectWorkspaceView(projectId: string) {
   const fallback = getMockProjectView(projectId)
 
   try {
-    const [project, organizations] = await Promise.all([
+    const [project, organizations, tasks] = await Promise.all([
       fetchApiJson<ApiProject>(`/projects/${projectId}`),
       fetchApiJson<ApiOrganization[]>("/organizations"),
+      fetchApiJson<ApiTask[]>(`/projects/${projectId}/tasks`),
     ])
 
     const mappedProject = mapProject(project)
@@ -112,7 +142,7 @@ export async function getProjectWorkspaceView(projectId: string) {
     return {
       organization,
       project: mappedProject,
-      tasks: fallback?.tasks ?? [],
+      tasks: mergeById(tasks.map(mapTask), fallback?.tasks ?? []),
       disputes: fallback?.disputes ?? [],
       exports: fallback?.exports ?? [],
     }

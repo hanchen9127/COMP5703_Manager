@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Bot,
@@ -33,6 +34,7 @@ import {
 } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Textarea } from "@workspace/ui/components/textarea"
+import { hejApiBaseUrl } from "@/lib/api-config"
 import type { MockProject } from "@/lib/mock-data"
 
 type TaskCreateFormProps = {
@@ -61,6 +63,7 @@ function formatTypeLabel(value: string) {
 }
 
 export function TaskCreateForm({ project }: TaskCreateFormProps) {
+  const router = useRouter()
   const [step, setStep] = useState(0)
   const [taskClass, setTaskClass] = useState<TaskClass>("annotation")
   const [taskType, setTaskType] = useState<string>(annotationTypeOptions[0].id)
@@ -69,6 +72,12 @@ export function TaskCreateForm({ project }: TaskCreateFormProps) {
   const [storagePath, setStoragePath] = useState(
     "s3://arc-intelligence/reasoning-conflict-resolution/"
   )
+  const [taskTitle, setTaskTitle] = useState("Reasoning Conflict Resolution")
+  const [taskObjective, setTaskObjective] = useState(
+    "Detect the correct label structure and preserve ambiguity before anything enters governed review."
+  )
+  const [submitState, setSubmitState] = useState<"idle" | "submitting" | "error">("idle")
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const steps = [
     "Task class",
@@ -119,6 +128,39 @@ export function TaskCreateForm({ project }: TaskCreateFormProps) {
     const nextType =
       nextClass === "judgement" ? judgementTypeOptions[0].id : annotationTypeOptions[0].id
     setTaskType(nextType)
+  }
+
+  async function handleCreateTask() {
+    setSubmitState("submitting")
+    setSubmitError(null)
+
+    try {
+      const response = await fetch(`${hejApiBaseUrl}/projects/${project.id}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: taskTitle.trim(),
+          judgment_question: taskObjective.trim(),
+          annotation_mode: executionMode,
+          label_schema_ref: taskType,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorBody = (await response.json().catch(() => null)) as
+          | { detail?: string }
+          | null
+        throw new Error(errorBody?.detail ?? "Task creation failed.")
+      }
+
+      router.push(`/projects/${project.id}/tasks`)
+      router.refresh()
+    } catch (error) {
+      setSubmitState("error")
+      setSubmitError(error instanceof Error ? error.message : "Task creation failed.")
+    }
   }
 
   return (
@@ -179,22 +221,16 @@ export function TaskCreateForm({ project }: TaskCreateFormProps) {
           <div className="grid gap-2">
             <label className="text-sm font-medium text-slate-700">Task title</label>
             <Input
-              defaultValue={
-                taskClass === "judgement"
-                  ? "Reasoning Answer Evaluation"
-                  : "Reasoning Conflict Resolution"
-              }
+              value={taskTitle}
+              onChange={(event) => setTaskTitle(event.target.value)}
             />
           </div>
 
           <div className="grid gap-2">
             <label className="text-sm font-medium text-slate-700">Task objective</label>
             <Textarea
-              defaultValue={
-                taskClass === "judgement"
-                  ? "Judge whether the answer is correct, well-supported, and safe enough for canonical publication."
-                  : "Detect the correct label structure and preserve ambiguity before anything enters governed review."
-              }
+              value={taskObjective}
+              onChange={(event) => setTaskObjective(event.target.value)}
               className="min-h-32"
             />
           </div>
@@ -451,9 +487,14 @@ export function TaskCreateForm({ project }: TaskCreateFormProps) {
                 <ChevronRight />
               </Button>
             ) : (
-              <Button className="bg-slate-900 text-stone-100">
+              <Button
+                type="button"
+                className="bg-slate-900 text-stone-100"
+                onClick={handleCreateTask}
+                disabled={submitState === "submitting"}
+              >
                 <FolderPlus />
-                Create task draft
+                {submitState === "submitting" ? "Creating..." : "Create task draft"}
               </Button>
             )}
             <Button asChild variant="outline">
@@ -463,6 +504,11 @@ export function TaskCreateForm({ project }: TaskCreateFormProps) {
               </Link>
             </Button>
           </div>
+          {submitError ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {submitError}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

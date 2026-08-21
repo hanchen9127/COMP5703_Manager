@@ -1,3 +1,6 @@
+from fastapi import HTTPException
+from fastapi import status
+
 from app.models import DataPointer
 from app.models import Task
 from app.models import TaskItem
@@ -30,9 +33,6 @@ class TaskService:
         return self.task_repository.list_by_project(project_id)
 
     def get_task(self, task_id: str) -> Task:
-        from fastapi import HTTPException
-        from fastapi import status
-
         task = self.task_repository.get(task_id)
         if task is None:
             raise HTTPException(
