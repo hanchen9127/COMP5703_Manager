@@ -112,14 +112,13 @@ def list_project_exports(
 
 `components/task-dispute-desk.tsx` has the full UI (decision selector including `"send_back"` at line 227, decision type at line 40) but short-circuits with a placeholder toast at lines 93-96 and 214-219: *"Send back to annotator is not wired yet."*
 
-Frontend already has the plumbing: `lib/api/review-actions.ts:55` types `decision: "finalize" | "send_back"`, and `lib/task-workspace-data.ts:106` already models an `"expert_send_back"` status. Need to check whether the backend has a matching endpoint (e.g. alongside whatever the `finalize` path calls — check `app/api/routes/tasks.py` for the escalation/dispute decision route and whether it already accepts a `send_back`-style decision, or whether that also needs adding).
+**Correction from initial triage:** this is frontend-only. The backend already fully implements `send_back` — `app/api/routes/review_actions.py`'s `decide_escalation` (`POST /tasks/{task_id}/task-items/{task_item_id}/escalations/decision`) maps `decision == "send_back"` to `TaskItemStatus.EXPERT_SEND_BACK` (lines 430-432), calls `ensure_expert_send_back_status` (line 447-448), and records the audit entry — confirmed by `test_review_actions.py::EscalationDecisionStatusTests`, which already passes. The frontend even has a ready-made client function for it: `decideTaskItemEscalation(taskId, itemId, body)` in `lib/api/review-actions.ts:157-170`, posting to that exact endpoint with `{decision, note, payload_preview}`. Nothing needs to change on the backend.
 
 **Plan:**
-1. In `app/api/routes/tasks.py` (or wherever the dispute/escalation decision endpoint lives), confirm/add support for a `send_back` decision that transitions the task item back to an annotator-facing status (likely `returned` per `task-item-workspace-sheet.tsx:978`) and records an `escalation_decided` audit entry with `decision: "send_back"` (consistent with `_summary_for_log`'s existing handling of `escalation_decided` in `task_audit_log_query.py:153-155`).
-2. In `task-dispute-desk.tsx`, replace the two placeholder blocks (lines 93-96, 214-219) with the real API call (same pattern as the `finalize` branch immediately above them), using the existing `decision: "send_back"` type.
-3. Update `lib/task-workspace-data.ts` status-mapping test coverage (`lib/api/status-mapping.test.ts`) if the returned status differs from what's already mapped.
+1. In `task-dispute-desk.tsx`, replace the two placeholder blocks (lines 93-96, 214-219) with a real call to `decideTaskItemEscalation(taskId, itemId, { decision: "send_back", ... })` — the same pattern the `finalize` branch immediately above them already uses.
+2. Confirm the item's displayed/mapped status after a successful send-back reflects `expert_send_back` (`lib/task-workspace-data.ts:106` already models this status) — check `lib/api/status-mapping.ts`/`status-mapping.test.ts` for whether it needs a UI-facing label mapping added.
 
-**Verify:** manual pass through the dispute desk (send an item back, confirm it reappears in the annotator's queue with status `returned`) + a new component test for the send-back path in `task-dispute-desk`'s test file (create one if it doesn't exist).
+**Verify:** manual pass through the dispute desk (send an item back, confirm it reappears in the annotator's queue with status `expert_send_back`/"Sent back") + a new component test for the send-back path in `task-dispute-desk`'s test file (create one if it doesn't exist).
 
 ---
 
@@ -254,11 +253,57 @@ This is also load-bearing beyond `HEJ_HOST`/`HEJ_PORT`/`HEJ_RELOAD` cosmetics �
 
 ---
 
+## 9. Vacuous frontend test: image-bbox hydration
+
+`apps/hej-web/components/task-item-workspace-sheet.test.tsx:609-622`, inside `describe("TaskItemWorkspaceSheet structured image bbox payloads")`:
+
+```ts
+it("hydrates image bbox annotator from draftPayloadText boxes", () => {
+  render(
+    <TaskItemWorkspaceSheet
+      task={imageTask}
+      item={hydratedImageItem}
+      activity={[]}
+      open={true}
+      initialTab="annotate"
+      onOpenChange={vi.fn()}
+    />,
+  )
+
+  expect(screen.getByText("Image annotation workspace")).toBeInTheDocument()
+})
+```
+
+The name claims to verify that `draftPayloadText`'s `boxes` array gets hydrated into the bbox annotator. The only assertion checks for the text `"Image annotation workspace"` — that's the static tab heading returned by `getMediaWorkspaceLabel(taskType)` whenever `task.taskType === "image"`; it renders regardless of whether hydration ran, ran correctly, or silently discarded the box data. The test passes today and would keep passing if hydration were completely broken.
+
+Its two siblings in the same file don't have this problem and are the model to follow:
+- `"hydrates text span annotator from draftPayloadText text_spans"` asserts the hydrated label (`"evidence"`) and note (`"Existing span"`) actually render.
+- `"hydrates audio segment annotator from draftPayloadText segments"` asserts multiple hydrated field values via `getByDisplayValue` (`"1.25"`, `"4.5"`, `"claim"`, `"Existing transcript"`, `"Existing segment note"`).
+
+**Fix:** add real assertions for the hydrated box data — at minimum the label (`"vehicle"`, per `hydratedImageItem`'s fixture) and the coordinate/size fields, using `getByDisplayValue` the same way the audio-segment test does.
+
+**Verify:** temporarily break bbox hydration in the component (e.g. skip populating box state from `draftPayloadText`) and confirm the strengthened test now fails — that's the check that it was vacuous before and isn't after.
+
+---
+
+## 10. Misleading mock setup in a backend admin-IAM test
+
+`apps/hej-api/tests/test_admin_iam_service.py::test_org_admin_can_create_user_in_own_org` (~lines 110-115) builds a `query_map` wiring `db.query(...)` stubs for `UserDB`, `OrganizationUserDB`, and `RoleAssignmentDB`, then installs it via `self._set_query_map(...)` before calling `create_user_for_org`.
+
+`create_user_for_org`'s actual implementation never calls `db.query(...)` at all — it only goes through `store.users.get_by_email`, `db.add`, `db.flush`, and `db.commit`. The `query_map` setup is dead code from the test's perspective: it doesn't drive any behavior the assertions depend on, but its presence tells a reader the service does DB `.query()` lookups as part of user creation, which isn't true. This isn't a false-pass risk (removing it wouldn't change the test's outcome), but it's actively misleading to anyone using this test to understand `create_user_for_org`'s real code path.
+
+**Fix:** delete the unused `query_map`/`_set_query_map(...)` setup from this test, leaving only the mocks that `create_user_for_org` actually exercises (`store.users`, `db.add`/`flush`/`commit`).
+
+**Verify:** run `uv run pytest tests/test_admin_iam_service.py -q` after removing the dead setup — it should still pass unchanged, confirming the removed code was never load-bearing.
+
+---
+
 ## Suggested execution order & grouping
 
 1. **PR 1 — frontend build health:** items 1 + 2 (typecheck fixes + test expectation update). Small, isolated, unblocks CI immediately.
 2. **PR 2 — backend audit log correctness:** items 6 + 7 together (same file, same test file, low risk).
 3. **PR 3 — export governance:** item 3 (new helper + filter, backed by the existing test file).
-4. **PR 4 — dispute send-back:** item 4 (needs a backend endpoint check/addition + frontend wiring — likely the largest change).
+4. **PR 4 — dispute send-back:** item 4 (frontend-only wiring to an existing backend endpoint — smaller than initially scoped).
 5. **PR 5 — dataset registration transaction:** item 5 (touches shared repo methods — review carefully, add the regression test described above before merging).
 6. **PR 6 — `.env` config fix:** item 8. Trivial, zero risk, can land any time — bundle with PR 1 if convenient.
+7. **PR 7 — test-quality fixes:** items 9 + 10. Trivial, zero risk, test-only changes. Item 9 touches the same file as PR 1 (`task-item-workspace-sheet.test.tsx`) so it's a natural fit there; item 10 (`test_admin_iam_service.py`) is unrelated to any other PR — land it standalone or tack it onto whichever PR merges next.
