@@ -13,6 +13,7 @@ Snapshot of known defects in the current HEJ codebase, their impact, and fix pri
 | Dataset registration isn't transactional | A failure partway through intake can leave partial/inconsistent data in the database, requiring manual cleanup. | High |
 | Audit log always shows "user" as the actor, even for system actions | Audit trail can't distinguish human actions from automated ones. | Medium |
 | Escalation audit entries duplicate their own summary as a "change" | Adds noise to the history view, makes real changes harder to spot. | Medium |
+| Backend `.env` config is silently broken | `.env.example` uses the wrong variable prefix, and the app never reads a `.env` file at all — copying the example file changes nothing, and settings always fall back to hardcoded defaults. | Medium |
 
 ## Release Risk
 
@@ -26,3 +27,4 @@ Snapshot of known defects in the current HEJ codebase, their impact, and fix pri
 3. Wire up dispute send-back.
 4. Make dataset registration transactional.
 5. Fix audit log actor labeling and reduce noisy escalation entries.
+6. Fix backend `.env` config loading and variable prefix.
