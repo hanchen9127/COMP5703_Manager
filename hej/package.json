@@ -1,0 +1,34 @@
+{
+  "name": "hej",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "dev:web": "npm run dev --workspace hej-web",
+    "dev:api": "cd apps/hej-api && uv run python main.py",
+    "lint": "turbo lint",
+    "lint:web": "npm run lint --workspace hej-web",
+    "format": "turbo format",
+    "format:web": "npm run format --workspace hej-web",
+    "typecheck": "turbo typecheck",
+    "typecheck:web": "npm run typecheck --workspace hej-web",
+    "check:api": "cd apps/hej-api && uv run python -m compileall app main.py"
+  },
+  "devDependencies": {
+    "@workspace/eslint-config": "*",
+    "@workspace/typescript-config": "*",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "turbo": "^2.8.17",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "npm@10.9.0"
+}

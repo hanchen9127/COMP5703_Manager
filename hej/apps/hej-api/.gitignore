@@ -1,0 +1,14 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local development SQLite database (created by init_data.py / init_db)
+hej_dev.db
+hej_dev.db-journal
