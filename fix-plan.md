@@ -1,6 +1,6 @@
 # HEJ Fix Plan
 
-Technical plan for each issue in `issues.md`. Ordered by the priority list there.
+Technical plan for each issue in `issues.md`. Items 1-23 are ordered by the priority list there. Items 24-28 were added after independent verification against the codebase (see `fix-summary.md`) — they are real defects that the original audit missed, and are slotted into the execution order at the end.
 
 ---
 
@@ -535,6 +535,130 @@ Two independent problems in `app/services/draft_service.py::submit_draft` (lines
 
 ---
 
+## 24. `GET /organizations` is registered twice, making "list pending invitations" unreachable
+
+`app/api/router.py:24-25` mounts two routers under the same prefix:
+
+```python
+api_router.include_router(organizations.router, prefix="/organizations", tags=["organizations"])
+api_router.include_router(members.router, prefix="/organizations", tags=["members"])
+```
+
+Both register a bare `GET ""` at that prefix — `organizations.py:86` (`list_organizations`, line 93) and `members.py:31-37` (`list_pending_invitations`, line 38). FastAPI matches in registration order, so `organizations.router` always wins and **`list_pending_invitations` can never be reached by any request**. Confirmed by route introspection over `api_router`: `('GET', '/organizations')` resolves to `app.api.routes.organizations`, with `app.api.routes.members` shadowed. (The same introspection surfaces the item 18 duplicate — these are the only two collisions in the app.)
+
+**Why this is worse than a dead route:** it compounds item 20. Invitations already cannot be *accepted* (broken token contract); with this collision they also cannot be *listed*. There is no working path through the invitation flow at all, and the failure is silent — the endpoint returns `list_organizations`' response shape, so a client calling it gets a `200` with the wrong payload rather than a `404`.
+
+**Fix:**
+1. Give `list_pending_invitations` a non-colliding path. It is not an organizations-collection endpoint — it lists the *current user's* pending invitations, so mount it under the existing `invitations.router` (already mounted at `/invitations`, `router.py:26`) as `GET /invitations/pending`, or keep it in `members.py` under an explicit sub-path such as `GET /organizations/invitations/pending`.
+2. Do not reorder the `include_router` calls to "fix" it — that would just shadow `list_organizations` instead.
+3. Land this together with item 20; neither is independently testable end-to-end, since a user cannot reach an invitation to accept without a working list endpoint.
+
+**Verify:** the route-introspection test proposed in item 18 (no duplicate method+path in `api_router`) must pass — it currently reports two collisions, and this item plus item 18 together bring it to zero. Add a route test asserting `list_pending_invitations` returns the caller's pending invitations rather than an organization list.
+
+---
+
+## 25. A task can never leave `draft`, so intake never closes and most export states are unreachable
+
+`TaskCreate` (`app/schemas/tasks.py:43-53`) has no `status` field, so every task is created in `draft`. `TaskUpdate` (`61-71`) has no `status` field either, and there is no activation endpoint anywhere in `app/api/routes/`. Grepping every writer of `task.status` in the service layer turns up exactly one: `task_service.py:347`, inside `complete_task`, which sets `"completed"`. **`draft → completed` is the only task-status transition the API can perform.**
+
+Two concrete consequences, both in already-shipped code paths:
+
+- **Dataset intake never closes.** `assert_task_allows_dataset_intake` (`task_service.py:63-68`) permits intake while the task is in `draft` or `ready`. Since a task stays `draft` for its entire working life, new items can be registered into a task at any point — including while its existing items are being reviewed or after some have been canonicalized. The guard exists but can never fire except on an already-`completed` task.
+- **Most export states are unreachable.** `_TASK_STATUS_TO_EXPORT` (`project_exports_service.py:20-26`) maps `in_review`, `ready`, and `disputed` to `"building"`. No task can hold any of those values, so every export package is either `"draft"` or `"ready"` — the intermediate state the dashboard is built to show never appears.
+
+This also undercuts item 21's premise: aligning "completion" and "export readiness" is only half the problem if the lifecycle in between has no transitions at all.
+
+**Fix:**
+1. Decide the intended task lifecycle explicitly (product question — `TaskStatus` already enumerates `draft`, `ready`, `in_review`, `disputed`, `completed`, so the intent exists in the model but not in the API).
+2. Add a dedicated activation transition rather than a free-form `status` field on `TaskUpdate` — e.g. `POST /projects/{project_id}/tasks/{task_id}/activate` alongside the existing `.../complete` (`tasks.py:76`), which is already the established shape for a guarded task transition.
+3. Enforce transitions in one place: a `assert_task_status_transition_allowed(current, next)` helper next to the existing `assert_task_completeable`, so `draft → ready → in_review → completed` is validated rather than assignable.
+4. Once tasks can actually reach `ready`, re-check `assert_task_allows_dataset_intake` — the `{draft, ready}` set should probably narrow to `{draft}` if `ready` is meant to mean "intake closed."
+
+**Verify:** a lifecycle test walking a task through every intended transition and asserting each illegal jump is rejected; assert dataset intake is refused once a task has left the intake phase; assert an export package can actually report `"building"`.
+
+---
+
+## 26. Lifecycle conflicts in dataset registration are returned as HTTP 500
+
+`register_dataset` (`app/api/routes/tasks.py:264-296`) wraps the whole service call in a blanket handler:
+
+```python
+try:
+    pointers, task_items = service.register_dataset(...)
+    ...
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    raise HTTPException(status_code=500, detail=f"Failed to register dataset: {str(e)}")
+```
+
+`HTTPException` is an ordinary `Exception` subclass, so the deliberate `409` raised by `assert_task_allows_dataset_intake` (`task_service.py:65`) is caught and re-raised as a `500`. Reproduced directly against a seeded database: registering items into a `completed` task returns
+
+```
+500: Failed to register dataset: 409: Dataset intake is only allowed while the task is in draft or ready status.
+```
+
+The correct status code and message are both present — nested inside a server-error envelope. Clients cannot distinguish "you attempted an invalid state transition" from "the server broke", so a retry loop or an alerting rule keyed on `5xx` will treat a normal workflow refusal as an outage.
+
+**Fix:**
+1. Re-raise `HTTPException` untouched before the generic handler:
+   ```python
+   except HTTPException:
+       raise
+   except Exception as e:
+       ...
+   ```
+2. Replace `traceback.print_exc()` with the application logger — printing to stdout loses the record in any real deployment.
+3. Audit the other broad `except Exception` handlers in `app/api/routes/` for the same swallow (`members.py`'s `accept_invitation` has the same shape but does re-raise `HTTPException` first, at lines 220-221 — that is the pattern to copy).
+
+**Verify:** POST dataset registration against a `completed` task and assert the response is `409` with the domain message intact, not `500`. Add the same assertion for any other lifecycle guard reachable through this route.
+
+---
+
+## 27. A live Gemini API key is hardcoded in committed source
+
+`app/core/config.py:15`:
+
+```python
+gemini_api_key: str = "AQ.Ab8RN6IXjWaXAT0iK69qDXAetfh5BdLAxtxegws5b-jTPp2OvA"
+```
+
+This is a field *default*, not a placeholder — it is committed to the repository and tracked in git (`git ls-files` confirms), so it is in the history of every clone and every fork. It is also the value that will actually be used at runtime, because of item 8: `Settings` reads no `.env` file, so unless someone exports `HEJ_GEMINI_API_KEY` in the process environment, this baked-in key is what `GeminiPreannotator` authenticates with.
+
+The two bugs reinforce each other: item 8 removes the mechanism by which an operator would supply their own key, and this item supplies a working fallback so nothing visibly fails. The result is that every developer running the app is silently spending against one shared, publicly-committed credential.
+
+**Fix:**
+1. Rotate the key at the provider first — it must be treated as compromised regardless of what happens in the repo.
+2. Change the default to empty (`gemini_api_key: str = ""`) and have `GeminiPreannotator` treat an empty key as *disabled* — which, per item 22, must mean "produce no draft", not "produce fabricated boxes".
+3. Add `HEJ_GEMINI_API_KEY=` to `.env.example` as part of item 8's rename, so the supported way to supply it is documented in the one file developers copy.
+4. Purging the key from git history is a separate decision (it requires a force-push and coordination); rotation is what actually closes the exposure.
+
+**Verify:** a test asserting `Settings().gemini_api_key` is empty by default; a grep/secret-scan step in CI so a credential-shaped literal cannot land in `app/` again.
+
+---
+
+## 28. `FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES` contains a status that cannot exist
+
+`task_service.py:82-88` defines:
+
+```python
+FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES = {
+    "approved",
+    "reviewed",
+    "canonicalized",
+}
+```
+
+`TaskItemStatus` (`app/models/domain.py:51-59`) has no `APPROVED` member — the values are `pending`, `annotated`, `returned`, `rejected`, `reviewed`, `disputed`, `expert_send_back`, `canonicalized`. No item can ever hold `"approved"`, so the set behaves as `{"reviewed", "canonicalized"}` and the first entry is dead.
+
+There is no behavioral bug here — `assert_task_completeable` already works as if `"approved"` were absent, so item 21's finding (a task can complete on merely-`reviewed` items) stands unchanged. The cost is comprehension: a reader auditing export eligibility reasonably concludes there is an `approved` state in the workflow, and goes looking for the transition that produces it.
+
+**Fix:** delete `"approved"` from the set as part of item 21's work, when that list is being replaced by a shared `is_task_item_export_eligible(status)` predicate anyway. Whatever that predicate ends up accepting, derive it from `TaskItemStatus` members so a non-existent status cannot be listed again.
+
+**Verify:** assert every member of the eligibility set is a valid `TaskItemStatus` value — a one-line test that would have caught this.
+
+---
+
 ## Suggested execution order & grouping
 
 Items 12-13, 16-17, 23 (and, less directly, 21) all revolve around the same unresolved question — **what is the single authoritative record of a finalized judgment, and how does a correction to it get made?** Answer that once (with product/governance input) and several of these fixes become mechanical rather than open-ended.
@@ -553,3 +677,9 @@ Items 12-13, 16-17, 23 (and, less directly, 21) all revolve around the same unre
 12. **PR L — backend audit log correctness:** items 6 + 7 together (same file, same test file, low risk).
 13. **PR M — `init_data.py`/`.env` dev-tooling fixes:** items 8 + 11 (both 11a and 11b). Trivial, zero risk, dev-tooling only — land any time.
 14. **PR N — test-quality fixes:** items 9 + 10. Trivial, zero risk, test-only changes.
+15. **PR O — credential rotation:** item 27. Do this **first in wall-clock time**, ahead of everything above — the rotation step is independent of all code work and the exposure runs until it happens. The code change itself is small and rides along with PR M's `.env` work.
+16. **PR P — invitation route collision:** item 24. Land together with PR I (item 20); the invitation flow is not testable end to end until both are in, and item 24 alone just moves an unreachable route.
+17. **PR Q — task lifecycle transitions:** item 25. **Blocked on a product decision** (what the intended `draft → ready → in_review → completed` path is and who may trigger each step). Sequence after PR J, since "what counts as done" should be settled before adding the transitions that lead there.
+18. **PR R — error-contract fix:** item 26. One-line `except HTTPException: raise` plus a logger change; independent, land any time.
+
+Item 28 has no PR of its own — fold it into PR J (item 21), which is rewriting that status set anyway.
