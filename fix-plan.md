@@ -1,14 +1,177 @@
 # HEJ Fix Plan
 
-Technical plan for each issue in `issues.md`. Items 1-23 are ordered by the priority list there. Items 24-28 were added after independent verification against the codebase (see `fix-summary.md`) — they are real defects that the original audit missed, and are slotted into the execution order at the end.
+Technical plan for each issue in `issues.md`, numbered 1–29 to match that file's Impact Table (see its numbering — 1 is highest priority, 29 is lowest). Section **3–4** covers two Impact Table rows (3 and 4) in one write-up, since both are downstream of the same root cause — no single canonical annotation per item — and share one fix.
 
 ---
 
-## 1. Frontend typecheck blockers
+## 1. A live Gemini API key is hardcoded in committed source
+
+`app/core/config.py:15`:
+
+```python
+gemini_api_key: str = "AQ.Ab8RN6IXjWaXAT0iK69qDXAetfh5BdLAxtxegws5b-jTPp2OvA"
+```
+
+This is a field *default*, not a placeholder — it is committed to the repository and tracked in git (`git ls-files` confirms), so it is in the history of every clone and every fork. It is also the value that will actually be used at runtime, because of item 23: `Settings` reads no `.env` file, so unless someone exports `HEJ_GEMINI_API_KEY` in the process environment, this baked-in key is what `GeminiPreannotator` authenticates with.
+
+The two bugs reinforce each other: item 23 removes the mechanism by which an operator would supply their own key, and this item supplies a working fallback so nothing visibly fails. The result is that every developer running the app is silently spending against one shared, publicly-committed credential.
+
+**Fix:**
+1. Rotate the key at the provider first — it must be treated as compromised regardless of what happens in the repo.
+2. Change the default to empty (`gemini_api_key: str = ""`) and have `GeminiPreannotator` treat an empty key as *disabled* — which, per item 20, must mean "produce no draft", not "produce fabricated boxes".
+3. Add `HEJ_GEMINI_API_KEY=` to `.env.example` as part of item 23's rename, so the supported way to supply it is documented in the one file developers copy.
+4. Purging the key from git history is a separate decision (it requires a force-push and coordination); rotation is what actually closes the exposure.
+
+**Verify:** a test asserting `Settings().gemini_api_key` is empty by default; a grep/secret-scan step in CI so a credential-shaped literal cannot land in `app/` again.
+
+---
+
+## 2. A finalized/canonicalized annotation can be silently overwritten
+
+`app/services/draft_service.py::submit_draft` (line 104) only checks `draft.status != "pending"` — it never checks the parent task item's status. `_create_annotation_from_draft` (lines 146-184) then does `annotations.update(existing_annotation.id, annotation_data=draft.draft_data, ...)` in place whenever the same creator already has an annotation for that item. There is no terminal-state guard anywhere in this path, and the route layer doesn't add one either — `create_draft`/`submit_draft` in `app/api/routes/drafts.py` call only `verify_user_is_active` + `verify_user_task_item_access`, which check org/project *access*, never item *status*. So a new draft can be created and submitted against a `canonicalized` item, silently rewriting its already-approved annotation content with no new review ever happening.
+
+**Fix:**
+1. Add an explicit guard — e.g. `assert_task_item_accepts_draft_writes(task_item)` — called from both `create_draft` and `submit_draft`, that raises `409` if the item's status is terminal (`canonicalized`, or whatever the platform's finalized-status set is; reuse the terminal-status set already defined in `task_service.py` if one exists, to keep the "what counts as terminal" definition in one place).
+2. Decide (with product/governance input, since this is a workflow-semantics question) how a legitimate correction to a finalized item should happen — e.g. an explicit "reopen" transition that a privileged role must trigger before a new draft is accepted, rather than any draft write silently succeeding.
+
+**Verify:** attempt to submit a draft against a `canonicalized` item and assert the request is rejected (`409`) and the existing annotation's content, version, and the original approving review remain byte-for-byte unchanged.
+
+---
+
+## 3–4. Ambiguous "latest annotation" selection when a task item has multiple annotators
+
+This surfaced while verifying `init_data.py` can be re-run safely — the seed script (`init_step_4_annotations`) creates exactly 2 `AnnotationDB` rows per task item, alternating `created_by` between alice and bob (`creator_ids[ann_num % len(creator_ids)]`), both hardcoded to `version=1` and `is_latest=True`. Verified via direct SQL against a seeded dev DB: all 10 seeded task items end up with 2 rows where `is_latest=1`.
+
+At first this looked like a seed-script bug, but it isn't — it's a faithful reproduction of how the **real** annotation-creation path already behaves, which exposes a genuine design gap in two read paths:
+
+- **The real invariant** (`app/repositories/db_store.py:1042-1050`, `find_by_item_and_creator`): *"Ensure each user has only one annotation for the same item"* — uniqueness is scoped to `(task_item_id, created_by)`, not to `task_item_id` alone. `app/services/draft_service.py::_create_annotation_from_draft` (lines 146-182) follows this correctly: if the creator already has an annotation for the item, it updates it in place; otherwise it creates a new one with `is_latest=True`. So when two different annotators each submit work on the same item, **both** end up with their own `is_latest=True` row — that's intentional, not a bug.
+- **The broken consumers**: `app/api/routes/review_actions.py::_latest_annotation(db, task_item_id)` (lines 133-142) filters only by `task_item_id` + `is_latest=True` — no `created_by` — and is used by the review-action endpoint (line 206) and the task-item adjustment read endpoint (`get_task_item_adjustment`, line 311 — surfaces the annotation preview to the dispute desk ahead of a decision, not `decide_escalation` itself) to fetch "the" annotation to act on. Its `.order_by(AnnotationDB.version.desc())` tiebreak is useless in practice because `version` is hardcoded to `1` everywhere an annotation is created (`draft_service.py:177`, and mirrored in the seed script) — it's never incremented. So with two creator-scoped rows tied on `version`, the tiebreak falls back to undefined row order. `draft_service.py`'s own draft-approval annotation lookup (lines 213-216) has the identical bug — same filter, and doesn't even attempt `.order_by()`.
+
+**Real-world impact (row 3):** any task item annotated by more than one person — which is the entire premise of the dual-sign-off review policy this platform documents (`docs/design/database/db_schema_strategy.md`) — hits this. A reviewer calling the review-action or escalation-decision endpoint on such an item can be shown an arbitrary one of the two annotators' submissions, with no signal that it picked "the wrong one."
+
+**Independently confirmed, and worse than review-time confusion — it reaches export (row 4).** `app/api/routes/tasks.py:653-678` builds `latest_annotations_by_item_and_creator`, keyed by `(task_item_id, created_by)` — one export slot per creator, not one per item. The export loop (lines 738-780) iterates that dict filtering only by `item.id`, so if two creators each have their own `is_latest` annotation on the same item, **both get written into that item's exported `"annotations"` array**, with nothing marking either as "the" canonical value. A finalized/canonicalized item can export two (or more) conflicting answers side by side. This means the fix below isn't just a review-UX nicety — it needs to also cover what `tasks.py`'s export serialization treats as canonical, not only what `_latest_annotation()` picks for review.
+
+**Fix — pick one of two directions and make every consumer agree with it:**
+1. **If only one active annotation per item is intended** (simpler mental model, matches `_latest_annotation`'s current name/shape): `_create_annotation_from_draft` needs to supersede (flip `is_latest=False` on) any other creator's current annotation for that item when a new one is approved, not just look up its own creator's row. This changes the product semantics of multi-annotator items, so confirm with product/governance docs first — `db_schema_strategy.md` §7.11 ("CanonicalJudgment... version chain for superseded canonical judgments") suggests this is closer to the intended model.
+2. **If per-creator concurrent annotations are intended** (matches the repository layer's actual invariant and comment): `_latest_annotation()` and the `draft_service.py` lookup both need a `created_by` argument threaded through from their callers (e.g. the draft/review context should know whose submission is being reviewed) instead of guessing.
+3. Either way, stop relying on `version` as a tiebreak while it's hardcoded to `1` — either increment it per new annotation in that scope, or order by `created_at DESC` instead.
+4. Update `init_step_4_annotations` in `init_data.py` to match whichever rule is chosen, so seeded dev data doesn't contradict the real invariant.
+5. Fix `app/api/routes/tasks.py:653-780`'s export serialization to emit exactly one canonical annotation per item (whichever the chosen rule defines as authoritative), with any other candidates included only as provenance/history, not as equally-weighted `"annotations"` entries.
+
+**Verify:** add a test that creates two annotations for the same task item from two different `created_by` users (mirroring real drafting behavior), then (a) calls the review-action endpoint, asserting the *correct, intended* annotation is the one acted on, and (b) exports the (finalized) item, asserting exactly one canonical annotation is present in the export payload. Both should fail against current code and pass after the fix.
+
+---
+
+## 5. Reviewer corrections are never actually persisted
+
+The frontend (`task-item-workspace-sheet.tsx`, `handleReviewAction`) sends a reviewer's corrected value as `final_payload`/`final_verdict`. The backend handler (`app/api/routes/review_actions.py`, ~lines 229-267) only does `notes_parts.append(f"final_payload={payload.final_payload.strip()[:500]}")` (and the same for `final_verdict`) — folding the correction into `review_notes`, a free-text field on the new `ReviewDB` row. The item's status still transitions to `next_item_status` (e.g. `canonicalized`) a few lines later, but `annotation.annotation_data` — the actual canonical content — is never reassigned. The reviewer's correction is captured only as truncated text in a notes/audit field; the stored and exported value remains the original, un-corrected annotation.
+
+**Fix:**
+1. When `payload.final_payload` (or `final_verdict`) is present, write it into the annotation's actual content — either update `annotation.annotation_data` directly (simplest, but loses the "who corrected what" lineage) or, better, create a new annotation version attributed to the reviewer and mark it `is_latest=True` (superseding the original per whichever rule is chosen in items 3–4 — these two fixes should share the same "how do we version/supersede annotations" mechanism).
+2. Keep `review_notes` for genuine free-text commentary only; don't rely on it to carry structured payload data. Consider truncation (`[:500]`) is itself a separate small bug once the payload actually needs to be preserved in full elsewhere.
+
+**Verify:** submit a review action with `final_payload` different from the original annotation content; assert the item's read endpoint *and* its export both reflect the reviewer's corrected value, including payloads over 500 characters (the current truncation length) to confirm nothing is silently cut.
+
+---
+
+## 6. Drafts have no ownership enforcement
+
+`app/core/resource_scope.py::verify_user_draft_access` (~lines 49-63) loads the draft and calls `verify_user_task_item_access`, which walks task → project → org scope (`app/core/permissions.py::verify_user_project_access`) — it never compares `draft.created_by` to the calling user. This same function guards `update_draft`, `delete_draft`, and (via `verify_user_task_item_access` directly) `submit_draft` in `app/api/routes/drafts.py`. Any active member with project access can PATCH, DELETE, or submit any other user's pending draft.
+
+**Fix:**
+1. In `verify_user_draft_access`, after the existing project/org scope check, add an ownership check: raise `403` unless `draft.created_by == current_user["user_id"]` (or the caller has an explicit reviewer/admin override role, if that's an intended capability — confirm with the role model in item 7 below, since these two fixes should agree on what "elevated" access means).
+2. Separately, reviewer *read* access to drafts (needed to review someone else's submission) must stay unaffected by this — this fix should only tighten *write* paths (`update_draft`, `delete_draft`, `submit_draft`), not `get`/`list` draft endpoints.
+3. Add a uniqueness rule (or at minimum, an application-level check) enforcing at most one pending draft per `(task_item_id, created_by)`, matching the annotation-layer's own stated invariant in items 3–4.
+
+**Verify:** a two-user test — user 2 attempts to PATCH/DELETE/submit user 1's pending draft and gets `403` in every case; user 1 can still do all three on their own draft.
+
+---
+
+## 7. No role check or self-review guard on review actions
+
+`submit_task_item_review_action` (`app/api/routes/review_actions.py:189-213`) calls only `verify_user_is_active` and `verify_user_task_access` — the latter (`app/core/permissions.py:159-212`) checks org/project tenancy only. A role-check helper already exists and is unused here: `verify_user_has_role(current_user, org_id, required_roles)` (`permissions.py:215-256`). Nothing in the route compares `current_user["user_id"]` to the annotation's/draft's `created_by` either. So any active org member — including the item's own annotator — can approve/reject/finalize their own work.
+
+**Fix:**
+1. Call `verify_user_has_role(current_user, task's org_id, required_roles=["reviewer", "admin"])` (or the platform's equivalent role set) at the top of `submit_task_item_review_action`, before any state mutation.
+2. Add an explicit self-review guard: raise `403` if `current_user["user_id"] == annotation.created_by` (fetch the annotation being reviewed — same lookup already happening at line 206 — and compare), unless the org's policy explicitly permits self-review (check `OrganizationPolicyDB`/`review_dual_sign_off` semantics — this may already be a policy-configurable flag worth reusing rather than hardcoding).
+3. Apply the same two checks to the escalation-decision endpoint (`decide_escalation`, same file) since it has the identical shape.
+
+**Verify:** an `annotator`-only user attempting to review their own annotation gets `403`; a `reviewer`/`admin` user reviewing someone else's work still succeeds; add a dual-sign-off scenario test if that policy flag exists.
+
+---
+
+## 8. A second, legacy review API can bypass and rewrite the official workflow
+
+`app/api/routes/annotations.py` exposes a fully separate API surface — `create_review` (POST `/annotations/{id}/reviews`, ~line 196), `update_review` (PATCH `/reviews/{id}`, ~line 319), `delete_review` (DELETE `/reviews/{id}`, ~line 426) — guarded only by `verify_user_is_active` + a pure tenancy check (`verify_user_annotation_access`/`verify_user_review_access` in `app/core/resource_scope.py:66-92`, which never checks role or ownership). Critically, `update_review` and `delete_review` mutate/delete `ReviewDB` rows directly and **never touch `TaskItemDB.status`** — unlike `review_actions.py`'s flow, which always advances `item.status` alongside a review decision. So any org member can flip an approved review to `rejected`, or delete it outright, while the item's official status (e.g. `canonicalized`) stays exactly as it was. Approval history and actual item state can diverge with no way to detect it from the item's status alone.
+
+**Fix:**
+1. Decide whether this route family serves any purpose the main `review_actions.py` flow doesn't — if not, remove `update_review`/`delete_review` entirely (or make them admin-only and read-only-by-default).
+2. If some capability here is genuinely needed (e.g. an admin correction path), route it through the same state-transition logic `review_actions.py` uses, so `TaskItemDB.status` is always kept consistent with the latest effective review decision.
+3. Model any legitimate review correction as an append-only event (new row), never an in-place edit or hard delete, to preserve the audit trail this platform's own docs (`db_schema_strategy.md`) require for judgment provenance.
+
+**Verify:** attempt to PATCH/DELETE a review via this route as a non-admin and confirm it's rejected; for any retained capability, confirm `TaskItemDB.status` is updated consistently and the change is recorded as a new append-only event rather than an edit/delete of history.
+
+---
+
+## 9. Cross-project write bypass in the task API
+
+`app/api/router.py` mounts `projects.router` (prefix `/projects`) before `tasks.project_tasks_router` (no prefix) — both register `PUT /projects/{project_id}/tasks/{task_id}` at the identical full path. Route matching goes by registration order, so `projects.py`'s handler always wins and `tasks.py`'s `PUT` version is dead code, unreachable. (`tasks.py`'s `project_tasks_router` has no `DELETE` route at all — there's no duplicate/shadowing on delete, just a single unguarded handler; see below.)
+
+The handler that actually runs — `update_task` in `app/api/routes/projects.py` (~lines 176-210) — verifies the caller has access to the *project* in the URL, then calls `task_service.update_task(task_id, ...)` **without ever checking `task.project_id == project_id`**. The shadowed, unreachable version in `tasks.py` (~lines 56-67) actually has the correct check (`if task is None or task.project_id != project_id: raise 404`) — the fix exists in the codebase already for `update_task`, it's just dead code. `delete_task` (`projects.py`, ~lines 214-235) has the exact same missing check, but there's no shadowed `tasks.py` counterpart to port it from — it needs to be added directly.
+
+Separately, task-item PATCH (`update_task_item` in `tasks.py`, ~lines 300-327) fetches the task only to check org/project access, then loads and updates the task item by `item_id` alone — no check that `task_item.task_id == task_id`.
+
+**Net effect:** access to *any* project you belong to is enough to PUT/DELETE a task, or PATCH a task item, that actually belongs to a completely different, inaccessible project/organization — as long as you know or can guess its ID.
+
+**Fix:**
+1. Remove the duplicate/shadowed `PUT` route in `projects.py` (or the one in `tasks.py` — pick one canonical `TaskUpdate` implementation) so there's exactly one handler per method+path.
+2. Whichever `PUT` implementation survives, port over the `task.project_id != project_id → 404` check that already exists in the dead `tasks.py` version.
+3. Add that same `task.project_id != project_id → 404` check directly to `delete_task` in `projects.py` — there's no dead version to port it from, since `tasks.py` never had a `DELETE` route.
+4. Add the equivalent `task_item.task_id != task_id → 404` check to `update_task_item`.
+
+**Verify:** with access only to `proj_allowed`, attempt `PUT`/`DELETE` on a task belonging to a different, inaccessible project — expect `404`, not success. Same for a task-item PATCH with a mismatched `task_id`/`item_id` pair. Add a route-introspection test asserting no duplicate method+path registrations exist in `api_router`.
+
+---
+
+## 10. Invalid task-item status gets committed before validation catches it
+
+`TaskItemStatusUpdate` (`app/api/routes/tasks.py:52-53`) declares `status: str` — a plain string, not the real `TaskItemStatus` enum. The only pre-write guard, `assert_task_item_status_update_allowed` (`app/services/task_service.py:89-110`), checks that the task/item aren't already terminal and that the target isn't a workflow-owned status — it never validates that the target is a real enum member at all. `db_item_repo.update(item_id, status=payload.status)` commits immediately. Only afterward, when FastAPI serializes the response against `TaskItemRead` (whose `status` field is a strict `TaskItemStatus` enum, `app/schemas/tasks.py:126`), does validation fail — by which point the invalid string is already permanently in the database.
+
+**Fix:**
+1. Change `TaskItemStatusUpdate.status` to `TaskItemStatus` (the real enum) so FastAPI rejects an invalid value at the request-parsing layer, before any service/repository code runs.
+2. Add a DB-level check constraint on `task_items.status` as defense in depth, in case any other code path ever writes to this column with an unvalidated string.
+3. Ensure `assert_task_item_status_update_allowed` runs (and would reject) before the repository commit, not just before the response is built.
+
+**Verify:** POST an update with `status: "not_a_real_status"` and confirm it's rejected with `422` (or `409` if caught by a domain check) and the database row is unchanged — not just that the HTTP response happens to fail after the row was already written.
+
+---
+
+## 11. Draft submission is non-atomic, and drafts never link to their own annotation
+
+This is listed in `issues.md` ("Draft submission is not one transaction...") but was missing its technical write-up here — adding it now.
+
+Two independent problems in `app/services/draft_service.py::submit_draft` (lines ~96-124):
+
+**a. Non-atomic writes.** The function makes three separate repository calls, each committing independently (`_commit_or_rollback` inside each repo method, per the pattern already noted in items 16 and 2): `self.db_store.drafts.update(...)` (draft status), `self._create_annotation_from_draft(...)` (creates/updates the annotation), then `self._advance_task_item_to_annotated_on_submit(...)` → `self.db_store.task_items.update(...)` (task item status). No wrapping transaction ties these three writes together. A failure between any of them — e.g. the annotation write succeeds but the task-item status update throws — leaves a submitted draft with no corresponding item-status change, or a draft marked submitted with no annotation at all.
+
+**b. `draft.annotation_id` is a dead column.** `DraftDB.annotation_id` (`app/models/db_models.py:255`) is a real FK column with a comment describing its purpose ("based on which annotation this was modified from"), and it's *read* defensively at `draft_service.py:206-207` (`if draft.annotation_id: ...`). But nothing in the codebase ever *writes* to it — `submit_draft` discards `_create_annotation_from_draft`'s return value outright, and grepping the entire `app/` tree for any assignment to this column (`draft.annotation_id =` or `drafts.update(..., annotation_id=...)`) turns up nothing. So that `if draft.annotation_id:` branch is dead code — always `None` in practice, despite the column existing specifically to make this link.
+
+**Why this matters beyond tidiness:** because the draft never records which specific annotation it produced, later steps that need "the annotation this submission created" (e.g. a review action) have no reliable way to look it up directly — they fall back to `_latest_annotation(db, task_item_id)` (`review_actions.py:133-142`), which queries by `task_item_id` alone with no creator scoping and an ineffective `version`-based tiebreak (`version` is hardcoded to `1` everywhere, per items 3–4). With two different annotators each having their own `is_latest=True` row on the same item, this lookup can return the wrong creator's annotation entirely — the same failure mode documented in items 3–4, reached here via the missing link rather than the ambiguous selection rule.
+
+**Fix:**
+1. Wrap the three writes in `submit_draft` in one transaction: use `flush()` (not commit) for the intermediate repo calls and a single `self.db.commit()` at the end, with `except: self.db.rollback(); raise` around the whole sequence — same pattern proposed for dataset registration in item 16.
+2. After `_create_annotation_from_draft` returns the annotation, actually write its id back: `self.db_store.drafts.update(draft.id, annotation_id=annotation.id)` (as part of the same transaction).
+3. Once (2) is in place, any code needing "the annotation this draft produced" should look it up via `draft.annotation_id` directly instead of the ambiguous `_latest_annotation(task_item_id)` fallback — this is a concrete way to close part of items 3–4's ambiguity, at least for the review-after-submit path specifically.
+
+**Verify:** submit a draft, then assert `draft.annotation_id` is populated and points to the annotation actually created/updated by that submission. Inject a failure between the annotation write and the task-item status update (e.g. mock the item-status repo call to raise) and assert no partial state remains — no orphaned "submitted" draft without an annotation, no item stuck out of sync with its draft.
+
+---
+
+## 12. Frontend typecheck blockers
 
 Two independent type errors, both in `apps/hej-web`.
 
-### 1a. `TaskItemTable` signal prop mismatch
+### 12a. `TaskItemTable` signal prop mismatch
 
 `components/task-item-table.tsx:54-64` defines the signal props as a discriminated union that requires `getSignal` whenever `signalLabel` is set:
 
@@ -18,7 +181,7 @@ type TaskItemTableSignalProps =
   | { signalLabel?: undefined; getSignal?: undefined }
 ```
 
-But every call site (`task-workbench.tsx:256`, `task-items-board.tsx:158`, `task-annotation-workspace.tsx:286`) only passes `signalLabel={isAiAssisted ? "Confidence" : undefined}` and relies on the component's existing fallback (`getSignal ? getSignal(item) : item.confidence`, line 197). No caller passes `getSignal`.
+Every call site (`task-workbench.tsx:259`, `task-items-board.tsx:160`, `task-annotation-workspace.tsx:288`) does pass both props — `signalLabel={isAiAssisted ? "Confidence" : undefined}` immediately followed by `getSignal={isAiAssisted ? (item) => getTaskItemSignal(task, item) : undefined}` — but each is its own independently-typed ternary (`string | undefined` and `Function | undefined`). TypeScript can't see that the two ternaries share the same `isAiAssisted` condition, so it can't narrow the pair to either arm of the discriminated union in `TaskItemTableSignalProps` — the call sites are logically correct but structurally don't satisfy the union. The component's runtime fallback (`getSignal ? getSignal(item) : item.confidence`, line 197) never actually needs to handle a "no `getSignal`" case from these callers in practice; the union itself is just stricter than any real call site can satisfy.
 
 **Fix:** drop the union, make both props independently optional:
 
@@ -31,7 +194,7 @@ type TaskItemTableSignalProps = {
 
 No call-site changes needed — the runtime fallback already handles the `getSignal`-absent case correctly; only the type was wrong.
 
-### 1b. Missing `judgementSignal` on `MockTaskItem`
+### 12b. Missing `judgementSignal` on `MockTaskItem`
 
 `components/task-item-workspace-sheet.tsx:1496` reads `item.judgementSignal`, a property that doesn't exist on `MockTaskItem` (`lib/domain/task-types.ts:32-61`).
 
@@ -47,7 +210,7 @@ Line 1498 (`isJudgement ? judgementSignal : item.confidence`) already uses the l
 
 ---
 
-## 2. Frontend test failure (`task-item-workspace-sheet.test.tsx`)
+## 13. Frontend test failure (`task-item-workspace-sheet.test.tsx`)
 
 `components/task-item-workspace-sheet.tsx:1204-1208` now includes `itemStatus: item.status` in the `AnnotateActionPayload` sent to `runAnnotateAction`:
 
@@ -69,7 +232,7 @@ This is consumed by `shouldForceCreatePendingDraft(payload.itemStatus)` in `lib/
 
 ---
 
-## 3. Backend export-route tests fail to collect
+## 14. Backend export-route tests fail to collect
 
 `tests/test_project_exports_route.py:11` imports `_is_task_export_eligible` from `app/api/routes/projects.py`, which doesn't exist — the route (`projects.py:115-126`) currently returns `ProjectExportsService(db=db).list_project_exports(project_id)` unfiltered, with no task-status gating at all. This is a missing feature, not a rename.
 
@@ -108,7 +271,7 @@ def list_project_exports(
 
 ---
 
-## 4. Dispute send-back not wired
+## 15. Dispute send-back not wired
 
 `components/task-dispute-desk.tsx` has the full UI (decision selector including `"send_back"` at line 227, decision type at line 40) but short-circuits with a placeholder toast at lines 93-96 and 214-219: *"Send back to annotator is not wired yet."*
 
@@ -122,7 +285,7 @@ def list_project_exports(
 
 ---
 
-## 5. Dataset registration isn't transactional
+## 16. Dataset registration isn't transactional
 
 `TaskService.register_dataset` (`app/services/task_service.py:403-509`) loops over `payload.items` and, for the DB-backed path, calls:
 - `self.db_pointer_repo.save(pointer)` per item
@@ -151,7 +314,70 @@ Every one of those repo calls independently calls `_commit_or_rollback(self.db)`
 
 ---
 
-## 6. Audit log actor always "user"
+## 17. Organization invitations are completely broken
+
+Two independent bugs, and together they mean **no invitation can ever be successfully accepted** through the normal flow:
+
+1. **Creation lies about its own result.** `invite_member` (`app/services/admin_service.py:370-401`) creates the `OrganizationUser` row with `status=OrganizationUserStatus.ACTIVE` and `accepted_at=datetime.now(UTC)` set immediately — the comment even says "Admin invite is automatically accepted" — yet the function's returned dict hardcodes `"status": "invited"`. The persisted state and the API response directly contradict each other.
+2. **Acceptance reads a claim the token never has.** `create_invitation_token` (`app/core/security.py:81-94`) encodes `{"user_id": ..., "org_id": ..., "type": "invitation", ...}` — there is no `"sub"` claim. A matching `decode_invitation_token` exists and correctly reads `user_id`/`org_id` (lines 97-107) — but `accept_invitation` (`app/api/routes/members.py:~206-209`) doesn't call it. It uses the generic `decode_token` and reads `token_data.get("sub")`, which is always `None` for an invitation token. The subsequent `if token_user_id != user_id: raise 403` check then fires **unconditionally, every time** — every legitimate acceptance attempt gets rejected.
+
+**Fix:**
+1. In `invite_member`, either actually create an `invited` (not `active`) membership with no `accepted_at` if that's the intended semantics, or fix the response to honestly report `"active"` — pick whichever matches the intended invite model and make persisted state and API response agree.
+2. In `accept_invitation`, switch to the already-existing `decode_invitation_token` instead of the generic `decode_token`, and verify token purpose/user/org/state explicitly (type == "invitation", user/org match, membership still in an acceptable pending state) rather than relying on a `sub` field that was never populated.
+3. Make acceptance idempotent (accepting an already-accepted invitation shouldn't error).
+
+**Verify:** route-level tests for valid acceptance, wrong-user acceptance, expired token, revoked invitation, and already-accepted invitation — valid acceptance must actually succeed (this is currently impossible; a passing test here is the real regression check).
+
+---
+
+## 18. `GET /organizations` is registered twice, making "list pending invitations" unreachable
+
+`app/api/router.py:24-25` mounts two routers under the same prefix:
+
+```python
+api_router.include_router(organizations.router, prefix="/organizations", tags=["organizations"])
+api_router.include_router(members.router, prefix="/organizations", tags=["members"])
+```
+
+Both register a bare `GET ""` at that prefix — `organizations.py:86` (`list_organizations`, line 93) and `members.py:31-37` (`list_pending_invitations`, line 38). FastAPI matches in registration order, so `organizations.router` always wins and **`list_pending_invitations` can never be reached by any request**. Confirmed by route introspection over `api_router`: `('GET', '/organizations')` resolves to `app.api.routes.organizations`, with `app.api.routes.members` shadowed. (The same introspection surfaces the item 9 duplicate — these are the only two collisions in the app.)
+
+**Why this is worse than a dead route:** it compounds item 17. Invitations already cannot be *accepted* (broken token contract); with this collision they also cannot be *listed*. There is no working path through the invitation flow at all, and the failure is silent — the endpoint returns `list_organizations`' response shape, so a client calling it gets a `200` with the wrong payload rather than a `404`.
+
+**Fix:**
+1. Give `list_pending_invitations` a non-colliding path. It is not an organizations-collection endpoint — it lists the *current user's* pending invitations, so mount it under the existing `invitations.router` (already mounted at `/invitations`, `router.py:26`) as `GET /invitations/pending`, or keep it in `members.py` under an explicit sub-path such as `GET /organizations/invitations/pending`.
+2. Do not reorder the `include_router` calls to "fix" it — that would just shadow `list_organizations` instead.
+3. Land this together with item 17; neither is independently testable end-to-end, since a user cannot reach an invitation to accept without a working list endpoint.
+
+**Verify:** the route-introspection test proposed in item 9 (no duplicate method+path in `api_router`) must pass — it currently reports two collisions, and this item plus item 9 together bring it to zero. Add a route test asserting `list_pending_invitations` returns the caller's pending invitations rather than an organization list.
+
+---
+
+## 19. Task completion and export readiness use different rules for "done"
+
+`app/services/task_service.py:82-86` defines `FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES = {"approved", "reviewed", "canonicalized"}`, used by `assert_task_completeable` (lines 324-340) — so a task can be marked `completed` when its items are merely `reviewed`, not `canonicalized`. But `app/services/project_exports_service.py` maps `task.status == "completed"` to export status `"ready"` (lines 20-26, `_TASK_STATUS_TO_EXPORT`), while `completed_item_count` (lines 51-59) filters `TaskItemDB.status == "canonicalized"` only. Result: a task completed via all-`reviewed` items produces an export package that reports itself `"ready"` while showing `0/N` completed items — two parts of the same feature disagreeing about what counts as done.
+
+**Fix:**
+1. Define one shared predicate (e.g. `is_task_item_export_eligible(status)`) and use it consistently in `assert_task_completeable`, the export package's readiness computation, its item-count computation, and the task-export route.
+2. Decide (product question, same territory as item 14's export-eligibility fix) whether `reviewed`-only completion should actually block "ready" export status, or whether the counting logic should include `reviewed` items too — either is defensible, but they must agree.
+
+**Verify:** a test asserting a package can never report `"ready"` with a completed-item count that doesn't match its own eligibility rule; service, route, and (if applicable) UI all reference the same shared predicate rather than duplicating the status list.
+
+---
+
+## 20. AI-assist failures fabricate plausible-looking fake annotations
+
+`app/integrations/gemini_preannotator.py`: when preannotation is disabled (`generate_for_item`'s `if not self.enabled` check, ~line 44-45) or the call errors (broad `except Exception`, ~line 54-55), the fallback (`_empty_result`, ~lines 232-259) doesn't report failure — it hardcodes two fixed bounding boxes with specific coordinates (`{"id": "ai_1", "label": "object", "x": 0.12, "y": 0.12, "width": 0.3, "height": 0.3}` and a second box), identical every time. Separately, `_ensure_min_image_boxes` (~lines 273-293) pads any real-but-short model result up to a minimum box count using those same hardcoded boxes. `task_service.py` (~lines 451-466) stores this straight into a normal `pending` draft, attributed to the operator like any other AI draft — the only difference is a free-text `revision_notes` string ("AI pre-annotation disabled"/"fallback" vs. a real success message), not a structured, queryable provenance flag.
+
+**Fix:**
+1. Give preannotation runs an explicit, structured outcome — e.g. a `model_run_status` (`succeeded`/`failed`/`disabled`) field on the draft or a separate run-log row — rather than encoding it only in free text.
+2. On failure/disabled/error, do not create a draft with fabricated content at all (unless an explicit demo/test mock mode is requested) — leave the item without an AI draft, or create a draft explicitly marked as having no real model output, so downstream review/export code can distinguish "the model said this" from "the model didn't run."
+3. Same treatment for the box-padding path: padding to a minimum count with invented data should either be removed or clearly flagged as synthetic, never presented as model confidence/output.
+
+**Verify:** force `self.enabled = False` and force an exception in the real API call path; assert neither produces a draft indistinguishable from genuine AI output — either no draft is created, or its provenance is explicitly marked as non-model-generated.
+
+---
+
+## 21. Audit log actor always "user"
 
 `app/services/task_audit_log_query.py:253-259`:
 
@@ -185,7 +411,7 @@ else:
 
 ---
 
-## 7. Escalation audit entries duplicate their summary
+## 22. Escalation audit entries duplicate their summary
 
 `_summary_for_log` (`task_audit_log_query.py:150-152`) already renders `"Escalation routed to {target}"` for `escalation_routed` events. But `_build_changes` (line 129-145) also emits a `changes` entry for the same `target` key, because `"target"` is in `_USER_VISIBLE_CHANGE_FIELDS` (line 68) and `escalation_routed` is not in `_OPERATIONS_WITHOUT_CHANGES` (line 61, currently only `DATA_INTAKE_OPERATIONS`). Grep confirms `"target"` is set in `new_values` only for `escalation_routed` (no other operation uses it), so removing it from the visible-fields set can't hide a "target" diff anyone else relies on.
 
@@ -195,7 +421,7 @@ else:
 
 ---
 
-## 8. Backend `.env` config is silently broken
+## 23. Backend `.env` config is silently broken
 
 Two independent bugs compound each other in `apps/hej-api`:
 
@@ -253,54 +479,9 @@ This is also load-bearing beyond `HEJ_HOST`/`HEJ_PORT`/`HEJ_RELOAD` cosmetics �
 
 ---
 
-## 9. Vacuous frontend test: image-bbox hydration
+## 24. `init_data.py --reset` is broken (two independent bugs)
 
-`apps/hej-web/components/task-item-workspace-sheet.test.tsx:609-622`, inside `describe("TaskItemWorkspaceSheet structured image bbox payloads")`:
-
-```ts
-it("hydrates image bbox annotator from draftPayloadText boxes", () => {
-  render(
-    <TaskItemWorkspaceSheet
-      task={imageTask}
-      item={hydratedImageItem}
-      activity={[]}
-      open={true}
-      initialTab="annotate"
-      onOpenChange={vi.fn()}
-    />,
-  )
-
-  expect(screen.getByText("Image annotation workspace")).toBeInTheDocument()
-})
-```
-
-The name claims to verify that `draftPayloadText`'s `boxes` array gets hydrated into the bbox annotator. The only assertion checks for the text `"Image annotation workspace"` — that's the static tab heading returned by `getMediaWorkspaceLabel(taskType)` whenever `task.taskType === "image"`; it renders regardless of whether hydration ran, ran correctly, or silently discarded the box data. The test passes today and would keep passing if hydration were completely broken.
-
-Its two siblings in the same file don't have this problem and are the model to follow:
-- `"hydrates text span annotator from draftPayloadText text_spans"` asserts the hydrated label (`"evidence"`) and note (`"Existing span"`) actually render.
-- `"hydrates audio segment annotator from draftPayloadText segments"` asserts multiple hydrated field values via `getByDisplayValue` (`"1.25"`, `"4.5"`, `"claim"`, `"Existing transcript"`, `"Existing segment note"`).
-
-**Fix:** add real assertions for the hydrated box data — at minimum the label (`"vehicle"`, per `hydratedImageItem`'s fixture) and the coordinate/size fields, using `getByDisplayValue` the same way the audio-segment test does.
-
-**Verify:** temporarily break bbox hydration in the component (e.g. skip populating box state from `draftPayloadText`) and confirm the strengthened test now fails — that's the check that it was vacuous before and isn't after.
-
----
-
-## 10. Misleading mock setup in a backend admin-IAM test
-
-`apps/hej-api/tests/test_admin_iam_service.py::test_org_admin_can_create_user_in_own_org` (~lines 110-115) builds a `query_map` wiring `db.query(...)` stubs for `UserDB`, `OrganizationUserDB`, and `RoleAssignmentDB`, then installs it via `self._set_query_map(...)` before calling `create_user_for_org`.
-
-`create_user_for_org`'s actual implementation never calls `db.query(...)` at all — it only goes through `store.users.get_by_email`, `db.add`, `db.flush`, and `db.commit`. The `query_map` setup is dead code from the test's perspective: it doesn't drive any behavior the assertions depend on, but its presence tells a reader the service does DB `.query()` lookups as part of user creation, which isn't true. This isn't a false-pass risk (removing it wouldn't change the test's outcome), but it's actively misleading to anyone using this test to understand `create_user_for_org`'s real code path.
-
-**Fix:** delete the unused `query_map`/`_set_query_map(...)` setup from this test, leaving only the mocks that `create_user_for_org` actually exercises (`store.users`, `db.add`/`flush`/`commit`).
-
-**Verify:** run `uv run pytest tests/test_admin_iam_service.py -q` after removing the dead setup — it should still pass unchanged, confirming the removed code was never load-bearing.
-
----
-
-## 11. `init_data.py --reset` is broken (two independent bugs)
-
-### 11a. Crashes on Windows (console encoding)
+### 24a. Crashes on Windows (console encoding)
 
 Every `print()` call throughout `init_data.py` uses non-ASCII glyphs (`✓`, `✗`, `❌`, `⚠️`, `✅`, and the `╔═╗╚╝` box-drawing banner). Windows' default console codepage is GBK/CP936, not UTF-8, and stdout isn't reconfigured — so any of these prints raises `UnicodeEncodeError` and kills the process.
 
@@ -320,7 +501,7 @@ Reproduced directly: running the exact command in the README, `uv run python ini
 
 **Verify:** on Windows, open a plain `cmd.exe` (not Windows Terminal with UTF-8 configured), do **not** set `PYTHONUTF8`, and run `uv run python init_data.py --reset` — it should complete with the normal `✅ Initialization Complete!` banner instead of crashing.
 
-### 11b. Fails with a FOREIGN KEY constraint error on a second reset — and corrupts the schema when it does
+### 24b. Fails with a FOREIGN KEY constraint error on a second reset — and corrupts the schema when it does
 
 Reproduced directly, cross-platform (not Windows-specific): seed a fresh database with `init_data.py --reset`, then run `init_data.py --reset` a **second** time against that now-populated database. It fails:
 
@@ -354,210 +535,74 @@ if table_names:
 
 ---
 
-## 12. Ambiguous "latest annotation" selection when a task item has multiple annotators
-
-This surfaced while verifying `init_data.py` can be re-run safely — the seed script (`init_step_4_annotations`) creates exactly 2 `AnnotationDB` rows per task item, alternating `created_by` between alice and bob (`creator_ids[ann_num % len(creator_ids)]`), both hardcoded to `version=1` and `is_latest=True`. Verified via direct SQL against a seeded dev DB: all 10 seeded task items end up with 2 rows where `is_latest=1`.
-
-At first this looked like a seed-script bug, but it isn't — it's a faithful reproduction of how the **real** annotation-creation path already behaves, which exposes a genuine design gap in two read paths:
-
-- **The real invariant** (`app/repositories/db_store.py:1042-1050`, `find_by_item_and_creator`): *"Ensure each user has only one annotation for the same item"* — uniqueness is scoped to `(task_item_id, created_by)`, not to `task_item_id` alone. `app/services/draft_service.py::_create_annotation_from_draft` (lines 146-182) follows this correctly: if the creator already has an annotation for the item, it updates it in place; otherwise it creates a new one with `is_latest=True`. So when two different annotators each submit work on the same item, **both** end up with their own `is_latest=True` row — that's intentional, not a bug.
-- **The broken consumers**: `app/api/routes/review_actions.py::_latest_annotation(db, task_item_id)` (lines 133-142) filters only by `task_item_id` + `is_latest=True` — no `created_by` — and is used by the review-action endpoint (line 206) and the escalation-decision endpoint (line 311) to fetch "the" annotation to act on. Its `.order_by(AnnotationDB.version.desc())` tiebreak is useless in practice because `version` is hardcoded to `1` everywhere an annotation is created (`draft_service.py:177`, and mirrored in the seed script) — it's never incremented. So with two creator-scoped rows tied on `version`, the tiebreak falls back to undefined row order. `draft_service.py`'s own draft-approval annotation lookup (lines 213-216) has the identical bug — same filter, and doesn't even attempt `.order_by()`.
-
-**Real-world impact:** any task item annotated by more than one person — which is the entire premise of the dual-sign-off review policy this platform documents (`docs/design/database/db_schema_strategy.md`) — hits this. A reviewer calling the review-action or escalation-decision endpoint on such an item can be shown an arbitrary one of the two annotators' submissions, with no signal that it picked "the wrong one."
-
-**Independently confirmed, and worse than review-time confusion — it reaches export.** `app/api/routes/tasks.py:653-678` builds `latest_annotations_by_item_and_creator`, keyed by `(task_item_id, created_by)` — one export slot per creator, not one per item. The export loop (lines 738-780) iterates that dict filtering only by `item.id`, so if two creators each have their own `is_latest` annotation on the same item, **both get written into that item's exported `"annotations"` array**, with nothing marking either as "the" canonical value. A finalized/canonicalized item can export two (or more) conflicting answers side by side. This means the fix below isn't just a review-UX nicety — it needs to also cover what `tasks.py`'s export serialization treats as canonical, not only what `_latest_annotation()` picks for review.
-
-**Fix — pick one of two directions and make every consumer agree with it:**
-1. **If only one active annotation per item is intended** (simpler mental model, matches `_latest_annotation`'s current name/shape): `_create_annotation_from_draft` needs to supersede (flip `is_latest=False` on) any other creator's current annotation for that item when a new one is approved, not just look up its own creator's row. This changes the product semantics of multi-annotator items, so confirm with product/governance docs first — `db_schema_strategy.md` §7.11 ("CanonicalJudgment... version chain for superseded canonical judgments") suggests this is closer to the intended model.
-2. **If per-creator concurrent annotations are intended** (matches the repository layer's actual invariant and comment): `_latest_annotation()` and the `draft_service.py` lookup both need a `created_by` argument threaded through from their callers (e.g. the draft/review context should know whose submission is being reviewed) instead of guessing.
-3. Either way, stop relying on `version` as a tiebreak while it's hardcoded to `1` — either increment it per new annotation in that scope, or order by `created_at DESC` instead.
-4. Update `init_step_4_annotations` in `init_data.py` to match whichever rule is chosen, so seeded dev data doesn't contradict the real invariant.
-5. Fix `app/api/routes/tasks.py:653-780`'s export serialization to emit exactly one canonical annotation per item (whichever the chosen rule defines as authoritative), with any other candidates included only as provenance/history, not as equally-weighted `"annotations"` entries.
-
-**Verify:** add a test that creates two annotations for the same task item from two different `created_by` users (mirroring real drafting behavior), then (a) calls the review-action endpoint, asserting the *correct, intended* annotation is the one acted on, and (b) exports the (finalized) item, asserting exactly one canonical annotation is present in the export payload. Both should fail against current code and pass after the fix.
-
----
-
-## 13. A finalized/canonicalized annotation can be silently overwritten
-
-`app/services/draft_service.py::submit_draft` (line 104) only checks `draft.status != "pending"` — it never checks the parent task item's status. `_create_annotation_from_draft` (lines 146-184) then does `annotations.update(existing_annotation.id, annotation_data=draft.draft_data, ...)` in place whenever the same creator already has an annotation for that item. There is no terminal-state guard anywhere in this path, and the route layer doesn't add one either — `create_draft`/`submit_draft` in `app/api/routes/drafts.py` call only `verify_user_is_active` + `verify_user_task_item_access`, which check org/project *access*, never item *status*. So a new draft can be created and submitted against a `canonicalized` item, silently rewriting its already-approved annotation content with no new review ever happening.
-
-**Fix:**
-1. Add an explicit guard — e.g. `assert_task_item_accepts_draft_writes(task_item)` — called from both `create_draft` and `submit_draft`, that raises `409` if the item's status is terminal (`canonicalized`, or whatever the platform's finalized-status set is; reuse the terminal-status set already defined in `task_service.py` if one exists, to keep the "what counts as terminal" definition in one place).
-2. Decide (with product/governance input, since this is a workflow-semantics question) how a legitimate correction to a finalized item should happen — e.g. an explicit "reopen" transition that a privileged role must trigger before a new draft is accepted, rather than any draft write silently succeeding.
-
-**Verify:** attempt to submit a draft against a `canonicalized` item and assert the request is rejected (`409`) and the existing annotation's content, version, and the original approving review remain byte-for-byte unchanged.
-
----
-
-## 14. Drafts have no ownership enforcement
-
-`app/core/resource_scope.py::verify_user_draft_access` (~lines 49-63) loads the draft and calls `verify_user_task_item_access`, which walks task → project → org scope (`app/core/permissions.py::verify_user_project_access`) — it never compares `draft.created_by` to the calling user. This same function guards `update_draft`, `delete_draft`, and (via `verify_user_task_item_access` directly) `submit_draft` in `app/api/routes/drafts.py`. Any active member with project access can PATCH, DELETE, or submit any other user's pending draft.
-
-**Fix:**
-1. In `verify_user_draft_access`, after the existing project/org scope check, add an ownership check: raise `403` unless `draft.created_by == current_user["user_id"]` (or the caller has an explicit reviewer/admin override role, if that's an intended capability — confirm with the role model in item 15 below, since these two fixes should agree on what "elevated" access means).
-2. Separately, reviewer *read* access to drafts (needed to review someone else's submission) must stay unaffected by this — this fix should only tighten *write* paths (`update_draft`, `delete_draft`, `submit_draft`), not `get`/`list` draft endpoints.
-3. Add a uniqueness rule (or at minimum, an application-level check) enforcing at most one pending draft per `(task_item_id, created_by)`, matching the annotation-layer's own stated invariant in item 12.
-
-**Verify:** a two-user test — user 2 attempts to PATCH/DELETE/submit user 1's pending draft and gets `403` in every case; user 1 can still do all three on their own draft.
-
----
-
-## 15. No role check or self-review guard on review actions
-
-`submit_task_item_review_action` (`app/api/routes/review_actions.py:189-213`) calls only `verify_user_is_active` and `verify_user_task_access` — the latter (`app/core/permissions.py:159-212`) checks org/project tenancy only. A role-check helper already exists and is unused here: `verify_user_has_role(current_user, org_id, required_roles)` (`permissions.py:215-256`). Nothing in the route compares `current_user["user_id"]` to the annotation's/draft's `created_by` either. So any active org member — including the item's own annotator — can approve/reject/finalize their own work.
-
-**Fix:**
-1. Call `verify_user_has_role(current_user, task's org_id, required_roles=["reviewer", "admin"])` (or the platform's equivalent role set) at the top of `submit_task_item_review_action`, before any state mutation.
-2. Add an explicit self-review guard: raise `403` if `current_user["user_id"] == annotation.created_by` (fetch the annotation being reviewed — same lookup already happening at line 206 — and compare), unless the org's policy explicitly permits self-review (check `OrganizationPolicyDB`/`review_dual_sign_off` semantics — this may already be a policy-configurable flag worth reusing rather than hardcoding).
-3. Apply the same two checks to the escalation-decision endpoint (`decide_escalation`, same file) since it has the identical shape.
-
-**Verify:** an `annotator`-only user attempting to review their own annotation gets `403`; a `reviewer`/`admin` user reviewing someone else's work still succeeds; add a dual-sign-off scenario test if that policy flag exists.
-
----
-
-## 16. Reviewer corrections are never actually persisted
-
-The frontend (`task-item-workspace-sheet.tsx`, `handleReviewAction`) sends a reviewer's corrected value as `final_payload`/`final_verdict`. The backend handler (`app/api/routes/review_actions.py`, ~lines 229-267) only does `notes_parts.append(f"final_payload={payload.final_payload.strip()[:500]}")` (and the same for `final_verdict`) — folding the correction into `review_notes`, a free-text field on the new `ReviewDB` row. The item's status still transitions to `next_item_status` (e.g. `canonicalized`) a few lines later, but `annotation.annotation_data` — the actual canonical content — is never reassigned. The reviewer's correction is captured only as truncated text in a notes/audit field; the stored and exported value remains the original, un-corrected annotation.
-
-**Fix:**
-1. When `payload.final_payload` (or `final_verdict`) is present, write it into the annotation's actual content — either update `annotation.annotation_data` directly (simplest, but loses the "who corrected what" lineage) or, better, create a new annotation version attributed to the reviewer and mark it `is_latest=True` (superseding the original per whichever rule is chosen in item 12 — these two fixes should share the same "how do we version/supersede annotations" mechanism).
-2. Keep `review_notes` for genuine free-text commentary only; don't rely on it to carry structured payload data. Consider truncation (`[:500]`) is itself a separate small bug once the payload actually needs to be preserved in full elsewhere.
-
-**Verify:** submit a review action with `final_payload` different from the original annotation content; assert the item's read endpoint *and* its export both reflect the reviewer's corrected value, including payloads over 500 characters (the current truncation length) to confirm nothing is silently cut.
-
----
-
-## 17. A second, legacy review API can bypass and rewrite the official workflow
-
-`app/api/routes/annotations.py` exposes a fully separate API surface — `create_review` (POST `/annotations/{id}/reviews`, ~line 196), `update_review` (PATCH `/reviews/{id}`, ~line 319), `delete_review` (DELETE `/reviews/{id}`, ~line 426) — guarded only by `verify_user_is_active` + a pure tenancy check (`verify_user_annotation_access`/`verify_user_review_access` in `app/core/resource_scope.py:66-92`, which never checks role or ownership). Critically, `update_review` and `delete_review` mutate/delete `ReviewDB` rows directly and **never touch `TaskItemDB.status`** — unlike `review_actions.py`'s flow, which always advances `item.status` alongside a review decision. So any org member can flip an approved review to `rejected`, or delete it outright, while the item's official status (e.g. `canonicalized`) stays exactly as it was. Approval history and actual item state can diverge with no way to detect it from the item's status alone.
-
-**Fix:**
-1. Decide whether this route family serves any purpose the main `review_actions.py` flow doesn't — if not, remove `update_review`/`delete_review` entirely (or make them admin-only and read-only-by-default).
-2. If some capability here is genuinely needed (e.g. an admin correction path), route it through the same state-transition logic `review_actions.py` uses, so `TaskItemDB.status` is always kept consistent with the latest effective review decision.
-3. Model any legitimate review correction as an append-only event (new row), never an in-place edit or hard delete, to preserve the audit trail this platform's own docs (`db_schema_strategy.md`) require for judgment provenance.
-
-**Verify:** attempt to PATCH/DELETE a review via this route as a non-admin and confirm it's rejected; for any retained capability, confirm `TaskItemDB.status` is updated consistently and the change is recorded as a new append-only event rather than an edit/delete of history.
-
----
-
-## 18. Cross-project write bypass in the task API
-
-`app/api/router.py` mounts `projects.router` (prefix `/projects`) before `tasks.project_tasks_router` (no prefix) — both register `PUT /projects/{project_id}/tasks/{task_id}` (and the DELETE equivalent). Route matching goes by registration order, so `projects.py`'s handlers always win and `tasks.py`'s versions are dead code, unreachable.
-
-The handler that actually runs — `update_task`/`delete_task` in `app/api/routes/projects.py` (~lines 176-235) — verifies the caller has access to the *project* in the URL, then calls `task_service.update_task(task_id, ...)` **without ever checking `task.project_id == project_id`**. The shadowed, unreachable version in `tasks.py` (~lines 56-73) actually has the correct check (`if task is None or task.project_id != project_id: raise 404`) — the fix exists in the codebase already, it's just dead code.
-
-Separately, task-item PATCH (`update_task_item` in `tasks.py`, ~lines 300-325) fetches the task only to check org/project access, then loads and updates the task item by `item_id` alone — no check that `task_item.task_id == task_id`.
-
-**Net effect:** access to *any* project you belong to is enough to PUT/DELETE a task, or PATCH a task item, that actually belongs to a completely different, inaccessible project/organization — as long as you know or can guess its ID.
-
-**Fix:**
-1. Remove the duplicate/shadowed route in `projects.py` (or the one in `tasks.py` — pick one canonical `TaskUpdate`/delete implementation) so there's exactly one handler per method+path.
-2. Whichever implementation survives, port over the `task.project_id != project_id → 404` check that already exists in the dead `tasks.py` version.
-3. Add the equivalent `task_item.task_id != task_id → 404` check to `update_task_item`.
-
-**Verify:** with access only to `proj_allowed`, attempt `PUT`/`DELETE` on a task belonging to a different, inaccessible project — expect `404`, not success. Same for a task-item PATCH with a mismatched `task_id`/`item_id` pair. Add a route-introspection test asserting no duplicate method+path registrations exist in `api_router`.
-
----
-
-## 19. Invalid task-item status gets committed before validation catches it
-
-`TaskItemStatusUpdate` (`app/api/routes/tasks.py:52-53`) declares `status: str` — a plain string, not the real `TaskItemStatus` enum. The only pre-write guard, `assert_task_item_status_update_allowed` (`app/services/task_service.py:89-110`), checks that the task/item aren't already terminal and that the target isn't a workflow-owned status — it never validates that the target is a real enum member at all. `db_item_repo.update(item_id, status=payload.status)` commits immediately. Only afterward, when FastAPI serializes the response against `TaskItemRead` (whose `status` field is a strict `TaskItemStatus` enum, `app/schemas/tasks.py:126`), does validation fail — by which point the invalid string is already permanently in the database.
-
-**Fix:**
-1. Change `TaskItemStatusUpdate.status` to `TaskItemStatus` (the real enum) so FastAPI rejects an invalid value at the request-parsing layer, before any service/repository code runs.
-2. Add a DB-level check constraint on `task_items.status` as defense in depth, in case any other code path ever writes to this column with an unvalidated string.
-3. Ensure `assert_task_item_status_update_allowed` runs (and would reject) before the repository commit, not just before the response is built.
-
-**Verify:** POST an update with `status: "not_a_real_status"` and confirm it's rejected with `422` (or `409` if caught by a domain check) and the database row is unchanged — not just that the HTTP response happens to fail after the row was already written.
-
----
-
-## 20. Organization invitations are completely broken
-
-Two independent bugs, and together they mean **no invitation can ever be successfully accepted** through the normal flow:
-
-1. **Creation lies about its own result.** `invite_member` (`app/services/admin_service.py:370-401`) creates the `OrganizationUser` row with `status=OrganizationUserStatus.ACTIVE` and `accepted_at=datetime.now(UTC)` set immediately — the comment even says "Admin invite is automatically accepted" — yet the function's returned dict hardcodes `"status": "invited"`. The persisted state and the API response directly contradict each other.
-2. **Acceptance reads a claim the token never has.** `create_invitation_token` (`app/core/security.py:81-94`) encodes `{"user_id": ..., "org_id": ..., "type": "invitation", ...}` — there is no `"sub"` claim. A matching `decode_invitation_token` exists and correctly reads `user_id`/`org_id` (lines 97-107) — but `accept_invitation` (`app/api/routes/members.py:~206-209`) doesn't call it. It uses the generic `decode_token` and reads `token_data.get("sub")`, which is always `None` for an invitation token. The subsequent `if token_user_id != user_id: raise 403` check then fires **unconditionally, every time** — every legitimate acceptance attempt gets rejected.
-
-**Fix:**
-1. In `invite_member`, either actually create an `invited` (not `active`) membership with no `accepted_at` if that's the intended semantics, or fix the response to honestly report `"active"` — pick whichever matches the intended invite model and make persisted state and API response agree.
-2. In `accept_invitation`, switch to the already-existing `decode_invitation_token` instead of the generic `decode_token`, and verify token purpose/user/org/state explicitly (type == "invitation", user/org match, membership still in an acceptable pending state) rather than relying on a `sub` field that was never populated.
-3. Make acceptance idempotent (accepting an already-accepted invitation shouldn't error).
-
-**Verify:** route-level tests for valid acceptance, wrong-user acceptance, expired token, revoked invitation, and already-accepted invitation — valid acceptance must actually succeed (this is currently impossible; a passing test here is the real regression check).
-
----
-
-## 21. Task completion and export readiness use different rules for "done"
-
-`app/services/task_service.py:82-86` defines `FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES = {"approved", "reviewed", "canonicalized"}`, used by `assert_task_completeable` (lines 324-340) — so a task can be marked `completed` when its items are merely `reviewed`, not `canonicalized`. But `app/services/project_exports_service.py` maps `task.status == "completed"` to export status `"ready"` (lines 20-26, `_TASK_STATUS_TO_EXPORT`), while `completed_item_count` (lines 51-59) filters `TaskItemDB.status == "canonicalized"` only. Result: a task completed via all-`reviewed` items produces an export package that reports itself `"ready"` while showing `0/N` completed items — two parts of the same feature disagreeing about what counts as done.
-
-**Fix:**
-1. Define one shared predicate (e.g. `is_task_item_export_eligible(status)`) and use it consistently in `assert_task_completeable`, the export package's readiness computation, its item-count computation, and the task-export route.
-2. Decide (product question, same territory as item 3's export-eligibility fix) whether `reviewed`-only completion should actually block "ready" export status, or whether the counting logic should include `reviewed` items too — either is defensible, but they must agree.
-
-**Verify:** a test asserting a package can never report `"ready"` with a completed-item count that doesn't match its own eligibility rule; service, route, and (if applicable) UI all reference the same shared predicate rather than duplicating the status list.
-
----
-
-## 22. AI-assist failures fabricate plausible-looking fake annotations
-
-`app/integrations/gemini_preannotator.py`: when preannotation is disabled (`generate_for_item`'s `if not self.enabled` check, ~line 44-45) or the call errors (broad `except Exception`, ~line 54-55), the fallback (`_empty_result`, ~lines 232-259) doesn't report failure — it hardcodes two fixed bounding boxes with specific coordinates (`{"id": "ai_1", "label": "object", "x": 0.12, "y": 0.12, "width": 0.3, "height": 0.3}` and a second box), identical every time. Separately, `_ensure_min_image_boxes` (~lines 273-293) pads any real-but-short model result up to a minimum box count using those same hardcoded boxes. `task_service.py` (~lines 451-466) stores this straight into a normal `pending` draft, attributed to the operator like any other AI draft — the only difference is a free-text `revision_notes` string ("AI pre-annotation disabled"/"fallback" vs. a real success message), not a structured, queryable provenance flag.
-
-**Fix:**
-1. Give preannotation runs an explicit, structured outcome — e.g. a `model_run_status` (`succeeded`/`failed`/`disabled`) field on the draft or a separate run-log row — rather than encoding it only in free text.
-2. On failure/disabled/error, do not create a draft with fabricated content at all (unless an explicit demo/test mock mode is requested) — leave the item without an AI draft, or create a draft explicitly marked as having no real model output, so downstream review/export code can distinguish "the model said this" from "the model didn't run."
-3. Same treatment for the box-padding path: padding to a minimum count with invented data should either be removed or clearly flagged as synthetic, never presented as model confidence/output.
-
-**Verify:** force `self.enabled = False` and force an exception in the real API call path; assert neither produces a draft indistinguishable from genuine AI output — either no draft is created, or its provenance is explicitly marked as non-model-generated.
-
----
-
-## 23. Draft submission is non-atomic, and drafts never link to their own annotation
-
-This is listed in `issues.md` ("Draft submission is not one transaction...") but was missing its technical write-up here — adding it now.
-
-Two independent problems in `app/services/draft_service.py::submit_draft` (lines ~96-124):
-
-**a. Non-atomic writes.** The function makes three separate repository calls, each committing independently (`_commit_or_rollback` inside each repo method, per the pattern already noted in items 5 and 13): `self.db_store.drafts.update(...)` (draft status), `self._create_annotation_from_draft(...)` (creates/updates the annotation), then `self._advance_task_item_to_annotated_on_submit(...)` → `self.db_store.task_items.update(...)` (task item status). No wrapping transaction ties these three writes together. A failure between any of them — e.g. the annotation write succeeds but the task-item status update throws — leaves a submitted draft with no corresponding item-status change, or a draft marked submitted with no annotation at all.
-
-**b. `draft.annotation_id` is a dead column.** `DraftDB.annotation_id` (`app/models/db_models.py:255`) is a real FK column with a comment describing its purpose ("based on which annotation this was modified from"), and it's *read* defensively at `draft_service.py:206-207` (`if draft.annotation_id: ...`). But nothing in the codebase ever *writes* to it — `submit_draft` discards `_create_annotation_from_draft`'s return value outright, and grepping the entire `app/` tree for any assignment to this column (`draft.annotation_id =` or `drafts.update(..., annotation_id=...)`) turns up nothing. So that `if draft.annotation_id:` branch is dead code — always `None` in practice, despite the column existing specifically to make this link.
-
-**Why this matters beyond tidiness:** because the draft never records which specific annotation it produced, later steps that need "the annotation this submission created" (e.g. a review action) have no reliable way to look it up directly — they fall back to `_latest_annotation(db, task_item_id)` (`review_actions.py:133-142`), which queries by `task_item_id` alone with no creator scoping and an ineffective `version`-based tiebreak (`version` is hardcoded to `1` everywhere, per item 12). With two different annotators each having their own `is_latest=True` row on the same item, this lookup can return the wrong creator's annotation entirely — the same failure mode documented in item 12, reached here via the missing link rather than the ambiguous selection rule.
-
-**Fix:**
-1. Wrap the three writes in `submit_draft` in one transaction: use `flush()` (not commit) for the intermediate repo calls and a single `self.db.commit()` at the end, with `except: self.db.rollback(); raise` around the whole sequence — same pattern proposed for dataset registration in item 5.
-2. After `_create_annotation_from_draft` returns the annotation, actually write its id back: `self.db_store.drafts.update(draft.id, annotation_id=annotation.id)` (as part of the same transaction).
-3. Once (2) is in place, any code needing "the annotation this draft produced" should look it up via `draft.annotation_id` directly instead of the ambiguous `_latest_annotation(task_item_id)` fallback — this is a concrete way to close part of item 12's ambiguity, at least for the review-after-submit path specifically.
-
-**Verify:** submit a draft, then assert `draft.annotation_id` is populated and points to the annotation actually created/updated by that submission. Inject a failure between the annotation write and the task-item status update (e.g. mock the item-status repo call to raise) and assert no partial state remains — no orphaned "submitted" draft without an annotation, no item stuck out of sync with its draft.
-
----
-
-## 24. `GET /organizations` is registered twice, making "list pending invitations" unreachable
-
-`app/api/router.py:24-25` mounts two routers under the same prefix:
-
-```python
-api_router.include_router(organizations.router, prefix="/organizations", tags=["organizations"])
-api_router.include_router(members.router, prefix="/organizations", tags=["members"])
+## 25. Vacuous frontend test: image-bbox hydration
+
+`apps/hej-web/components/task-item-workspace-sheet.test.tsx:609-622`, inside `describe("TaskItemWorkspaceSheet structured image bbox payloads")`:
+
+```ts
+it("hydrates image bbox annotator from draftPayloadText boxes", () => {
+  render(
+    <TaskItemWorkspaceSheet
+      task={imageTask}
+      item={hydratedImageItem}
+      activity={[]}
+      open={true}
+      initialTab="annotate"
+      onOpenChange={vi.fn()}
+    />,
+  )
+
+  expect(screen.getByText("Image annotation workspace")).toBeInTheDocument()
+})
 ```
 
-Both register a bare `GET ""` at that prefix — `organizations.py:86` (`list_organizations`, line 93) and `members.py:31-37` (`list_pending_invitations`, line 38). FastAPI matches in registration order, so `organizations.router` always wins and **`list_pending_invitations` can never be reached by any request**. Confirmed by route introspection over `api_router`: `('GET', '/organizations')` resolves to `app.api.routes.organizations`, with `app.api.routes.members` shadowed. (The same introspection surfaces the item 18 duplicate — these are the only two collisions in the app.)
+The name claims to verify that `draftPayloadText`'s `boxes` array gets hydrated into the bbox annotator. The only assertion checks for the text `"Image annotation workspace"` — that's the static tab heading returned by `getMediaWorkspaceLabel(taskType)` whenever `task.taskType === "image"`; it renders regardless of whether hydration ran, ran correctly, or silently discarded the box data. The test passes today and would keep passing if hydration were completely broken.
 
-**Why this is worse than a dead route:** it compounds item 20. Invitations already cannot be *accepted* (broken token contract); with this collision they also cannot be *listed*. There is no working path through the invitation flow at all, and the failure is silent — the endpoint returns `list_organizations`' response shape, so a client calling it gets a `200` with the wrong payload rather than a `404`.
+Its two siblings in the same file don't have this problem and are the model to follow:
+- `"hydrates text span annotator from draftPayloadText text_spans"` asserts the hydrated label (`"evidence"`) and note (`"Existing span"`) actually render.
+- `"hydrates audio segment annotator from draftPayloadText segments"` asserts multiple hydrated field values via `getByDisplayValue` (`"1.25"`, `"4.5"`, `"claim"`, `"Existing transcript"`, `"Existing segment note"`).
 
-**Fix:**
-1. Give `list_pending_invitations` a non-colliding path. It is not an organizations-collection endpoint — it lists the *current user's* pending invitations, so mount it under the existing `invitations.router` (already mounted at `/invitations`, `router.py:26`) as `GET /invitations/pending`, or keep it in `members.py` under an explicit sub-path such as `GET /organizations/invitations/pending`.
-2. Do not reorder the `include_router` calls to "fix" it — that would just shadow `list_organizations` instead.
-3. Land this together with item 20; neither is independently testable end-to-end, since a user cannot reach an invitation to accept without a working list endpoint.
+**Fix:** add real assertions for the hydrated box data — at minimum the label (`"vehicle"`, per `hydratedImageItem`'s fixture) and the coordinate/size fields, using `getByDisplayValue` the same way the audio-segment test does.
 
-**Verify:** the route-introspection test proposed in item 18 (no duplicate method+path in `api_router`) must pass — it currently reports two collisions, and this item plus item 18 together bring it to zero. Add a route test asserting `list_pending_invitations` returns the caller's pending invitations rather than an organization list.
+**Verify:** temporarily break bbox hydration in the component (e.g. skip populating box state from `draftPayloadText`) and confirm the strengthened test now fails — that's the check that it was vacuous before and isn't after.
 
 ---
 
-## 25. A task can never leave `draft`, so intake never closes and most export states are unreachable
+## 26. Misleading mock setup in a backend admin-IAM test
+
+`apps/hej-api/tests/test_admin_iam_service.py::test_org_admin_can_create_user_in_own_org` (~lines 110-115) builds a `query_map` wiring `db.query(...)` stubs for `UserDB`, `OrganizationUserDB`, and `RoleAssignmentDB`, then installs it via `self._set_query_map(...)` before calling `create_user_for_org`.
+
+`create_user_for_org`'s actual implementation never calls `db.query(...)` at all — it only goes through `store.users.get_by_email`, `db.add`, `db.flush`, and `db.commit`. The `query_map` setup is dead code from the test's perspective: it doesn't drive any behavior the assertions depend on, but its presence tells a reader the service does DB `.query()` lookups as part of user creation, which isn't true. This isn't a false-pass risk (removing it wouldn't change the test's outcome), but it's actively misleading to anyone using this test to understand `create_user_for_org`'s real code path.
+
+**Fix:** delete the unused `query_map`/`_set_query_map(...)` setup from this test, leaving only the mocks that `create_user_for_org` actually exercises (`store.users`, `db.add`/`flush`/`commit`).
+
+**Verify:** run `uv run pytest tests/test_admin_iam_service.py -q` after removing the dead setup — it should still pass unchanged, confirming the removed code was never load-bearing.
+
+---
+
+## 27. `FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES` contains a status that cannot exist
+
+`task_service.py:82-88` defines:
+
+```python
+FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES = {
+    "approved",
+    "reviewed",
+    "canonicalized",
+}
+```
+
+`TaskItemStatus` (`app/models/domain.py:51-59`) has no `APPROVED` member — the values are `pending`, `annotated`, `returned`, `rejected`, `reviewed`, `disputed`, `expert_send_back`, `canonicalized`. No item can ever hold `"approved"`, so the set behaves as `{"reviewed", "canonicalized"}` and the first entry is dead.
+
+There is no behavioral bug here — `assert_task_completeable` already works as if `"approved"` were absent, so item 19's finding (a task can complete on merely-`reviewed` items) stands unchanged. The cost is comprehension: a reader auditing export eligibility reasonably concludes there is an `approved` state in the workflow, and goes looking for the transition that produces it.
+
+**Fix:** delete `"approved"` from the set as part of item 19's work, when that list is being replaced by a shared `is_task_item_export_eligible(status)` predicate anyway. Whatever that predicate ends up accepting, derive it from `TaskItemStatus` members so a non-existent status cannot be listed again.
+
+**Verify:** assert every member of the eligibility set is a valid `TaskItemStatus` value — a one-line test that would have caught this.
+
+---
+
+## 28. A task can never leave `draft`, so intake never closes and most export states are unreachable
 
 `TaskCreate` (`app/schemas/tasks.py:43-53`) has no `status` field, so every task is created in `draft`. `TaskUpdate` (`61-71`) has no `status` field either, and there is no activation endpoint anywhere in `app/api/routes/`. Grepping every writer of `task.status` in the service layer turns up exactly one: `task_service.py:347`, inside `complete_task`, which sets `"completed"`. **`draft → completed` is the only task-status transition the API can perform.**
 
@@ -566,7 +611,7 @@ Two concrete consequences, both in already-shipped code paths:
 - **Dataset intake never closes.** `assert_task_allows_dataset_intake` (`task_service.py:63-68`) permits intake while the task is in `draft` or `ready`. Since a task stays `draft` for its entire working life, new items can be registered into a task at any point — including while its existing items are being reviewed or after some have been canonicalized. The guard exists but can never fire except on an already-`completed` task.
 - **Most export states are unreachable.** `_TASK_STATUS_TO_EXPORT` (`project_exports_service.py:20-26`) maps `in_review`, `ready`, and `disputed` to `"building"`. No task can hold any of those values, so every export package is either `"draft"` or `"ready"` — the intermediate state the dashboard is built to show never appears.
 
-This also undercuts item 21's premise: aligning "completion" and "export readiness" is only half the problem if the lifecycle in between has no transitions at all.
+This also undercuts item 19's premise: aligning "completion" and "export readiness" is only half the problem if the lifecycle in between has no transitions at all.
 
 **Fix:**
 1. Decide the intended task lifecycle explicitly (product question — `TaskStatus` already enumerates `draft`, `ready`, `in_review`, `disputed`, `completed`, so the intent exists in the model but not in the API).
@@ -578,7 +623,7 @@ This also undercuts item 21's premise: aligning "completion" and "export readine
 
 ---
 
-## 26. Lifecycle conflicts in dataset registration are returned as HTTP 500
+## 29. Lifecycle conflicts in dataset registration are returned as HTTP 500
 
 `register_dataset` (`app/api/routes/tasks.py:264-296`) wraps the whole service call in a blanket handler:
 
@@ -615,71 +660,24 @@ The correct status code and message are both present — nested inside a server-
 
 ---
 
-## 27. A live Gemini API key is hardcoded in committed source
+## Suggested execution order & grouping (PR bundles)
 
-`app/core/config.py:15`:
+Items 2, 3–4, 5, 11 (and, less directly, 19) all revolve around the same unresolved question — **what is the single authoritative record of a finalized judgment, and how does a correction to it get made?** Answer that once (with product/governance input) and several of these fixes become mechanical rather than open-ended.
 
-```python
-gemini_api_key: str = "AQ.Ab8RN6IXjWaXAT0iK69qDXAetfh5BdLAxtxegws5b-jTPp2OvA"
-```
-
-This is a field *default*, not a placeholder — it is committed to the repository and tracked in git (`git ls-files` confirms), so it is in the history of every clone and every fork. It is also the value that will actually be used at runtime, because of item 8: `Settings` reads no `.env` file, so unless someone exports `HEJ_GEMINI_API_KEY` in the process environment, this baked-in key is what `GeminiPreannotator` authenticates with.
-
-The two bugs reinforce each other: item 8 removes the mechanism by which an operator would supply their own key, and this item supplies a working fallback so nothing visibly fails. The result is that every developer running the app is silently spending against one shared, publicly-committed credential.
-
-**Fix:**
-1. Rotate the key at the provider first — it must be treated as compromised regardless of what happens in the repo.
-2. Change the default to empty (`gemini_api_key: str = ""`) and have `GeminiPreannotator` treat an empty key as *disabled* — which, per item 22, must mean "produce no draft", not "produce fabricated boxes".
-3. Add `HEJ_GEMINI_API_KEY=` to `.env.example` as part of item 8's rename, so the supported way to supply it is documented in the one file developers copy.
-4. Purging the key from git history is a separate decision (it requires a force-push and coordination); rotation is what actually closes the exposure.
-
-**Verify:** a test asserting `Settings().gemini_api_key` is empty by default; a grep/secret-scan step in CI so a credential-shaped literal cannot land in `app/` again.
-
----
-
-## 28. `FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES` contains a status that cannot exist
-
-`task_service.py:82-88` defines:
-
-```python
-FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES = {
-    "approved",
-    "reviewed",
-    "canonicalized",
-}
-```
-
-`TaskItemStatus` (`app/models/domain.py:51-59`) has no `APPROVED` member — the values are `pending`, `annotated`, `returned`, `rejected`, `reviewed`, `disputed`, `expert_send_back`, `canonicalized`. No item can ever hold `"approved"`, so the set behaves as `{"reviewed", "canonicalized"}` and the first entry is dead.
-
-There is no behavioral bug here — `assert_task_completeable` already works as if `"approved"` were absent, so item 21's finding (a task can complete on merely-`reviewed` items) stands unchanged. The cost is comprehension: a reader auditing export eligibility reasonably concludes there is an `approved` state in the workflow, and goes looking for the transition that produces it.
-
-**Fix:** delete `"approved"` from the set as part of item 21's work, when that list is being replaced by a shared `is_task_item_export_eligible(status)` predicate anyway. Whatever that predicate ends up accepting, derive it from `TaskItemStatus` members so a non-existent status cannot be listed again.
-
-**Verify:** assert every member of the eligibility set is a valid `TaskItemStatus` value — a one-line test that would have caught this.
-
----
-
-## Suggested execution order & grouping
-
-Items 12-13, 16-17, 23 (and, less directly, 21) all revolve around the same unresolved question — **what is the single authoritative record of a finalized judgment, and how does a correction to it get made?** Answer that once (with product/governance input) and several of these fixes become mechanical rather than open-ended.
-
-1. **PR A — canonical-annotation model decision + fixes:** items 12 + 13 + 16 + 23, and touch 17's data model too. **Blocked on a product/governance decision** (single active annotation vs. per-creator concurrent annotations; how reviewer corrections are versioned) — see the "Management decisions required" style questions this implies: what persisted record is authoritative, and may reviewers replace payloads or must corrections go back through a new annotation + review cycle? Do this first — it's the highest-severity cluster (silent overwrite of finalized data, wrong/duplicate export output, discarded reviewer corrections, non-atomic submission with a dead draft→annotation link) and other fixes below build on its outcome.
-2. **PR B — draft ownership + self-review guard:** items 14 + 15. Independent of PR A's data-model question; can proceed in parallel. Closes the two most direct multi-user-abuse gaps (editing others' drafts, self-approval).
-3. **PR C — legacy review API lockdown:** item 17. Do after PR A's canonical-record decision is settled, since this route's fate (remove vs. reroute through the official state-transition path) depends on it.
-4. **PR D — cross-project write bypass + task-item status validation:** items 18 + 19. Same file family (`tasks.py`/`projects.py`), independent of the annotation work — can land any time, high value for the risk (near-zero regression surface, closes a real cross-tenant mutation path).
-5. **PR E — frontend build health:** items 1 + 2 (typecheck fixes + test expectation update). Small, isolated, unblocks CI immediately.
-6. **PR F — backend export-route tests:** item 3 (new helper + filter, backed by the existing test file).
-7. **PR G — dispute send-back:** item 4 (frontend-only wiring to an existing backend endpoint — smaller than initially scoped).
-8. **PR H — dataset registration transaction:** item 5 (touches shared repo methods — review carefully, add the regression test described above before merging).
-9. **PR I — organization invitations:** item 20. Currently invitations cannot be accepted *at all* — this blocks onboarding any real second user, so treat as high priority despite being independent of the data-integrity cluster.
-10. **PR J — export/completion rule alignment:** item 21. Depends conceptually on PR A's canonical-annotation decision (what counts as "done" should agree with what counts as "canonical").
-11. **PR K — AI-assist failure visibility:** item 22. Independent; mostly a matter of not fabricating output on failure.
-12. **PR L — backend audit log correctness:** items 6 + 7 together (same file, same test file, low risk).
-13. **PR M — `init_data.py`/`.env` dev-tooling fixes:** items 8 + 11 (both 11a and 11b). Trivial, zero risk, dev-tooling only — land any time.
-14. **PR N — test-quality fixes:** items 9 + 10. Trivial, zero risk, test-only changes.
-15. **PR O — credential rotation:** item 27. Do this **first in wall-clock time**, ahead of everything above — the rotation step is independent of all code work and the exposure runs until it happens. The code change itself is small and rides along with PR M's `.env` work.
-16. **PR P — invitation route collision:** item 24. Land together with PR I (item 20); the invitation flow is not testable end to end until both are in, and item 24 alone just moves an unreachable route.
-17. **PR Q — task lifecycle transitions:** item 25. **Blocked on a product decision** (what the intended `draft → ready → in_review → completed` path is and who may trigger each step). Sequence after PR J, since "what counts as done" should be settled before adding the transitions that lead there.
-18. **PR R — error-contract fix:** item 26. One-line `except HTTPException: raise` plus a logger change; independent, land any time.
-
-Item 28 has no PR of its own — fold it into PR J (item 21), which is rewriting that status set anyway.
+- **PR A — rotate the credential (item 1):** do this **first in wall-clock time**, ahead of everything below — the rotation step is independent of all code work and the exposure runs until it happens. The code-default change rides along with PR N's `.env` work.
+- **PR B — canonical-annotation model decision + fixes (items 2, 3–4, 5, 11; touches 8's data model):** **Blocked on a product/governance decision** — single active annotation vs. per-creator concurrent annotations, and how reviewer corrections are versioned. Do this first among the code work — it's the highest-severity cluster (silent overwrite of finalized data, wrong/duplicate export output, discarded reviewer corrections, non-atomic submission with a dead draft→annotation link) and other fixes below build on its outcome.
+- **PR C — draft ownership + self-review guard (items 6, 7):** independent of PR B's data-model question; can proceed in parallel. Closes the two most direct multi-user-abuse gaps (editing others' drafts, self-approval).
+- **PR D — legacy review API lockdown (item 8):** do after PR B's canonical-record decision is settled, since this route's fate (remove vs. reroute through the official state-transition path) depends on it.
+- **PR E — cross-project write bypass + task-item status validation (items 9, 10):** same file family (`tasks.py`/`projects.py`), independent of the annotation work — can land any time, high value for the risk (near-zero regression surface, closes a real cross-tenant mutation path).
+- **PR F — frontend build health (items 12, 13):** small, isolated, unblocks CI immediately.
+- **PR G — backend export-route tests (item 14):** new helper + filter, backed by the existing test file.
+- **PR H — dispute send-back (item 15):** frontend-only wiring to an existing backend endpoint — smaller than initially scoped.
+- **PR I — dataset registration transaction (item 16):** touches shared repo methods — review carefully, add the regression test described above before merging.
+- **PR J — organization invitations + route collision (items 17, 18):** invitations currently cannot be accepted *at all* — this blocks onboarding any real second user, so treat as high priority despite being independent of the data-integrity cluster. Land both together; neither is testable end-to-end alone.
+- **PR K — export/completion rule alignment (item 19, folding in item 27):** depends conceptually on PR B's canonical-annotation decision (what counts as "done" should agree with what counts as "canonical"). Drop the impossible `"approved"` status (item 27) here, while this status list is being rewritten anyway.
+- **PR L — AI-assist failure visibility (item 20):** independent; mostly a matter of not fabricating output on failure.
+- **PR M — backend audit log correctness (items 21, 22):** same file, same test file, low risk.
+- **PR N — `init_data.py`/`.env` dev-tooling fixes (items 23, 24, both 24a and 24b):** trivial, zero risk, dev-tooling only — land any time.
+- **PR O — test-quality fixes (items 25, 26):** trivial, zero risk, test-only changes.
+- **PR P — task lifecycle transitions (item 28):** **Blocked on a product decision** (what the intended `draft → ready → in_review → completed` path is and who may trigger each step). Sequence after PR K, since "what counts as done" should be settled before adding the transitions that lead there.
+- **PR Q — error-contract fix (item 29):** one-line `except HTTPException: raise` plus a logger change; independent, land any time.
