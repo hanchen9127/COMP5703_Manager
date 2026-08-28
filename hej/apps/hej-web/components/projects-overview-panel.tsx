@@ -174,7 +174,7 @@ export function ProjectsOverviewPanel({
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="flex h-full flex-col rounded-[1.15rem] border border-slate-900/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(247,240,227,0.82))] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-900/20 hover:shadow-[0_18px_34px_rgba(15,23,42,0.10)] hej-surface-dark dark:border-white/10 dark:hover:border-white/20 dark:hover:shadow-[0_20px_40px_rgba(2,6,23,0.38)]"
+                  className="flex h-full flex-col rounded-[1.15rem] border border-slate-900/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(247,240,227,0.82))] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-900/20 hover:shadow-[0_18px_34px_rgba(15,23,42,0.10)] hej-surface-dark dark:border-white/10 dark:hover:border-white/20 dark:hover:shadow-[0_20px_40px_rgba(2,6,23,0.38)]"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-100">{project.name}</h2>

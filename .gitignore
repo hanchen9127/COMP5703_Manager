@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+
+# Turbo
+.turbo
+
+# Python
+**/__pycache__/
+**/*.py[oc]
+**/.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Vercel
+.vercel
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Logs
+npm-debug.log*
+*.log
+
+# Databases / local dev artifacts
+*.db
+*.db-journal
+*.sqlite
+
+# Office lock/temp files
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.pem
+.vscode/*
+!.vscode/settings.json
+
+# Misc
+.tmp-*.md
+.temp/
+.repo-backups/
+
+# Local agent/skill config - do not upload
+.agents/
+.claude/

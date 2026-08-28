@@ -135,8 +135,8 @@ export function ProjectWorkspaceOverview() {
                 href={`/tasks/${task.id}`}
                 className={
                   primaryTask?.id === task.id
-                    ? "block rounded-xl border border-amber-300/70 bg-[linear-gradient(180deg,rgba(255,251,235,0.96),rgba(250,244,230,0.92))] p-3.5 shadow-[0_12px_24px_rgba(217,119,6,0.10)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-[0_16px_28px_rgba(217,119,6,0.14)]"
-                    : "hej-surface-soft block rounded-xl border border-slate-900/10 bg-stone-50/88 p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-900/20 hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
+                    ? "block rounded-xl border border-amber-300/70 bg-[linear-gradient(180deg,rgba(255,251,235,0.96),rgba(250,244,230,0.92))] p-3.5 shadow-[0_12px_24px_rgba(217,119,6,0.10)] transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-[0_16px_28px_rgba(217,119,6,0.14)]"
+                    : "hej-surface-soft block rounded-xl border border-slate-900/10 bg-stone-50/88 p-3.5 transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-900/20 hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
                 }
               >
                 <div className="flex flex-wrap items-center gap-2">
@@ -222,7 +222,7 @@ export function ProjectWorkspaceOverview() {
               <Link
                 key={label}
                 href={href}
-                className="hej-surface-soft block rounded-xl border border-slate-900/10 bg-white/84 p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-900/20 hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
+                className="hej-surface-soft block rounded-xl border border-slate-900/10 bg-white/84 p-3.5 transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-900/20 hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -252,7 +252,7 @@ export function ProjectWorkspaceOverview() {
               <Link
                 key={title}
                 href={href}
-                className="hej-surface-soft rounded-xl border border-slate-900/10 bg-stone-50/88 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-900/20 hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
+                className="hej-surface-soft rounded-xl border border-slate-900/10 bg-stone-50/88 p-4 transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-900/20 hover:bg-white hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
               >
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-slate-900 p-2 text-stone-100">
