@@ -1796,7 +1796,7 @@ export function TaskItemWorkspaceSheet({
                               <button
                                 key={label}
                                 type="button"
-                                className={`hej-surface-soft rounded-full border px-3 py-1.5 text-sm transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] ${tone.buttonClassName}`}
+                                className={`hej-surface-soft rounded-full border px-3 py-1.5 text-sm transition-colors ${tone.buttonClassName}`}
                                 onClick={() => setVerdict(label)}
                               >
                                 {label}
@@ -2370,7 +2370,7 @@ export function TaskItemWorkspaceSheet({
                           <button
                             key={action}
                             type="button"
-                            className="hej-surface-soft rounded-full border border-slate-900/10 bg-stone-50/88 px-3 py-1.5 text-sm text-slate-700 transition-[color,background-color,border-color,transform] duration-150 ease-out hover:bg-stone-100 active:scale-[0.97] dark:border-white/10 dark:text-slate-200"
+                            className="hej-surface-soft rounded-full border border-slate-900/10 bg-stone-50/88 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-stone-100 dark:border-white/10 dark:text-slate-200"
                             onClick={() => setReviewVerdict(action)}
                           >
                             {action}
@@ -2623,7 +2623,7 @@ export function TaskItemWorkspaceSheet({
                           <button
                             key={action}
                             type="button"
-                            className="hej-surface-soft rounded-full border border-slate-900/10 bg-stone-50/88 px-3 py-1.5 text-sm text-slate-700 transition-[color,background-color,border-color,transform] duration-150 ease-out hover:bg-stone-100 active:scale-[0.97] dark:border-white/10 dark:text-slate-200"
+                            className="hej-surface-soft rounded-full border border-slate-900/10 bg-stone-50/88 px-3 py-1.5 text-sm text-slate-700 transition-colors hover:bg-stone-100 dark:border-white/10 dark:text-slate-200"
                             onClick={() => setReviewVerdict(action)}
                           >
                             {action}

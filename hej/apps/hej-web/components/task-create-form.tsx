@@ -349,7 +349,7 @@ export function TaskCreateForm({
                     <button
                       type="button"
                       onClick={() => setStep(index)}
-                      className={`flex items-center gap-2 rounded-full border px-2.5 py-1.25 text-[13px] transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] ${
+                      className={`flex items-center gap-2 rounded-full border px-2.5 py-1.25 text-[13px] transition-colors ${
                         active
                           ? "border-slate-950 bg-slate-950 text-stone-100"
                           : complete
@@ -396,7 +396,7 @@ export function TaskCreateForm({
                     key={id}
                     type="button"
                     onClick={() => changeTaskClass(id)}
-                    className={`rounded-xl border p-4 text-left transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] ${
+                    className={`rounded-xl border p-4 text-left transition-colors ${
                       taskClass === id
                         ? "border-slate-950 bg-slate-950 text-stone-100"
                         : "hej-surface-soft border-slate-900/10 bg-stone-50/88 text-slate-900 hover:bg-stone-100 dark:border-white/10 dark:text-slate-200"
@@ -471,7 +471,7 @@ export function TaskCreateForm({
                       setTaskType(optionTaskType)
                       if (taskTypeError) setTaskTypeError(null)
                     }}
-                    className={`rounded-xl border p-3 text-left transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] ${
+                    className={`rounded-xl border p-3 text-left transition-colors ${
                       taskSubtypeId === id
                         ? "border-slate-950 bg-slate-950 text-stone-100"
                         : "hej-surface-soft border-slate-900/10 bg-stone-50/88 text-slate-900 hover:bg-stone-100 dark:border-white/10 dark:text-slate-200"
@@ -518,7 +518,7 @@ export function TaskCreateForm({
                       key={option.id}
                       type="button"
                       onClick={() => setExecutionMode(option.id)}
-                      className={`rounded-xl border p-4 text-left transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.98] ${
+                      className={`rounded-xl border p-4 text-left transition-colors ${
                         executionMode === option.id
                           ? "border-slate-950 bg-slate-950 text-stone-100"
                         : "hej-surface-soft border-slate-900/10 bg-stone-50/88 text-slate-900 hover:bg-stone-100 dark:border-white/10 dark:text-slate-200"

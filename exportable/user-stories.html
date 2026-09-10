@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hej Delivery Backlog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+:root{
+  --ground:#f4f6f8;
+  --surface:#ffffff;
+  --surface-2:#eef1f5;
+  --line:#d8dee6;
+  --line-soft:#e7ecf1;
+  --ink:#131a21;
+  --ink-2:#465666;
+  --ink-3:#6b7c8d;
+  --accent:#0d6a63;
+  --accent-soft:#e2efee;
+  --p0:#a32b22;
+  --p0-soft:#fbe9e7;
+  --p1:#8a5a08;
+  --p1-soft:#fbf0dd;
+  --p2:#5b6a79;
+  --p2-soft:#eaeef2;
+  --focus:#0d6a63;
+  --st-done:#1a7f5a;
+  --st-done-soft:#e2f2ea;
+  --st-work:#b0730a;
+  --st-work-soft:#fbf0dd;
+  --st-drop:#7d8a97;
+  --st-drop-soft:#eaeef2;
+  --shadow:0 1px 2px rgba(19,26,33,.05),0 12px 32px rgba(19,26,33,.10);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0d1216;
+    --surface:#151c22;
+    --surface-2:#1c242b;
+    --line:#2a343d;
+    --line-soft:#222c34;
+    --ink:#e4eaef;
+    --ink-2:#a3b2bf;
+    --ink-3:#7d8d9b;
+    --accent:#54b3a8;
+    --accent-soft:#16302e;
+    --p0:#f08379;
+    --p0-soft:#341d1a;
+    --p1:#e0ad5c;
+    --p1-soft:#322717;
+    --p2:#93a3b2;
+    --p2-soft:#222b33;
+    --focus:#54b3a8;
+    --st-done:#5cc79a;
+    --st-done-soft:#16302a;
+    --st-work:#e0ad5c;
+    --st-work-soft:#322717;
+    --st-drop:#8c9aa7;
+    --st-drop-soft:#232c34;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 36px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0d1216;
+  --surface:#151c22;
+  --surface-2:#1c242b;
+  --line:#2a343d;
+  --line-soft:#222c34;
+  --ink:#e4eaef;
+  --ink-2:#a3b2bf;
+  --ink-3:#7d8d9b;
+  --accent:#54b3a8;
+  --accent-soft:#16302e;
+  --p0:#f08379;
+  --p0-soft:#341d1a;
+  --p1:#e0ad5c;
+  --p1-soft:#322717;
+  --p2:#93a3b2;
+  --p2-soft:#222b33;
+  --focus:#54b3a8;
+  --st-done:#5cc79a;
+  --st-done-soft:#16302a;
+  --st-work:#e0ad5c;
+  --st-work-soft:#322717;
+  --st-drop:#8c9aa7;
+  --st-drop-soft:#232c34;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 36px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:14px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"IBM Plex Serif",Georgia,"Times New Roman",serif;font-weight:600;text-wrap:balance;margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ---------- masthead ---------- */
+.masthead{border-bottom:1px solid var(--line);background:var(--surface)}
+.masthead .wrap{padding-top:34px;padding-bottom:26px}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center
+}
+.eyebrow .dot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.5}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;letter-spacing:-.015em}
+.lede{color:var(--ink-2);max-width:62ch;margin-top:12px;font-size:15px}
+.counts{display:flex;gap:26px;flex-wrap:wrap;margin-top:22px;padding-top:20px;border-top:1px solid var(--line-soft)}
+.count .n{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;display:block;letter-spacing:-.02em}
+.count .l{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.count a.n{color:inherit;text-decoration:none}
+.count a.n:hover{color:var(--accent)}
+.count a.n:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px}
+
+/* ---------- gap strip ---------- */
+.gap{margin-top:30px}
+.gap h2{font-size:13px;font-family:"IBM Plex Sans",sans-serif;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px}
+.gap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:3px;overflow:hidden}
+.gap-cell{background:var(--surface);padding:13px 15px}
+.gap-cell .k{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.gap-cell .v{color:var(--ink-2);font-size:13px;line-height:1.5}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  position:sticky;top:0;z-index:20;background:var(--ground);
+  border-bottom:1px solid var(--line);padding:12px 0;margin-top:34px
+}
+.toolbar .wrap{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.search{
+  flex:1 1 240px;min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:8px 11px;color:var(--ink);font:inherit
+}
+.search::placeholder{color:var(--ink-3)}
+.search:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fgroup{display:flex;gap:4px;align-items:center}
+.flabel{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-right:3px}
+.chip{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.04em;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);
+  padding:5px 9px;border-radius:3px;cursor:pointer
+}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.chip:disabled{opacity:.45;cursor:default}
+.chip:disabled:hover{border-color:var(--line);color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"],
+:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0d1216}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .chip[aria-pressed="true"]{color:#fff}}
+
+/* ---------- epics ---------- */
+main{padding-bottom:70px}
+.epic{margin-top:38px;scroll-margin-top:70px}
+.epic-head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
+.epic-id{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--accent);
+  background:var(--accent-soft);border-radius:3px;padding:3px 8px;letter-spacing:.06em
+}
+.epic-head h2{font-size:19px;letter-spacing:-.01em}
+.epic-note{color:var(--ink-3);font-size:13px;margin:0 0 14px;max-width:70ch;font-style:italic}
+.rows{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--surface)}
+.row{
+  display:grid;grid-template-columns:18px 52px 1fr auto auto auto;gap:12px;align-items:center;
+  width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line-soft);
+  padding:11px 14px;cursor:pointer;color:inherit;font:inherit
+}
+.stg{width:15px;height:15px;display:block;flex:none}
+.st-empty{color:var(--ink-3);opacity:.5}
+.st-working{color:var(--st-work)}
+.st-done{color:var(--st-done)}
+.st-dropped{color:var(--st-drop)}
+.row.dropped .title{text-decoration:line-through;text-decoration-thickness:1px;opacity:.55}
+.row.dropped .sid{opacity:.6}
+.alloc-chip{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.03em;color:var(--ink-3);
+  background:var(--surface-2);border:1px solid var(--line-soft);border-radius:2px;
+  padding:1px 6px;margin-left:8px;white-space:nowrap;vertical-align:1px
+}
+.row:first-child{border-top:0}
+.row:hover{background:var(--surface-2)}
+.row:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.row .sid{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
+.row:hover .sid{color:var(--accent)}
+.row .title{font-size:13.5px;line-height:1.45}
+.pri{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  padding:2px 7px;border-radius:2px;white-space:nowrap
+}
+.pri.P0{background:var(--p0-soft);color:var(--p0)}
+.pri.P1{background:var(--p1-soft);color:var(--p1)}
+.pri.P2{background:var(--p2-soft);color:var(--p2)}
+.own{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);white-space:nowrap}
+.fx{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+.fx b{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;font-variant-numeric:tabular-nums;
+  background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line-soft);
+  border-radius:2px;padding:1px 5px
+}
+.callout{
+  margin-top:12px;border-left:2px solid var(--accent);background:var(--accent-soft);
+  padding:11px 14px;font-size:13px;color:var(--ink-2);border-radius:0 3px 3px 0
+}
+.callout b{color:var(--ink);font-weight:600}
+.empty{padding:26px 14px;text-align:center;color:var(--ink-3);font-size:13px}
+
+/* ---------- defect map ---------- */
+.section{margin-top:52px;padding-top:34px;border-top:1px solid var(--line);scroll-margin-top:86px}
+.section h2{font-size:19px;margin-bottom:6px}
+.section p.sub{color:var(--ink-2);margin:0 0 18px;max-width:66ch}
+.dmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:3px;overflow:hidden}
+.d{display:grid;grid-template-columns:30px 1fr auto;gap:9px;align-items:center;background:var(--surface);border:0;padding:9px 12px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%}
+.d:hover{background:var(--surface-2)}
+.d:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.d .num{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.d:hover .num{color:var(--accent)}
+.d .dt{font-size:12.5px;line-height:1.4}
+.d .sev{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;padding:1px 5px;border-radius:2px}
+.sev.Critical{background:var(--p0-soft);color:var(--p0)}
+.sev.High{background:var(--p1-soft);color:var(--p1)}
+.sev.Medium,.sev.Low{background:var(--p2-soft);color:var(--p2)}
+
+/* ---------- start here / decisions ---------- */
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:18px 20px}
+.panel h3{font-size:15px;margin-bottom:10px}
+.panel ol,.panel ul{margin:0;padding-left:19px;color:var(--ink-2);font-size:13px}
+.panel li{margin-bottom:7px}
+.panel li b{color:var(--ink);font-weight:600}
+.panel li:last-child{margin-bottom:0}
+.scope{color:var(--ink-2);font-size:13px;line-height:1.7;margin:0}
+.scope b{color:var(--ink);font-weight:600}
+
+/* ---------- detail drawer ---------- */
+dialog{
+  border:0;padding:0;background:transparent;max-width:none;max-height:none;width:100%;height:100%;
+  margin:0;color:var(--ink);overscroll-behavior:contain
+}
+dialog::backdrop{background:rgba(10,14,18,.44)}
+.sheet{
+  /* Half the viewport on a desktop, never narrower than the old 560px, never
+     wider than the screen. */
+  position:fixed;top:0;right:0;height:100%;width:min(100%,max(560px,50vw));
+  background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;animation:slide .22s cubic-bezier(.22,.7,.3,1)
+}
+@keyframes slide{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-head{padding:20px 24px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+.sheet-head .hid{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:3px;letter-spacing:.05em}
+.sheet-head h3{font-size:17px;line-height:1.3;flex:1}
+.x{background:none;border:1px solid var(--line);border-radius:3px;color:var(--ink-2);cursor:pointer;font-size:16px;line-height:1;padding:5px 9px}
+.x:hover{border-color:var(--accent);color:var(--ink)}
+.x:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.sheet-meta{display:flex;gap:8px;flex-wrap:wrap;padding:13px 24px;border-bottom:1px solid var(--line-soft);background:var(--surface-2)}
+.meta{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;color:var(--ink-3)}
+.meta b{color:var(--ink-2);font-weight:600}
+.sheet-body{padding:22px 24px 40px;overflow-y:auto;flex:1}
+.nav{display:flex;gap:8px;padding:14px 24px;border-top:1px solid var(--line);background:var(--surface-2)}
+.nav button{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:8px;cursor:pointer;color:var(--ink-2);font:inherit;font-size:12px}
+.nav button:hover:not(:disabled){border-color:var(--accent);color:var(--ink)}
+.nav button:disabled{opacity:.4;cursor:default}
+.nav button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+
+/* ---------- editing ---------- */
+.f-title{
+  width:100%;font-family:"IBM Plex Serif",Georgia,serif;font-size:17px;font-weight:600;line-height:1.3;
+  color:var(--ink);background:transparent;border:1px solid transparent;border-radius:3px;
+  padding:4px 7px;margin:-4px -7px
+}
+.f-title:hover{border-color:var(--line)}
+.f-title:focus{outline:none;border-color:var(--accent);background:var(--surface-2)}
+.field{margin-bottom:24px}
+.field:last-child{margin-bottom:0}
+.field label{
+  display:flex;gap:8px;align-items:baseline;font-size:11px;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;cursor:pointer
+}
+.hint{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.02em;text-transform:none;color:var(--ink-3);opacity:.85;font-weight:400}
+/* Fields read as a document until focused, then reveal themselves as editable. */
+textarea.f{
+  display:block;width:100%;font:inherit;font-size:13.5px;line-height:1.65;color:var(--ink-2);
+  background:transparent;border:1px solid transparent;border-radius:3px;
+  padding:8px 10px;resize:none;overflow:hidden
+}
+textarea.f:hover{border-color:var(--line-soft);background:var(--surface-2)}
+textarea.f:focus{outline:none;border-color:var(--accent);background:var(--surface-2);color:var(--ink)}
+textarea.f#fStory{
+  font-family:"IBM Plex Serif",Georgia,serif;font-size:15px;line-height:1.55;color:var(--ink);
+  border-left:2px solid var(--accent);border-radius:0 3px 3px 0;padding-left:14px
+}
+textarea.f#fStory:hover,textarea.f#fStory:focus{border-left-color:var(--accent)}
+.savebar{
+  display:flex;gap:9px;align-items:center;padding:12px 24px;
+  border-top:1px solid var(--line);background:var(--accent-soft)
+}
+.sb-msg{flex:1;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.05em;color:var(--accent)}
+.btn{
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:7px 14px;
+  cursor:pointer;color:var(--ink-2);font:inherit;font-size:12.5px
+}
+.btn:hover{border-color:var(--accent);color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+:root[data-theme="dark"] .btn.primary{color:#0d1216}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#0d1216}}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+:root[data-theme="dark"] .btn.primary:hover{color:#0d1216}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary:hover{color:#0d1216}}
+/* status control + allocation */
+.statusrow{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:26px}
+.stbtn{
+  display:inline-flex;gap:6px;align-items:center;font:inherit;font-size:12px;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:6px 11px;color:var(--ink-3)
+}
+.stbtn:hover{border-color:var(--ink-3);color:var(--ink-2)}
+.stbtn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.stbtn[aria-pressed="true"]{color:var(--ink);font-weight:500}
+.stbtn[aria-pressed="true"][data-st=""]{border-color:var(--ink-3);background:var(--surface-2)}
+.stbtn[aria-pressed="true"][data-st="working"]{border-color:var(--st-work);background:var(--st-work-soft);color:var(--st-work)}
+.stbtn[aria-pressed="true"][data-st="done"]{border-color:var(--st-done);background:var(--st-done-soft);color:var(--st-done)}
+.stbtn[aria-pressed="true"][data-st="dropped"]{border-color:var(--st-drop);background:var(--st-drop-soft);color:var(--st-drop)}
+/* Ordered fields: keep the ordinals a consistent width so 1. and 10. line up. */
+textarea.f.ord{font-variant-numeric:tabular-nums}
+/* Subtasks read as a work list, not prose — tighter leading, a hanging marker
+   per line, and a surface that separates them from the story above. */
+.field.subs{border-top:1px solid var(--line-soft);margin-top:28px;padding-top:22px}
+textarea.f.sub{
+  font-size:13px;line-height:1.55;color:var(--ink-2);
+  background:var(--surface-2);border-color:var(--line-soft);
+  padding:11px 13px 11px 15px;border-left:2px solid var(--accent);border-radius:0 3px 3px 0
+}
+textarea.f.sub:hover{border-color:var(--line);border-left-color:var(--accent)}
+textarea.f.sub:focus{background:var(--surface-2);border-color:var(--accent);color:var(--ink)}
+textarea.f.sub::placeholder{color:var(--ink-3);opacity:.8}
+.alloc{border-top:1px solid var(--line-soft);margin-top:28px;padding-top:22px}
+.statsum{display:flex;gap:10px;align-items:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
+.statsum span{display:inline-flex;gap:4px;align-items:center}
+.statsum .stg{width:12px;height:12px}
+.badge-edit{
+  font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--accent);background:var(--accent-soft);
+  border-radius:2px;padding:1px 5px;margin-left:7px;vertical-align:1px
+}
+.toolright{display:flex;gap:9px;align-items:center;margin-left:auto}
+.chip.add{
+  background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500;
+  font-family:"IBM Plex Sans",sans-serif;font-size:12px;letter-spacing:0;padding:6px 12px
+}
+:root[data-theme="dark"] .chip.add{color:#0d1216}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.add{color:#0d1216}}
+.chip.add:hover{filter:brightness(1.08);color:#fff}
+:root[data-theme="dark"] .chip.add:hover{color:#0d1216}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip.add:hover{color:#0d1216}}
+.addrow{
+  display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line-soft);
+  padding:9px 14px 9px 46px;cursor:pointer;color:var(--ink-3);font:inherit;font-size:12.5px
+}
+.addrow:hover{background:var(--surface-2);color:var(--accent)}
+.addrow:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.badge-new{
+  font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--st-done);background:var(--st-done-soft);
+  border-radius:2px;padding:1px 5px;margin-left:7px;vertical-align:1px
+}
+/* selectors used when composing a new story */
+.newmeta{gap:14px;align-items:center}
+.newmeta label{display:inline-flex;gap:6px;align-items:center}
+.fsel{
+  font:inherit;font-size:12px;font-family:"IBM Plex Mono",monospace;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:3px 6px
+}
+.fsel:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.mchips{display:inline-flex;gap:4px;flex-wrap:wrap}
+.mchip{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.04em;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-3);border-radius:2px;padding:2px 7px
+}
+.mchip:hover{border-color:var(--accent);color:var(--ink-2)}
+.mchip:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.mchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .mchip[aria-pressed="true"]{color:#0d1216}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mchip[aria-pressed="true"]{color:#0d1216}}
+.hint-local{
+  font-size:11.5px;color:var(--ink-3);margin:16px 0 0;padding-top:14px;border-top:1px solid var(--line-soft)
+}
+.editstat{display:flex;gap:6px;align-items:center}
+.editstat .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent)}
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;
+  background:var(--ink);color:var(--ground);font-size:12.5px;padding:9px 18px;border-radius:3px;
+  box-shadow:var(--shadow);animation:rise .2s ease
+}
+@keyframes rise{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}}
+/* ---------- export chooser ---------- */
+.picker{
+  width:min(540px,calc(100% - 32px));margin:10vh auto;background:var(--surface);
+  border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow);overflow:hidden
+}
+.picker-head{padding:18px 22px 14px;display:flex;gap:12px;align-items:flex-start}
+.picker-head h3{font-size:16px;flex:1}
+.picker-head p{margin:4px 0 0;font-size:12.5px;color:var(--ink-3)}
+.pick{
+  display:block;width:100%;text-align:left;background:none;border:0;
+  border-top:1px solid var(--line-soft);padding:15px 22px;cursor:pointer;color:inherit;font:inherit
+}
+.pick:hover{background:var(--surface-2)}
+.pick:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.pick .pt{font-weight:600;font-size:13.5px;display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.pick .pf{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:400;color:var(--accent)}
+.pick .pd{font-size:12.5px;color:var(--ink-3);margin-top:5px;line-height:1.5}
+.pick .pm{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);margin-top:7px;opacity:.85}
+.picker-foot{padding:12px 22px;border-top:1px solid var(--line-soft);background:var(--surface-2);display:flex;justify-content:flex-end}
+footer{border-top:1px solid var(--line);margin-top:56px;padding:24px 0 40px;color:var(--ink-3);font-size:12px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media(max-width:720px){
+  .row{grid-template-columns:16px 42px 1fr auto;row-gap:6px;gap:9px}
+  .row .own{display:none}
+  .fx{grid-column:3/5;justify-content:flex-start}
+  .sheet{width:100%;top:auto;bottom:0;height:92%;border-left:0;border-top:1px solid var(--line);border-radius:8px 8px 0 0}
+  .counts{gap:18px}
+}
+/* ---------- CSV connection states ---------- */
+.banner{
+  max-width:1120px;margin:16px auto 0;padding:11px 16px;border-radius:3px;font-size:13px;
+  background:var(--accent-soft);color:var(--ink-2);border-left:2px solid var(--accent)
+}
+.banner.warn{background:var(--p1-soft);border-left-color:var(--p1);color:var(--p1)}
+.banner.bad{background:var(--p0-soft);border-left-color:var(--p0);color:var(--p0)}
+.banner b{color:inherit;font-weight:600}
+.chip.ok{border-color:var(--st-done);color:var(--st-done);background:var(--st-done-soft)}
+.chip.ok:hover{border-color:var(--st-done);color:var(--st-done)}
+#csvDirty{color:var(--p1)}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span>CS-57</span><span class="dot"></span>
+      <span>Arc Intelligence</span><span class="dot"></span>
+      <span>Week 5 &middot; scope breakdown</span>
+    </div>
+    <h1>Hej Delivery Backlog</h1>
+    <p class="lede">The platform looks finished and isn't &mdash; the interface shows a workflow the backend doesn't enforce. Every story below is one step of closing that gap. Click any row to read it, set its status, record the ticket that covers it and say who owns it &mdash; everything is stored in <span class="mono">story_src.csv</span> beside this page.</p>
+    <div class="counts">
+      <div class="count"><span class="n" id="cStories">59</span><span class="l">Stories</span></div>
+      <div class="count"><span class="n">11</span><span class="l">Epics</span></div>
+      <div class="count"><span class="n">29</span><span class="l">Defects closed</span></div>
+      <div class="count"><span class="n">32</span><span class="l">Tickets</span></div>
+      <div class="count"><span class="n">8</span><span class="l">Weeks</span></div>
+    </div>
+
+    <section class="gap">
+      <h2>Where the platform stands today</h2>
+      <div class="gap-grid" id="gapGrid"></div>
+    </section>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <input id="q" class="search" type="search" placeholder="Search stories, roles, defects&hellip;" aria-label="Search stories">
+    <div class="filters">
+      <div class="fgroup" id="stFilters"><span class="flabel">Status</span></div>
+      <div class="fgroup" id="priFilters"><span class="flabel">Priority</span></div>
+      <div class="fgroup" id="ownFilters"><span class="flabel">Owner</span></div>
+      <div class="fgroup" id="tkFilters"><span class="flabel">Ticket</span></div>
+    </div>
+    <div class="toolright">
+      <div class="editstat" id="editStat" hidden>
+        <span class="statsum" id="statSum"></span>
+        <span class="n" id="editCount"></span>
+        <span class="n" id="csvDirty" hidden>· unsaved</span>
+        <button class="chip" id="resetBtn" title="Clear status, allocation and edits on the original stories — stories you added are kept">Reset</button>
+      </div>
+      <button class="chip" id="csvBtn" title="Open story_src.csv so edits can be written back to it">Connect CSV</button>
+      <button class="chip" id="exportBtn" title="Download the backlog as Markdown">Export</button>
+      <button class="chip add" id="addBtn" title="Write a new user story">+ New story</button>
+    </div>
+  </div>
+</div>
+
+<div id="banner" class="banner" hidden></div>
+
+<main class="wrap">
+  <div id="epics"></div>
+
+  <section class="section">
+    <h2>Defect coverage</h2>
+    <p class="sub">All 29 defects from <span class="mono">plans/issues.md</span>, each attached to the story that closes it &mdash; per the client's direction that defect work stays with the feature it blocks. Click one to open that story.</p>
+    <div class="dmap" id="dmap"></div>
+  </section>
+
+  <section class="section">
+    <div class="cols">
+      <div class="panel">
+        <h3>Where to start</h3>
+        <ol>
+          <li><b>A1&ndash;A5</b> &mdash; process, build, environment, credentials, vocabulary. Everything downstream depends on these.</li>
+          <li><b>D3, D4, D5</b> &mdash; protect authoritative data.</li>
+          <li><b>D1, D6, D8</b> &mdash; restore multi-user governance, get work to the right people.</li>
+          <li><b>D2, G3, G4</b> &mdash; close the legacy review path and the cross-project bypass.</li>
+          <li>Then B &rarr; C &rarr; E/F &rarr; G &rarr; H &rarr; I in parallel by workstream, with <b>K2 running from day one</b>.</li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>Client decisions needed first</h3>
+        <ul>
+          <li><b>B4</b> &mdash; what the intended task lifecycle path is, and who may trigger each step.</li>
+          <li><b>D4</b> &mdash; one canonical annotation per item, or per-annotator submissions kept side by side.</li>
+        </ul>
+        <p style="color:var(--ink-3);font-size:12.5px;margin:12px 0 0">Both block implementation and shouldn't be decided by us alone. Raise at the next weekly meeting.</p>
+      </div>
+      <div class="panel">
+        <h3>Definition of done</h3>
+        <ul>
+          <li>Demonstrable <b>in the running app</b>, not just the API.</li>
+          <li>New workflow logic ships <b>with tests in the same change</b>.</li>
+          <li>Any listed defect has a test that <b>fails against the old behaviour</b>.</li>
+          <li>Docs for changed states or contracts updated in the same change.</li>
+          <li>Reviewed by someone <b>other than the author</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Out of scope</h2>
+    <p class="scope">Real model training or fine-tuning &middot; Label Studio integration &middot; every modality at once (<b>text first</b>) &middot; a generic workflow engine or universal ontology &middot; formal compliance claims &middot; marketplace, trust, billing or payout &middot; fixing all 29 defects as a separate cleanup phase &mdash; each one is attached to the story that closes it.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Data source: <span class="mono">story_src.csv</span> &middot; full detail: <span class="mono">user-stories.md</span></span>
+    <span class="mono" id="fCount">CS-57 &middot; 59 stories</span>
+  </div>
+</footer>
+
+<dialog id="sheet" aria-label="Story detail"></dialog>
+<dialog id="exportDlg" aria-label="Export the backlog"></dialog>
+
+<script>
+/* Reference chrome — epics, the gap summary and the defect map are documentation,
+   not tracked state, so they ship with the page. Stories come from story_src.csv. */
+const GAPS=[["Govern","Roles are labels. Nothing checks them on any action. No guideline versioning."],["Assist","One hardcoded AI call, run synchronously. No queue. On failure it invents fake annotations."],["Record","Generic activity log only. Reviewer corrections are thrown away."],["Adjudicate","Finalised results can be silently overwritten. Two review APIs disagree. Can't tell whose work you're reviewing."],["Release","“Export” is a status label computed on the fly. No manifest, no immutability, no gate."],["Evaluate","Doesn't exist."],["Plus","No task queue, no work assignment, 7 screens still on mock data."]];
+const EPICS=[["A","Trustworthy Foundations","Do these first. Nothing else is safe or demonstrable until they hold.","<b>A5 matters more than it looks.</b> Docs say draft/active/paused/completed/archived; code says draft/ready/in_review/disputed/completed. Four later stories fix screen disagreements — doing that against three vocabularies means it comes back."],["B","Setting Up Work","Project → policy → task → items. The client's own critical path starts here.",""],["C","AI-Assisted First Pass","The client's stated #1 engineering gap: the connective layer between platform, queue and AI.",""],["D","Review & Cross-Validation","Highest-severity defects live here — two are named in the client's own brief.","<b>D8 is bigger than it reads.</b> Task items have no assignee field at all — the concept is absent, not broken. D7 and E2 both assume it exists. Factor this into the W9–10 estimate."],["E","Disagreement & Dispute","",""],["F","Provenance & History","The brief's test: “how did this label get here” — and refuse to release when it can't answer.",""],["G","Roles, Permissions & Organisations","",""],["H","Release & Export","Biggest genuine build gap — today's export is a placeholder, not a partial implementation.",""],["I","Evaluation","Primary deliverable, not a final-week activity. Currently zero exists.",""],["J","Organisations & Dashboard","Client explicitly said nice-to-have. Do not over-invest.",""],["K","Evidence & Handover","Not code, but assessed. Left to the final fortnight, this is what turns a working platform into an average submission.",""]];
+const DEFECTS=[[1,"Live API key hardcoded in committed source","Medium","A4"],[2,"Finalised annotation can be silently overwritten","Critical","D5"],[3,"Reviewers can be shown the wrong annotator's work","High","D4"],[4,"Finalised item can export conflicting answers","Critical","H4"],[5,"Reviewer corrections aren't saved","Critical","D3"],[6,"Drafts have no ownership enforcement","Critical","D6"],[7,"Annotators can approve their own work","Critical","D1"],[8,"Legacy review API can rewrite approval history","Critical","D2"],[9,"Cross-project / cross-org write bypass","High","G3"],[10,"Invalid status values saved to the database","High","G4"],[11,"Draft submission not atomic; draft–annotation link never saved","High","D5"],[12,"Frontend fails typecheck","High","A2"],[13,"Frontend test suite failing","High","A2"],[14,"Backend export tests fail to run","High","H5"],[15,"Dispute “send back to annotator” not implemented","High","E2"],[16,"Dataset registration isn't transactional","High","B5"],[17,"Organisation invitations completely broken","High","G5"],[18,"Pending-invitation listing unreachable","High","G5"],[19,"Completion and export readiness disagree on “done”","High","B6"],[20,"AI failures produce fake annotations","High","C3"],[21,"Audit log always shows “user” as actor","Medium","F4"],[22,"Escalation entries duplicate their summary","Medium","F4"],[23,"Backend .env config silently broken","Medium","A3"],[24,"init_data.py --reset broken two ways","High","A3"],[25,"Frontend test doesn't test what it claims","Low","A2"],[26,"Backend test has misleading setup","Low","A2"],[27,"Export-eligibility list names an impossible status","Low","B6"],[28,"Task can never leave draft","High","B4"],[29,"Lifecycle conflicts reported as server errors","Medium","B5"]];
+
+/* The 59 stories as originally written. Used only to (a) mark a story as reworded,
+   (b) restore one with "Reset story", and (c) fill the page if the CSV can't be read. */
+const SEED=[{"id":"A1","e":"A","p":"P0","o":"Lead","t":"Changes are reviewed before they reach the platform","s":"As a project manager, I want every change to the platform to be reviewed by a second person before it goes live, because the previous team's uncoordinated changes overwrote each other and I need to trust that what I'm demonstrating is what was agreed.","ac":["No change reaches the main branch without an approving review from someone other than its author.","Every change is traceable to the user story it implements.","Automated checks must pass before a change can be merged."],"r":["No open defects — this is the process control that stops new defects of the kind catalogued in issues.md from re-entering, which the client asked for by name at the status meeting."],"f":[]},{"id":"A2","e":"A","p":"P0","o":"SC","t":"I can trust that a fix in one place hasn't broken another","s":"As a client, I want the platform's automated checks to genuinely pass before anything ships, because otherwise a change to the review screen can silently break annotation and nobody finds out until the demo.","ac":["The web application's checks and test suite pass cleanly, so a broken change is caught before merge rather than after.","Tests that claim to check something actually check it — a test named for image-annotation loading must fail if that loading breaks.","Test setup does not imply behaviour the platform doesn't have."],"r":["**Issues 12 & 13** (frontend fails typecheck; test suite failing) — this story's definition of done is a green frontend build and suite, so both are resolved by the work itself rather than tracked separately.","**Issue 25** (a frontend test passes even when the behaviour it names is broken) — replacing the placeholder assertion with a real one is exactly what “tests genuinely pass” requires here.","**Issue 26** (misleading mock setup in a backend test) — removed while making the suite trustworthy, so a future reader isn't misled about what the code does."],"f":[12,13,25,26]},{"id":"A3","e":"A","p":"P0","o":"SC","t":"I can get a working copy of the platform running by myself","s":"As a team member, I should be able to set up and reset a working local copy of the platform with seeded demo accounts in one step, because I can't contribute to or demonstrate a system I can't start.","ac":["Following the documented setup steps produces a running platform with the seeded Admin, Reviewer and Annotator accounts.","Resetting the demo data works repeatedly, including against an already-seeded database.","Configuration supplied by a team member (ports, keys, environment) is actually picked up by the platform.","A setup failure reports what went wrong instead of failing silently or crashing while reporting."],"r":["**Issue 24** (init_data.py --reset broken two ways) — the story requires reset to work repeatedly on a stock Windows terminal, which closes both the console-encoding crash and the foreign-key failure that currently leaves the database half-dropped.","**Issue 23** (.env config silently ignored) — “configuration is actually picked up” is the acceptance criterion, so the wrong-prefix and never-read-the-file defects both have to go for this story to pass."],"f":[23,24]},{"id":"A4","e":"A","p":"P0","o":"SC","t":"Platform credentials aren't sitting in shared code","s":"As an organisation administrator, I want the platform's service credentials kept out of the shared codebase, because a key that ships inside every copy of the code is a key I can't control, revoke or attribute.","ac":["No live credential is readable in the source code.","Credentials are supplied per environment and can be rotated without a code change.","The exposed key is rotated at the provider, not merely removed from the code."],"r":["**Issue 1** (live API key hardcoded in committed source) — this story's first criterion removes it, and the rotation criterion covers the part a code fix alone can't: the key is already public in every existing clone. Depends on **A3**, since configuration must actually load before a key can be supplied any other way."],"f":[1]},{"id":"A5","e":"A","p":"P0","o":"SC","t":"A status means the same thing wherever I see it","s":"As a project manager, I want a status, role or result to mean one thing across every screen, the API and the export, because the same item currently has different state names in different places and I can't tell whether two screens disagree because of a bug or because they're using different words for the same thing.","ac":["One agreed set of task states and one agreed set of item states, used by the screens, the API and the export alike.","Where our design documents and the running code currently disagree, the difference is resolved deliberately and the documents updated to match what was built.","A state a user can see is a state the workflow can actually reach.","The frontend–backend contract and the AI-assistant contract are written down and reviewed before the workflow work in Epics C–H begins."],"r":["No open defects catalogued — but this is the third of the four objectives agreed with the client, and the drift is real: our design documents describe task states draft/active/paused/completed/archived and a FINALIZED item state, while the code implements draft/ready/in_review/disputed/completed and canonicalized. Our own risk register lists this drift as Risk 4 and Risk 10.","Sequenced first because **B4**, **B6**, **G4** and **H5** all resolve disagreements between screens, and doing that three separate times against three different vocabularies is how the disagreement returns."],"f":[]},{"id":"B1","e":"B","p":"P0","o":"BE/FE","t":"I can create a project to hold related work","s":"As a project manager, I want to create a project with a name, description and objective inside my organisation, because my work comes in programmes — the client's own example is an “Autonomous Driving” project holding several different annotation and evaluation tasks.","ac":["I can create a project and see it listed in my organisation.","A project belongs to exactly one organisation and is visible only to that organisation's members.","I can open a project and see the tasks inside it."],"r":["No open defects — the capability exists and works; it is listed because the workflow depends on it and because **J4** later extends it with lifecycle operations."],"f":[]},{"id":"B2","e":"B","p":"P0","o":"BE","t":"I can decide how carefully my project's work gets reviewed","s":"As a project manager, I want to set how many reviewers an item needs, how many review rounds run, and what share of items get independently double-checked, because a low-risk labelling job and a safety-critical judgement task shouldn't be governed identically.","ac":["When creating a project or task I can set: the number of approvals required, the proportion of items requiring independent cross-review (the client's example: 30%), and what happens when reviewers disagree.","The settings I choose are visible on the project afterwards and can be corrected before work starts.","The workflow actually behaves according to what I set — this is not a label recorded and ignored."],"r":["No open defects — policy settings partially exist in the data model, but nothing enforces them. Enforcement is **G2**."],"f":[]},{"id":"B3","e":"B","p":"P0","o":"BE/FE","t":"I can create a task for a specific piece of work","s":"As a project manager, I want to create a task stating whether it is an annotation task or a judgement task and what kind of data it covers, because the client's two task categories need different work surfaces and different result shapes.","ac":["I can create a task under a project, choosing annotation or judgement and the task type.","The task records what a finished result should look like (labels for annotation, verdict plus reasoning for judgement).","Text tasks are fully workable end-to-end; image and video tasks can be created without breaking, but are not committed demo paths in this phase."],"r":["No open defects — task creation exists; what's missing is the lifecycle (**B4**) and the schema/policy binding that makes it meaningful."],"f":[]},{"id":"B4","e":"B","p":"P0","o":"BE","t":"My task moves through real states, not just “draft”","s":"As a project manager, I want to start a task, pause it and complete it, because right now a task stays a draft forever — which means the item list is never closed and I can never tell from the outside whether work is in progress.","ac":["I can move a task from draft into active work, and from active into complete.","Once a task is active, new items can no longer be quietly added to it mid-review.","The state shown on the project screen, the task screen and the export list agree with each other."],"r":["**Issue 28** (a task can never leave draft, so intake never closes) — the story's whole point is the missing activation step; adding it also makes the in_review / ready / disputed states reachable, which the export dashboard is already built around but can never currently display. issues.md flags this as needing a product decision first, so this story includes agreeing the intended path with the client."],"f":[28]},{"id":"B5","e":"B","p":"P0","o":"BE","t":"Loading a dataset either works or leaves nothing behind","s":"As a project manager, I want registering a batch of items to either fully succeed or fully fail, because a batch that half-loaded leaves me with a task I can't trust and no way to tell which items are real.","ac":["If item registration fails partway, no partial items, pointers or drafts remain.","I can load a task with hundreds or thousands of items — the client's example is 1,000 video recordings under one task.","If I try to load items at a point in the workflow that doesn't allow it, I'm told that clearly (“intake is closed for this task”), not shown a generic server error."],"r":["**Issue 16** (dataset registration isn't transactional) — “leaves nothing behind on failure” is precisely the missing all-or-nothing behaviour, so implementing this story removes the partial-state cleanup problem.","**Issue 29** (lifecycle conflicts reported as server errors) — the clear-message criterion requires the deliberate “intake closed” response to survive instead of being converted into a 500."],"f":[16,29]},{"id":"B6","e":"B","p":"P1","o":"BE","t":"“Done” means the same thing everywhere I look","s":"As a project manager, I want a completed task to report the same progress on every screen, because a task marked complete that reports zero finished items destroys my confidence in every other number the platform shows me.","ac":["The rule for “this item is finished” is the same rule used by task completion and by the export list.","A completed task never shows a contradictory item count.","Status values shown to me correspond to states the workflow can actually reach."],"r":["**Issue 19** (task completion and export readiness disagree on “done”) — the story cannot pass while two different definitions exist, so the two rules must be unified into one.","**Issue 27** (export-eligibility list names an impossible “approved” status) — cleaned up in the same change, since the story requires the states shown to be states that can genuinely occur."],"f":[19,27]},{"id":"C1","e":"C","p":"P1","o":"BE","t":"The AI assistant can be swapped without disrupting my work","s":"As a project manager, I want the platform's AI assistant to be replaceable, because the client intends to move from a mock to open-source or self-hosted models later and I don't want the workflow rebuilt when that happens.","ac":["The mock AI assistant can be replaced with a different one without changing any review, dispute or export behaviour.","Which assistant and version produced a suggestion is recorded against the item.","Everything downstream treats an AI suggestion as a suggestion, never as a finished answer."],"r":["No open defects — this is net-new capability the brief calls for (“a replaceable, typed model interface, with mock and live modes interchangeable”)."],"f":[]},{"id":"C2","e":"C","p":"P0","o":"BE","t":"A large batch of items gets AI-annotated reliably","s":"As a project manager, I want to request AI annotation across a whole task and have it complete reliably in the background, because with a thousand items I can't sit and wait, and one failed item must not sink the batch.","ac":["I can trigger AI annotation for a task and keep working while it runs.","Temporary failures are retried automatically; items that permanently fail are shown to me as failed rather than dropped.","I can see how much of the batch is done, in progress or stuck."],"r":["No open defects — net-new. The client raised this as the central engineering requirement (retries, failed jobs, dead-letter handling, “a classic distributed system problem”), and there is currently no queue of any kind."],"f":[]},{"id":"C3","e":"C","p":"P0","o":"BE","t":"I'm told when the AI failed instead of being shown a fake answer","s":"As a reviewer, I want to know when the AI step failed or was switched off, because a fabricated suggestion I mistake for a real one is worse than no suggestion at all.","ac":["If the AI step fails or is disabled, the item is clearly marked as having no AI suggestion — the platform never invents one.","Where an AI result was incomplete, what was actually returned is shown as-is rather than padded out.","The distinction between “AI said this” and “no AI result available” is visible on the review screen."],"r":["**Issue 20** (AI failures produce fake annotations disguised as real ones) — the platform currently fabricates fixed bounding boxes on failure and pads short results with more of them, stored as an ordinary draft. This story's first two criteria make that behaviour impossible to keep."],"f":[20]},{"id":"C4","e":"C","p":"P1","o":"BE/FE","t":"I can control whether reviewers see the AI's answer first","s":"As a project manager, I want to choose whether a task shows the AI suggestion up front, hides it until the human has committed, or runs human-only, because seeing the machine's answer first changes the answer people give.","ac":["I can select human-only, AI-first, or blind-then-reveal when setting up a task.","In blind-then-reveal, the reviewer cannot see the AI suggestion until their own answer is recorded.","Which mode was in force is recorded against the item, so results from different modes can be compared later (see I4)."],"r":["No open defects — net-new, and worth flagging as a gap between our own documents: the inherited design describes only two modes, while the client brief requires three. Neither is implemented today."],"f":[]},{"id":"C5","e":"C","p":"P1","o":"BE/FE","t":"I can record why I decided, not just what I decided","s":"As a reviewer working on a judgement task, I want to record my reasoning alongside my verdict, because the client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers.","ac":["Judgement tasks capture a structured justification alongside the verdict, not an optional comment box.","My reasoning is retrievable later, attached to the item and distinct from the verdict itself.","Reasoning is carried into the export with the decision it explains."],"r":["No open defects — net-new. Client examples of what this must capture: why an AI answer is wrong, why one answer is preferred, how a person broke the problem down."],"f":[]},{"id":"D1","e":"D","p":"P0","o":"BE","t":"I can't approve my own work","s":"As a reviewer, I should not be able to approve an item I annotated myself, because a review that one person can perform on their own work is not a review, and any dataset built on it is indefensible.","ac":["Attempting to review my own annotation is refused, with a clear explanation.","Only users holding a reviewer or expert role can perform review actions at all.","The same restriction applies to dispute decisions, not just first-line review."],"r":["**Issue 7** (annotators can approve their own work) — the review endpoint currently checks only that you belong to the organisation. This story's first two criteria are exactly the two missing checks, so the defect closes as the story lands."],"f":[7]},{"id":"D2","e":"D","p":"P0","o":"BE","t":"Approval history can't be rewritten behind my back","s":"As a project manager, I want an approval decision to be permanent and consistent with the item's actual state, because if an approval can be flipped or deleted afterwards, the record of who signed off on what is worthless.","ac":["There is one way to record a review decision, and it always moves the item's state with it.","An existing approval cannot be edited or deleted into a different outcome by an ordinary member.","Item state and review history always agree with each other."],"r":["**Issue 8** (a second, legacy review API can rewrite approval history) — an older set of endpoints lets any organisation member change or delete a review without touching item status. The “one way to record a decision” criterion requires retiring or locking down that path, which is the fix."],"f":[8]},{"id":"D3","e":"D","p":"P0","o":"BE","t":"The correction I make is the answer that gets saved","s":"As a reviewer, when I correct an annotation I want my corrected value to become the stored answer, because at the moment I can correct an item, watch it finalise, and my correction is nowhere in the result.","ac":["A corrected value submitted with a review replaces the stored answer for that item.","Re-opening the item afterwards shows my correction, not the original.","The exported dataset carries the corrected value.","The original annotation is still visible in the item's history — corrected, not erased."],"r":["**Issue 5** (reviewer corrections aren't actually saved) — corrections are currently appended as truncated text to a notes field while the item advances anyway. Criteria 1–3 are unimplementable without fixing this; criterion 4 keeps the fix consistent with the provenance requirement in **F3**."],"f":[5]},{"id":"D4","e":"D","p":"P0","o":"BE","t":"I know I'm reviewing the right person's work","s":"As a reviewer, I want certainty that the annotation in front of me belongs to the annotator it says it does, because on a double-annotated item the platform currently can't reliably tell, and I could approve or reject the wrong person's submission without any sign anything went wrong.","ac":["Opening an item for review always shows a specific, identified annotator's submission.","On an item annotated by two people, both submissions are individually addressable — I never get an arbitrary one of the two.","My decision is recorded against the submission I actually looked at."],"r":["**Issue 3** (reviewers can get shown the wrong annotator's work) — the “which annotation is current” pick is effectively random on multi-annotator items. This story requires a defined answer, which is the fix; issues.md notes the choice between one canonical annotation per item and per-annotator submissions is a product decision to settle with the client first.","**Issue 11** (draft submission isn't atomic and drafts don't link to their annotation) — the missing draft-to-annotation link is the same root cause reached from the other direction; restoring it is what makes criterion 3 possible."],"f":[3,11]},{"id":"D5","e":"D","p":"P0","o":"BE","t":"Finalised means finalised","s":"As a client, I want a finalised result to stay finalised unless someone deliberately reopens it, because a “locked” answer that a later submission can quietly change means no exported label can be defended.","ac":["Submitting new work against a finalised item is refused, or explicitly reopens review — never silently applied.","Reopening a finalised item is a visible, attributable action.","A submission either completes fully or not at all — it never leaves an item half-updated."],"r":["**Issue 2** (a finalised annotation can be silently overwritten) — currently a new draft updates the same record in place with no check on whether the item is already finalised. Criterion 1 is the missing check.","**Issue 11** (draft submission is not one transaction) — criterion 3 requires the three separate writes involved in submitting work to succeed or fail together."],"f":[2,11]},{"id":"D6","e":"D","p":"P0","o":"BE","t":"My unfinished work is mine","s":"As an annotator, I want my in-progress draft to be editable only by me, because right now anyone in the organisation can change, submit or delete my unfinished work — including submitting it before I'm ready.","ac":["Only I can edit, delete or submit my own draft.","Someone else attempting it is refused, with a clear message.","An administrator or reviewer override, if we allow one, is explicit and recorded in the item's history."],"r":["**Issue 6** (drafts have no ownership enforcement) — draft access is currently checked against organisation and project membership only, never against who owns the draft. This story's first criterion is that missing check."],"f":[6]},{"id":"D7","e":"D","p":"P1","o":"BE","t":"A defined share of items gets independently double-checked","s":"As a project manager, I want the proportion of items I set in my policy to be routed to a second, independent reviewer, because sampling for cross-validation is how I find out whether my reviewers actually agree.","ac":["The cross-validation percentage set in B2 determines how many items are routed for a second independent review.","The second reviewer cannot see the first reviewer's decision before recording their own.","I can see, per task, how many items were double-reviewed and how often the two reviewers agreed."],"r":["No open defects — net-new. This is the mechanism the client described (30% independently reviewed) and it feeds the agreement metrics in **I3**."],"f":[]},{"id":"D8","e":"D","p":"P0","o":"BE/FE","t":"Work reaches the right person","s":"As an annotator, I want to open the platform and see the items that are mine to work on, because otherwise there is no answer to “what should I do next” — and as a project manager I need to give specific work to specific people rather than hoping the right person picks it up.","ac":["I can see a list of items assigned to me, and open one directly from it.","A project manager can assign items to an annotator, a reviewer or an expert, individually or in bulk.","An item shows who it is currently with, and moving it to someone else is recorded in its history.","Assignment respects roles — an item needing review is not assigned to someone who cannot review."],"r":["No open defects catalogued, because the concept is absent rather than broken: task items have no assignee at all in the data model, so there is nothing to attribute a defect to.","This is a prerequisite the rest of the epic quietly assumes. **D7** routes a share of items to “a second independent reviewer” and **E2** sends an item “back to the annotator” — neither is implementable without assignment existing first."],"f":[]},{"id":"E1","e":"E","p":"P0","o":"BE","t":"Disagreement is noticed without anyone reporting it","s":"As a project manager, I want the platform to detect when two reviewers disagree and open a dispute automatically, because disagreement I have to find manually is disagreement I will miss.","ac":["When independent reviews on the same item conflict, a dispute is raised automatically.","The dispute shows both conflicting decisions and who made them.","Disputed items are visible in one place and are excluded from release until resolved."],"r":["No open defects — net-new. Our own design notes are explicit that dispute should default to auto-detected disagreement rather than being a complaint button."],"f":[]},{"id":"E2","e":"E","p":"P0","o":"FE","t":"I can send an item back to the annotator","s":"As an expert, I want to send a disputed item back to its annotator with a note, because not every dispute should be settled by me overruling — sometimes the right outcome is the original annotator redoing it with guidance.","ac":["“Send back to annotator” works from the dispute screen and is not a placeholder.","The item returns to the annotator's queue with my note attached.","The send-back appears in the item's history with who sent it back and why."],"r":["**Issue 15** (dispute “send back to annotator” isn't implemented) — users currently hit a placeholder message. issues.md confirms the platform already fully supports this behind the screen and has a ready client function for it, so this is a frontend-only story: wiring the existing button to the existing capability closes the defect."],"f":[15]},{"id":"E3","e":"E","p":"P1","o":"BE","t":"An expert's decision is recorded as its own decision","s":"As an expert, I want my adjudication recorded as a distinct decision that references the dispute it settles, because “who routed this to me” and “who decided it” are different facts and collapsing them destroys the audit trail.","ac":["An adjudication is a separate record from the routing that requested it.","It references the item, the dispute, and the conflicting decisions it resolves.","The annotator's original label, the reviewers' decisions and my adjudication all remain individually visible afterwards."],"r":["No open defects — net-new. This is the brief's requirement that annotator label, reviewer decision and adjudicated judgment are “preserved rather than collapsed into one final answer field.”"],"f":[]},{"id":"E4","e":"E","p":"P1","o":"BE","t":"Resolving a dispute doesn't erase the disagreement","s":"As a client, I want a resolved item to still show that people disagreed and how it was settled, because disagreement is evidence about the item's difficulty, and deleting it hides exactly what I most need to know.","ac":["Resolving a dispute adds a resolution; it never deletes or overwrites the conflicting decisions.","A resolved item's history still shows the original disagreement.","Reports can distinguish items that were contested from items that were unanimous."],"r":["No open defects — net-new, and a stated non-negotiable in our governance documents (“disagreement is first-class… must be preserved, not collapsed”)."],"f":[]},{"id":"E5","e":"E","p":"P1","o":"BE","t":"Escalation matches the assurance my project needs","s":"As a project manager, I want to configure whether disputes must reach an expert, may reach one, or never do, because a routine labelling task and an arbitration-ready project need different escalation rules.","ac":["I can set the escalation posture when configuring the project or task.","Where an expert gate is required, an item cannot complete without an expert decision.","The posture in force is visible on the project."],"r":["No open defects — net-new. The escalation gate values exist internally but are not selectable or enforced; see **G2** for the wider posture enforcement this depends on."],"f":[]},{"id":"E6","e":"E","p":"P0","o":"FE","t":"The dispute and arbitration screens show my real cases","s":"As an expert, I want the dispute and arbitration screens to show the actual disputed items from my projects, because they currently display sample data — so everything Epic E builds underneath is invisible to the person who has to act on it.","ac":["The project dispute list, the individual dispute view and the arbitration view all show real cases from the backend, scoped to what I'm allowed to see.","The task-level dispute and finalised views show that task's real items.","Actions taken on these screens change real state, and the change is visible on refresh.","No screen in the dispute or arbitration path renders placeholder content."],"r":["No open defects catalogued — the screens work, they're just not connected. Verified: tasks/[taskId]/dispute, tasks/[taskId]/finalized, projects/[projectId]/disputes and the standalone dispute/arbitration views contain no live-data calls at all, while the overview, items, annotate and review screens do.","This is the second of the four agreed objectives (“every screen backed by real, correctly-scoped data rather than partially-wired endpoints”) and without it Epic E is backend work nobody can see."],"f":[]},{"id":"F1","e":"F","p":"P0","o":"BE","t":"I can ask how any label came to exist","s":"As a client, I want to open any item in a delivered dataset and see the full sequence that produced its label, because a dataset that can't answer that can only be shipped, not defended.","ac":["Each item shows an ordered record of: what it came from, what the AI suggested, what the human did with that suggestion (accepted, modified, rejected or replaced), every review decision, and any dispute or adjudication.","Each entry names who did it and when.","The record is captured as the work happens, not reconstructed afterwards."],"r":["No open defects — net-new. Only a generic activity log exists today, holding opaque before/after values rather than a structured account of the workflow."],"f":[]},{"id":"F2","e":"F","p":"P1","o":"BE","t":"Annotations remember which guideline they followed","s":"As a project manager, I want to update annotation guidelines without rewriting history, because when I revise a guideline mid-project I need to know which items were labelled under the old one.","ac":["Updating a guideline or source creates a new version rather than replacing the current one.","Every annotation records the guideline and source version in force when it was made.","I can see which items were annotated under a superseded version."],"r":["No open defects — net-new. There is no versioning of any kind today, which is also what makes the “superseded version” release check in **H3** impossible to build until this exists."],"f":[]},{"id":"F3","e":"F","p":"P0","o":"BE","t":"The AI's suggestion, the human's answer and the reviewer's correction stay separate","s":"As a client, I want to see the AI's suggestion, the annotator's decision on it and any reviewer correction as three distinct facts, because collapsing them into one value destroys the only evidence of what human judgement actually contributed.","ac":["All three are individually retrievable for any item.","A later correction never overwrites the earlier record — it supersedes it visibly.","The export identifies which value is authoritative and shows what it superseded."],"r":["**Issue 5** (reviewer corrections aren't saved) — **D3** makes corrections land; this story makes them land without destroying the original, which is the other half of the same defect.","**Issue 4** (a finalised item can export more than one conflicting answer) — “the export identifies which value is authoritative” is precisely the missing concept; see **H4** for the export-side change."],"f":[4,5]},{"id":"F4","e":"F","p":"P1","o":"BE","t":"History tells me who really did what","s":"As a project manager, I want the history to distinguish what a person did from what the platform did automatically, because an audit trail that attributes automated steps to people is worse than none.","ac":["Automated actions are shown as system actions, not attributed to a user.","The history reads cleanly — one entry per thing that happened, without a change entry repeating what the summary already says.","I can filter an item's history to just the human decisions."],"r":["**Issue 21** (audit log always shows “user” as the actor) — criterion 1 requires the actor to reflect what actually happened, which is the fix.","**Issue 22** (escalation entries duplicate their own summary as a change) — criterion 2 removes exactly this noise from the history view."],"f":[21,22]},{"id":"F5","e":"F","p":"P1","o":"FE","t":"I can see an item's whole story on one screen","s":"As a reviewer, I want to see an item's full timeline before I make a decision, because deciding without knowing that two people already disagreed about it is how bad decisions get made.","ac":["The item view shows its history in order: annotation, reviews, disputes, adjudication.","Each entry shows who, when and what changed.","I can reach the item's history from the review screen without losing my place."],"r":["No open defects — net-new; depends on **F1**."],"f":[]},{"id":"G1","e":"G","p":"P0","o":"BE","t":"My role determines what I can do","s":"As an organisation administrator, I want a person's role to determine which actions they can take, because at the moment being a member of the organisation is enough to do almost anything, which makes the roles I assign decorative.","ac":["Approving, disputing, adjudicating and releasing each require the appropriate role.","A user without the required role is refused with a clear message rather than silently allowed.","Adding a new role later doesn't require reworking the workflow."],"r":["**Issue 7** (annotators can approve their own work) — **D1** blocks self-review specifically; this story generalises the same enforcement across every governed action so the gap doesn't simply reappear on the next endpoint."],"f":[7]},{"id":"G2","e":"G","p":"P1","o":"BE","t":"My project's governance posture actually governs","s":"As a project manager, I want choosing dual sign-off, expert gate or arbitration-ready to genuinely change what the workflow requires, because otherwise I've selected a label that reassures me and enforces nothing.","ac":["Dual sign-off requires the configured number of approvals from different reviewers before an item can finalise.","Expert gate prevents completion until an expert has approved.","Arbitration-ready guarantees unresolved disagreement reaches arbitration rather than quietly defaulting.","The posture in force is visible on the project and in the export record."],"r":["No open defects — net-new enforcement. Our own terminology documents describe these three postures as “signals, not separate workflow engines,” which is an accurate description of the gap: they are recorded and never applied."],"f":[]},{"id":"G3","e":"G","p":"P0","o":"BE","t":"My work stays inside my project","s":"As an organisation administrator, I want a person with access to one project to be unable to change anything in another, because access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.","ac":["Changing or deleting a task fails unless it genuinely belongs to the project it was requested under.","The same applies to changing an item within a task.","Attempts across a boundary are refused, not silently applied."],"r":["**Issue 9** (cross-project/cross-org write bypass) — a duplicated route means the check that would catch this is never reached. The story's criteria can only pass once the live path performs the ownership check, which also removes the shadowed duplicate."],"f":[9]},{"id":"G4","e":"G","p":"P1","o":"BE/SC","t":"The platform refuses states that can't exist","s":"As a project manager, I want the platform to reject an impossible item state outright, because a nonsense status stored permanently makes my counts, filters and progress figures lie from then on.","ac":["An invalid status is rejected before anything is stored.","The rejection explains what the valid options were.","No item can be left in a state the workflow doesn't recognise."],"r":["**Issue 10** (invalid task status values get saved to the database) — the value is currently committed first and only rejected when the response is built, so the bad data survives. Criterion 1 inverts that order, which is the fix."],"f":[10]},{"id":"G5","e":"G","p":"P0","o":"BE","t":"I can actually invite someone into my organisation","s":"As an organisation administrator, I want to invite a colleague and have them successfully join, because today no invitation can be accepted at all — which means I cannot onboard a second person through the normal route.","ac":["I can send an invitation and see it listed as pending.","The invited person can accept it and gain access.","What I'm shown about an invitation's state matches its real state."],"r":["**Issue 17** (organisation invitations are completely broken) — invitations are created as already-accepted internally while reporting “pending,” and acceptance always fails on a broken token contract. Criteria 2 and 3 cannot pass while either remains.","**Issue 18** (pending-invitation listing unreachable behind a duplicate route) — criterion 1 requires the pending list to be reachable; issues.md notes neither defect is testable end-to-end without the other, so they are fixed together here."],"f":[17,18]},{"id":"H1","e":"H","p":"P0","o":"BE","t":"A release is a fixed thing I can point at","s":"As a client, I want a release to be a permanent, unchanging artefact, because a “release” that silently changes when someone edits an item afterwards is not something I can hand to anyone.","ac":["Releasing a dataset produces a stored artefact capturing the items as they were at that moment.","Later changes to the underlying items do not alter an existing release.","Each release is identifiable and re-downloadable unchanged."],"r":["No open defects — net-new. Today's export list is derived live from task status; nothing is ever written or frozen, so there is no defect to fix, only a capability to build."],"f":[]},{"id":"H2","e":"H","p":"P0","o":"BE","t":"Every release explains what's in it","s":"As a client, I want each release to come with a manifest describing exactly what it contains, because I need to verify a dataset independently rather than take its contents on trust.","ac":["The manifest lists item count, the guideline and source versions covered, when it was produced and by whom.","Each item in the release points to its provenance record.","The release's contents can be checked against its manifest."],"r":["No open defects — net-new; depends on **F1** and **F2**."],"f":[]},{"id":"H3","e":"H","p":"P0","o":"BE","t":"A release that shouldn't exist is refused","s":"As a client, I want the platform to refuse to produce a release containing unreviewed items, missing provenance or superseded versions, because a warning attached to a bad release is not a safeguard — by then the bad release exists.","ac":["The checks run before anything is produced, and failure means no release is created.","I'm told which items caused the refusal and why.","The gate cannot be satisfied by someone asserting that review happened — it is checked against the recorded decisions."],"r":["No open defects — net-new, and the brief's sharpest requirement: gated “before the release exists,” and explicitly not satisfiable “by an operator asserting that review happened.”"],"f":[]},{"id":"H4","e":"H","p":"P0","o":"BE","t":"Every released item has exactly one authoritative answer","s":"As a client, I want each item in a release to carry one answer marked as the authoritative one, because an export containing two conflicting “final” answers for the same item is unusable for training and indefensible to an auditor.","ac":["Each released item carries exactly one authoritative value.","Where other submissions existed, they appear as superseded history — never as competing answers.","The authoritative value matches what the review and adjudication record says it should be."],"r":["**Issue 4** (a finalised item can export more than one conflicting answer) — the export currently tracks one slot per annotator rather than one canonical value per item. Criterion 1 makes that impossible; it depends on the canonical-answer decision taken in **D4** and the supersession model in **F3**."],"f":[4]},{"id":"H5","e":"H","p":"P1","o":"BE","t":"Export figures agree with the rest of the platform","s":"As a project manager, I want the export list to report the same progress I see on the task, because two screens disagreeing about the same task tells me one of them is wrong and I don't know which.","ac":["Export readiness and item counts use the same completion rule as the task itself.","A task marked complete never produces an export reporting zero completed items.","Export behaviour is covered by tests that actually run, so this can't silently regress."],"r":["**Issue 19** (completion and export readiness disagree on “done”) — resolved jointly with **B6**, which unifies the rule; this story is the export-side half.","**Issue 27** (impossible “approved” status in the eligibility list) — removed while unifying the rule.","**Issue 14** (backend export tests fail to even run) — criterion 3 requires working export tests, which means implementing the missing helper the existing test file already specifies; until then export behaviour is entirely unverified."],"f":[14,19,27]},{"id":"H6","e":"H","p":"P0","o":"FE","t":"The export, policy and history screens show real data","s":"As a project manager, I want the export, policy and history screens to show my project's actual releases, actual policy and actual activity, because a screen showing sample data is worse than no screen — it tells me something confidently and it isn't true.","ac":["The project export list and individual export view show real releases produced by H1.","The project policy screen shows the policy actually in force, as set in B2, and the governance posture from G2.","The task history and setup screens show that task's real activity and real configuration.","Figures on these screens agree with the task screen and the dashboard."],"r":["No open defects catalogued — same situation as **E6**: verified that projects/[projectId]/exports, projects/[projectId]/policies, tasks/[taskId]/history and tasks/[taskId]/setup contain no live-data calls.","Completes the second agreed objective alongside **E6** and **D8**. Depends on **H1** and **H2**, since there are no real releases to display until they exist."],"f":[]},{"id":"I1","e":"I","p":"P0","o":"GOV","t":"I can re-run the whole workflow against known cases","s":"As a quality lead, I want to run a scripted scenario through the entire workflow and check the outcome against what should have happened, because testing individual pieces tells me nothing about whether the workflow holds together.","ac":["A scenario can run end-to-end — annotation, review, cross-validation, dispute, final judgement — without manual clicking.","Each scenario states its expected outcome and reports pass or fail.","Results are comparable across runs, so a regression is visible."],"r":["No open defects — net-new; nothing of this kind exists."],"f":[]},{"id":"I2","e":"I","p":"P0","o":"GOV","t":"The platform is tested against cases designed to break it","s":"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","ac":["The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.","Each case has a stated expected outcome and runs through I1.","The casebook grows toward the 40–60 cases the brief specifies."],"r":["No open defects — net-new. These adversarial categories are taken directly from the brief."],"f":[]},{"id":"I3","e":"I","p":"P1","o":"GOV","t":"I can tell whether reviewers actually agree","s":"As a quality lead, I want reviewer agreement measured properly rather than as a raw match percentage, because raw agreement flatters any task where one answer dominates.","ac":["Agreement is reported using an established coefficient, not percentage match.","Agreement is reported per task and comparable across tasks.","AI suggestion quality and confidence calibration are reported alongside human agreement."],"r":["No open defects — net-new; depends on the cross-validation routing in **D7**."],"f":[]},{"id":"I4","e":"I","p":"P1","o":"GOV","t":"I can see what AI assistance does to human judgement","s":"As a quality lead, I want to measure how often reviewers accept, modify or override AI suggestions and how long they take, because the client's question is what AI assistance actually does to human judgement — not whether it feels faster.","ac":["Acceptance, modification and override rates are reported per task.","Time per item is reported alongside them.","Results can be compared across the execution modes from C4, including how often confidently-wrong AI suggestions were accepted."],"r":["No open defects — net-new; depends on **C4** and **F3**, since the measurement is impossible if suggestion and decision are collapsed into one value."],"f":[]},{"id":"I5","e":"I","p":"P1","o":"GOV","t":"I can prove the platform's records hold up","s":"As a quality lead, I want automated checks that provenance is complete, permissions were enforced and a release matches its manifest, because integrity claimed is not integrity demonstrated.","ac":["Checks confirm every released item has complete provenance.","Checks confirm governed actions were performed by users holding the right role.","A release can be reconstructed from its manifest and compared against the original.","Findings — including what failed and why — are recorded, with negative results reported rather than dropped."],"r":["No open defects — net-new; exercises the gates from **H3** and the records from **F1**."],"f":[]},{"id":"J1","e":"J","p":"P2","o":"BE","t":"My organisation has a stable identity","s":"As an organisation administrator, I want my organisation to have a unique identifier and address, because the client's one concrete requirement in this area is being able to refer to an organisation unambiguously.","ac":["Each organisation has a unique identifier and URL that don't change.","An organisation can hold multiple accounts and use cases."],"r":["No open defects — net-new."],"f":[]},{"id":"J2","e":"J","p":"P2","o":"FE","t":"I can see how my project is going at a glance","s":"As a project manager, I want a simple overview of project status and progress, because I want a starting point — not an analytics product.","ac":["Shows project status, item counts by state and basic workflow statistics.","Figures agree with the task and export screens (see B6).","Deliberately limited in scope — the client asked that time not be spent making this comprehensive."],"r":["No open defects — net-new."],"f":[]},{"id":"J3","e":"J","p":"P2","o":"BE/FE","t":"I can invite and manage my team","s":"As an organisation administrator, I want to invite colleagues and manage their membership and roles, because I can't run governed review without the people who perform it.","ac":["I can invite a person, see pending invitations, and remove a member.","I can assign and change a member's role.","Role changes take effect on what that person can do (see G1)."],"r":["**Issues 17 & 18** (invitations broken; pending list unreachable) — **G5** fixes the underlying flow; this story is the administrator-facing capability built on top of it and cannot be demonstrated until those are closed."],"f":[17,18]},{"id":"J4","e":"J","p":"P2","o":"BE/FE","t":"I can maintain a project after creating it","s":"As a project manager, I want to rename a project, update its policy or team, and archive it when finished, because a project I can only create and never adjust doesn't survive contact with real work.","ac":["I can rename a project and update its description, policy, team and storage settings.","I can archive a completed project; archived projects are read-only but still viewable.","Changes are recorded in the project's history."],"r":["No open defects — net-new. Client's own list: rename, update, update policy, update team settings, update storage location, archive."],"f":[]},{"id":"K1","e":"K","p":"P1","o":"Lead","t":"A reader can understand the system without us in the room","s":"As a client, I want a technical report covering the architecture, the evaluation results, the limitations and the known failure cases, because I have to maintain this platform after the team disperses.","ac":["Covers architecture, the evaluation results from Epic I, limitations, and failure cases we know about and did not fix.","States what was consciously deferred and why — including which of the 29 defects were left, with justification.","Written progressively across the project, not assembled in the final week."],"r":["No open defects — but the deferred-defect record is what closes out issues.md honestly; any of the 29 not fixed by a story above needs an explicit, argued decision rather than silence."],"f":[]},{"id":"K2","e":"K","p":"P1","o":"all","t":"Each of us can defend our own design decisions","s":"As a team member, I want my significant design and technical decisions recorded with the alternatives I considered, because Arc has said explicitly that I will be asked to walk through my reasoning, and reconstructing it at the end is neither honest nor convincing.","ac":["Each member keeps a decision record covering their significant choices, the alternatives, and why they chose as they did.","Records are written when the decision is made, not retrospectively.","Where an AI tool was used, the member can still explain and defend the result independently of it."],"r":["No open defects — this is a stated project requirement, and the brief is blunt that an agent-authored rewrite “needs the same prior justification as a hand-written one.”"],"f":[]},{"id":"K3","e":"K","p":"P1","o":"GOV","t":"What didn't work is recorded as carefully as what did","s":"As a client, I want the findings documentation to include what we tried that failed and why, because negative findings tell me more about this platform's real limits than a list of features that worked.","ac":["Findings record what was tried, what worked, what failed, and why.","Negative results from the evaluation casebook are reported, not filtered out.","Results are traceable to specific cases in I2 so a reader can re-run them."],"r":["No open defects — the brief states plainly that “negative findings carry equal weight.”"],"f":[]},{"id":"K4","e":"K","p":"P0","o":"Lead","t":"The end-to-end demonstration works when it matters","s":"As a client, I want to watch the full journey run end-to-end on realistic data, because that demonstration is where I find out whether the platform is genuinely finished or merely feature-complete on paper.","ac":["One canonical demo dataset and a fixed sequence of roles are agreed and frozen ahead of time.","The full journey runs: project → policy → task → items → AI first pass → review → cross-validation → dispute → adjudication → release.","The run is rehearsed against a clean environment (A3) before it is performed.","A recorded fallback exists in case the live run fails."],"r":["No open defects — but our own risk register lists “demo failure despite working components” as Risk 11, with exactly these mitigations. This story is that mitigation made someone's explicit responsibility."],"f":[]}];
+
+/* ---------------------------------------------------------------
+   Hej Delivery Backlog — CSV-backed
+   story_src.csv is the source of truth. SEED below is the 59 stories
+   as originally shipped, kept only to mark reworded stories and to
+   rebuild the CSV if it is missing.
+----------------------------------------------------------------*/
+const OWNERS=["BE","FE","SC","GOV","Lead"];
+const CSV_NAME="story_src.csv";
+const COLS=["id","epic","priority","owner","name","story","acceptance_criteria",
+            "related_issues","subtasks","defects","status","allocated_to","scrum","source"];
+/* Columns an older story_src.csv may legitimately be missing — they are
+   back-filled from the page's own defaults. Anything else absent is a real
+   error, and rowsToStories still says so. */
+const OPTIONAL_COLS=["subtasks","scrum","source"];
+
+/* Subtasks per story — the default breakdown, editable per story in the panel. */
+const SUBTASKS={"A1":["Protect `main`: require one approving review from someone other than the author, and passing checks, before merge.","Add a PR template carrying the story id, the defect it closes, and how it was verified.","Add a CI workflow running backend pytest plus frontend typecheck and tests on every pull request.","Agree a branch naming convention (story/D3-reviewer-corrections) and write it into docs/team-discipline/dev-workflow.md.","Set a review rota so no pull request sits waiting on one person."],"A2":["Run `npm run typecheck` in apps/hej-web and fix the TaskItemTable prop mismatch and the missing judgementSignal field (issue 12).","Run `npm test` in apps/hej-web and fix the annotate-payload test that has drifted from its component (issue 13).","Replace the placeholder assertion in the image-annotation \"hydrates from draft\" test so it fails when hydration breaks (issue 25).","Delete the unused mock wiring in the admin-IAM backend test that implies a DB lookup the code never makes (issue 26).","Wire both suites into the A1 CI workflow so a red build blocks merge."],"A3":["Fix the console-encoding crash in init_data.py --reset on a stock Windows terminal, including the error handler that crashes while reporting it (issue 24).","Drop tables in foreign-key-safe order so --reset works repeatedly against an already-seeded database instead of half-dropping the schema (issue 24).","Add env_file to model_config in app/core/config.py:19 so a .env file is actually read (issue 23).","Correct apps/hej-api/.env.example from the DAP_ prefix to HEJ_, which is what Settings expects (issue 23).","Write the setup path in the README and have a second person follow it from a clean clone to seeded Admin, Reviewer and Annotator accounts."],"A4":["Rotate the committed Gemini key at the provider — it is public in every existing clone and fork (issue 1).","Remove the key default from gemini_api_key in app/core/config.py:15 so a missing key fails loudly (issue 1).","Confirm the key is read from the environment only, and that the app starts with a clear error when it is absent.","Add the key names to .env.example with placeholder values and a note on where the real key lives.","Sequence after A3 — configuration has to load before a key can be supplied any other way."],"A5":["Write docs/contracts/lifecycle.md: the authoritative task and task-item status sets, and the legal transitions between them.","Resolve the drift — docs/design says draft/active/paused/completed/archived and FINALIZED; the code says draft/ready/in_review/disputed/completed and canonicalized.","Split the writing by surface — one owner per contract file under docs/contracts/ — covering request and response shape, legal enum values and error codes.","Consolidate the contract files into docs/contracts/integration-gaps.md — this is the W6 milestone artefact.","Add a schema test that fails when the backend enum and the frontend lib/api/status-mapping.ts drift apart.","Update docs/design and docs/terminology to match what was agreed, in the same change."],"B1":["Confirm POST /organizations/{org_id}/projects scopes the new project to the caller's organisation.","Confirm the projects list shows only projects in the caller's organisation.","Add a test that a project created in org A is invisible to a member of org B.","Check project-create-form.tsx surfaces the API's validation errors rather than a generic failure."],"B2":["Add the policy fields a manager sets: approvals required, cross-review percentage, and what happens when reviewers disagree.","Put them on the project and task setup forms, with the client's 30% cross-review as the worked example.","Show the policy in force on the project afterwards, correctable until the first task goes active.","Freeze the resolved policy against the task so a later policy change cannot rewrite finished work.","Stop at recording the choice faithfully — enforcement is G2."],"B3":["Add the annotation-versus-judgement distinction to TaskCreate and the task form.","Resolve label_schema_ref into an actual result shape — today it is a string pointer nothing reads.","Record what a finished result looks like: labels for annotation, verdict plus reasoning for judgement.","Borrow the merged-schema idea from the MVP's SchemaMerger, but map fields explicitly rather than asking a model to infer them.","Keep image and audio task creation working without breaking; text is the committed demo path.","Add a test that a judgement task rejects a result with no verdict."],"B4":["Raise the intended lifecycle path and who may trigger each step with the client — issues.md flags this as a product decision.","Add status to TaskUpdate in app/schemas/tasks.py:61 — the field is absent, which is why a task can never leave draft (issue 28).","Add an activation endpoint and implement the transition table agreed in A5.","Close dataset intake once a task is active so items cannot be added mid-review.","Wire Activate / Pause / Complete into the task page, disabled with a reason when the transition is illegal.","Check the state agrees across the project screen, the task screen and the export list."],"B5":["Wrap register_dataset (app/services/task_service.py:403) so pointers, items and drafts commit together or not at all (issue 16).","Stop the blanket except in the registration route turning the deliberate 409 into a 500 (issue 29).","Render \"intake is closed for this task\" on the dataset panel instead of a generic server error.","Move the per-item AI call out of the intake path — it runs synchronously inside registration today (see C2).","Test that a mid-batch failure leaves no partial pointers, items or drafts behind.","Load one of the 200-item fixture sets from labeling_ai_assistnat_mvp/app/data/text/ end to end."],"B6":["Write one is_item_finished() predicate and use it for both task completion and export eligibility.","Reconcile task_service.py:82 (accepts reviewed, approved and canonicalized) with project_exports_service.py:55 (counts only canonicalized) (issue 19).","Remove \"approved\" from FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES at task_service.py:83 — it is not a member of the status enum (issue 27).","Add a test that a task marked complete never reports zero completed items in its export package."],"C1":["Define an AnnotationAssistant protocol, with MockAssistant as the default and GeminiPreannotator moved behind it.","Adopt the MVP's candidate envelope as the return type: payload_schema_version, model_version, and candidates carrying task_item_id plus candidate_output.","Replace the hand-rolled urllib call to Gemini with an OpenAI-compatible client so a local Ollama model and a hosted provider share one path.","Record provider, model and version against every suggestion, and keep the registry in one place — the MVP duplicates it four times.","Port TextAnalyzer's four text tasks from labeling_ai_assistnat_mvp, dropping its LLM-inferred field mapping and its writing of results to files.","Check nothing downstream treats a suggestion as a finished answer."],"C2":["Choose the queue — a DB-backed job table with a worker loop, or a broker — and write the decision down.","Add a job table carrying attempt count, last error and a terminal state.","Move the assist call out of task_service.py:445, where it runs synchronously inside dataset registration.","Retry transient failures with backoff; send permanent failures to a dead-letter state that stays visible rather than dropped.","Expose batch progress per task: done, in flight, failed.","Prove it on a 1,000-item batch — one failed item must not sink the run. Do not copy the MVP's TaskRunner, which prints the error and drops the item."],"C3":["Delete the fabricated bounding boxes from _empty_result at gemini_preannotator.py:233 (issue 20).","Delete _ensure_min_image_boxes at gemini_preannotator.py:273, which pads real results with invented ones (issue 20).","Return a failed assist outcome carrying no annotation, so a failure can never be stored as an ordinary draft.","Treat an unparseable model response as a failure, not as a candidate with a placeholder verdict.","Show \"no AI suggestion\" as distinct from \"the AI suggested this\" on the review screen.","Test that a failing assist leaves the item with no AI draft at all."],"C4":["Add human-only, AI-first and blind-then-reveal to task setup — the code has two modes, the brief requires three.","Hold the suggestion back in blind-then-reveal until the human's own answer is recorded.","Record the mode in force against each item so results from different modes can be compared later (see I4).","Test that the suggestion is absent from the API response before the human commits, not merely hidden in the UI."],"C5":["Add a structured rationale alongside verdict on judgement results — required, not an optional comment box.","Wire the field into the annotate workspace; task-item-workspace-sheet.tsx:997 already destructures the judgement fields.","Keep the reasoning retrievable separately from the verdict it explains.","Carry reasoning into the export alongside the decision.","Settle with the client whether justification is required on accept, or only on reject, modify and dispute."],"D1":["Refuse a review when the reviewer created the annotation under review — review_actions.py:206 checks organisation access only (issue 7).","Require a reviewer or expert capability to call the review endpoint at all.","Apply the same restriction to dispute decisions, not only first-line review.","Return a refusal that explains why, rather than a bare 403.","Test that an annotator cannot approve their own item and that a reviewer can."],"D2":["Retire or lock the legacy review-mutation endpoints at annotations.py:319, :364 and :426 (issue 8).","Make the review-action path the only way to record a decision, and have it always move item status with it.","Refuse edits and deletions of an existing review by an ordinary member.","Test that item state and review history cannot diverge."],"D3":["Stop truncating final_payload into review_notes at review_actions.py:235 (issue 5).","Create a superseding annotation version carrying the corrected value.","Show the correction, not the original, when the item is reopened.","Carry the corrected value into the exported dataset.","Keep the original annotation visible in history — corrected, not erased (with F3).","Blocked until the client says who authors a reviewer's correction."],"D4":["Settle with the client: one canonical annotation per item, or per-annotator submissions with an explicit canonical pick.","Replace the effectively random \"latest annotation\" pick with the defined choice (issue 3).","Make both submissions individually addressable on a double-annotated item.","Record the decision against the submission the reviewer actually opened — impossible while draft.annotation_id is never written, the same root cause as issue 11.","Test that a two-annotator item returns a specific, identified submission every time."],"D5":["Refuse a draft submission against a canonicalized item instead of updating the annotation row in place — draft_service.py:145 (issue 2).","Make submit_draft one transaction; draft status, the annotation and the item status are three separate commits today (issue 11).","Persist draft.annotation_id, which is declared on the model and never written (issue 11).","Make reopening a finalised item an explicit, attributed action rather than a side effect.","Test that a finalised item cannot be changed by a later submission."],"D6":["Check draft ownership on update, delete and submit — drafts.py:158, :192 and :212 check org and project membership only (issue 6).","Refuse another member's attempt with a message that says why.","Decide whether an administrator override exists; if it does, record it in the item's history.","Test that a second organisation member cannot submit someone else's pending draft."],"D7":["Route the cross-review percentage set in B2 to a second, independent reviewer.","Hide the first reviewer's decision from the second until the second is recorded.","Report per task how many items were double-reviewed and how often the two reviewers agreed.","Depends on D8 — there is no assignee to route an item to yet."],"D8":["Add an assignee to TaskItemDB — the concept is absent from the data model, not merely broken.","Add assignment endpoints, individually and in bulk.","Build a \"my work\" queue an annotator can open an item directly from.","Show who an item is currently with, and record every reassignment in its history.","Refuse assigning a review to someone without the reviewer capability (see G1)."],"E1":["Detect conflicting independent reviews on the same item and open a dispute without anyone reporting it.","Show both conflicting decisions and who made them on the dispute.","List disputed items in one place, scoped to what the viewer may see.","Exclude disputed items from release until they are resolved."],"E2":["Replace the \"not wired yet\" guard at task-dispute-desk.tsx:93 with the call the page already has (issue 15).","No backend work — POST /tasks/{id}/task-items/{id}/escalations/decision already accepts send_back, and lib/api/review-actions.ts:55 already types it.","Attach the expert's note and return the item to the annotator's queue.","Record who sent it back and why in the item's history.","Test the round trip: the item reaches expert_send_back and shows as \"Returned\" in the annotate queue."],"E3":["Record an adjudication as its own record, separate from the escalation routing that requested it.","Reference the item, the dispute, and the conflicting decisions it resolves.","Keep the annotator's label, the reviewers' decisions and the adjudication individually visible afterwards.","Blocked until the client says where an item goes once a dispute is settled."],"E4":["Add a resolution rather than overwriting or deleting the conflicting decisions.","Keep the original disagreement visible in the item's history after resolution.","Let reports tell a contested item from a unanimous one.","Test that resolving a dispute deletes nothing."],"E5":["Make the escalation posture selectable when configuring a project or task.","Where an expert gate is required, block completion until an expert has decided.","Show the posture in force on the project.","The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2."],"E6":["Verify rather than rebuild: the task dispute and finalized desks already read live data.","Build or delete the three routes that return notFound() — /disputes/[id], /arbitration/[id] and /exports/[id] — and record which and why.","Scope every dispute list to what the viewer is allowed to see.","Confirm an action taken on these screens changes real state and survives a refresh."],"F1":["Add a provenance event record distinct from AuditLogDB (db_models.py:127), which holds opaque before/after blobs.","Cover the ordered kinds: source registered, AI suggested, human responded, reviewed, disputed, adjudicated, released.","Distinguish the human response — accepted, modified, rejected or replaced.","Write events at the point of decision rather than reconstructing them afterwards.","Name the actor and the time on every entry."],"F2":["Version guidelines and sources instead of replacing them in place — there is no versioning of any kind today.","Record the guideline and source version in force on every annotation.","Let a manager see which items were annotated under a superseded version.","Sequence before H3 — its superseded-version check cannot be built until this exists."],"F3":["Keep the AI suggestion, the annotator's decision and any reviewer correction individually retrievable.","Make a later correction supersede visibly rather than overwrite — D3 makes the correction land, this keeps the original (issue 5).","Mark which value is authoritative in the export, and show what it superseded — the missing concept behind issue 4.","Depends on the canonical-annotation decision taken in D4."],"F4":["Set actor_kind from what actually happened — task_audit_log_query.py:255 hardcodes \"user\" even when the display name is System (issue 21).","Stop escalation entries repeating their own summary as a change (issue 22).","Let an item's history be filtered to human decisions only.","Test that a system-generated entry is never attributed to a person."],"F5":["Show the item's timeline in order: annotation, reviews, disputes, adjudication.","Show who, when and what changed on each entry.","Reach the item's history from the review screen without losing your place.","Sequence after F1 — the timeline has nothing to read until provenance events are being written."],"G1":["Add a capability check that reads RoleAssignmentDB.role_key — app/core/permissions.py verifies tenancy only, and nothing anywhere checks a role before an action.","Require the appropriate capability for approving, disputing, adjudicating and releasing, so issue 7 cannot reappear on the next endpoint.","Refuse without it, with a message that says what was needed, rather than allowing it silently.","Keep the model extensible so adding a role later does not mean reworking the workflow.","Coordinate with G3 — both stories change the same permission layer."],"G2":["Enforce dual sign-off: the configured number of approvals from different reviewers before an item can finalise.","Enforce the expert gate: no completion until an expert has approved.","Enforce arbitration-ready: unresolved disagreement reaches arbitration rather than quietly defaulting.","Show the posture in force on the project and in the export record.","The three postures are recorded and never applied — docs/terminology calls them \"signals, not separate workflow engines\"."],"G3":["Delete the shadowing duplicate PUT and DELETE /projects/{id}/tasks/{id} at projects.py:176 and :213 (issue 9).","Keep the tasks.py:56 version, which checks the task belongs to the project named in the URL; projects.py is mounted first and wins today.","Apply the same ownership check to task-item updates.","Test that a member of project A cannot update or delete a task, or patch an item, in project B."],"G4":["Type TaskItemStatusUpdate.status — it is a bare str at app/api/routes/tasks.py:52 (issue 10).","Validate before writing rather than after the commit; the bad value survives in the database today.","Return the valid options in the rejection so the caller can correct it.","Test that an invalid status never reaches the database."],"G5":["Stop creating invitations as already accepted — invite_member sets membership ACTIVE with accepted_at while the response says pending (issue 17).","Issue a real invitation token carrying the org_id and sub claims the accept endpoint at members.py:205 reads (issue 17).","Confirm the pending-invitation list is reachable now the router mounts invitations at its own prefix (issue 18 looks closed — verify).","Test the whole route: invite, shows pending, accepted by the invitee, access granted."],"H1":["Add a release record storing the items as they were at the moment of release.","Make later changes to the underlying items leave an existing release untouched.","Give each release a stable identifier and an artefact that can be downloaded again unchanged.","Today's export list is derived live from task status in project_exports_service.py:20 — nothing is ever written or frozen."],"H2":["Write a manifest carrying item count, the guideline and source versions covered, when it was produced and by whom.","Point each item in the release at its provenance record.","Let the release contents be checked against the manifest independently.","Sequence after F1 and F2 — the provenance pointers and the version list both come from them."],"H3":["Run the checks before anything is produced — a failure must mean no release is created.","Refuse on unreviewed items, incomplete provenance, or superseded versions.","Name the items that caused the refusal and why.","Check against the recorded decisions, never against an operator asserting that review happened."],"H4":["Carry exactly one authoritative value per released item (issue 4).","Show other submissions as superseded history, never as competing answers.","Match the authoritative value to what the review and adjudication record says it should be.","The export tracks one slot per creator rather than one canonical value per item, which is how two answers reach one item.","Depends on D4's canonical decision and F3's supersession model."],"H5":["Use the same completion rule as the task itself, unified in B6.","Make sure a task marked complete never produces an export reporting zero completed items (issue 19), and drop the impossible \"approved\" status while unifying the rule (issue 27).","Confirm tests/test_task_exports.py runs — all three helpers it imports now exist, so issue 14 looks closed; verify it.","Add tests covering export eligibility so this cannot silently regress."],"H6":["Show the real releases produced by H1 on the project export list and the individual export view.","Show the policy actually in force, as set in B2, and the governance posture from G2.","Verify rather than rebuild — the task history and setup screens already read that task's real activity.","Reconcile the figures on these screens with the task screen and the dashboard.","Depends on H1 and H2; there are no real releases to display until they exist."],"I1":["Build a harness that drives a scenario end to end without manual clicking.","Cover annotation, review, cross-validation, dispute and final judgement in a single run.","State the expected outcome per scenario and report pass or fail.","Keep results comparable across runs so a regression is visible.","Reset to a clean seeded database between runs — depends on A3."],"I2":["Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.","Cover a genuinely ambiguous item, and reviewers who disagree with no guideline resolution.","Cover a guideline changed after annotation, and an item with missing provenance.","Cover an unreviewed item reaching a proposed release, and a release containing a superseded item.","Use the gold fixtures in labeling_ai_assistnat_mvp/app/data/text/ — four 200-item sets with ground truth, already shaped in hej's own vocabulary.","Grow toward the 40–60 cases the brief specifies, each ticket contributing the cases for its own surface as it lands."],"I3":["Report agreement with an established coefficient rather than raw percentage match.","Report per task and comparably across tasks.","Report AI suggestion quality and confidence calibration alongside human agreement.","Measure against the gold annotations in the fixture sets.","Depends on D7's cross-validation routing."],"I4":["Report accept, modify and override rates per task.","Report time per item alongside them.","Compare results across the execution modes from C4.","Report how often a confidently wrong suggestion was accepted.","Impossible unless suggestion and decision stay separate — depends on F3."],"I5":["Check that every released item has complete provenance.","Check that governed actions were performed by users holding the right role.","Reconstruct a release from its manifest and compare it against the original.","Record the findings, including what failed and why — negative results reported rather than dropped."],"J1":["Give each organisation a unique identifier and URL that do not change.","Let one organisation hold multiple accounts and use cases.","Keep it small — this is the client's one concrete requirement in this area."],"J2":["Show project status and item counts by state.","Reconcile the figures with the task and export screens (see B6).","Keep it deliberately limited — the client asked that time not be spent making this comprehensive."],"J3":["Invite a person, list pending invitations, and remove a member.","Assign and change a member's role.","Make a role change take effect on what that person can actually do (see G1).","Cannot be demonstrated until G5 fixes the invitation flow (issue 17) and the pending-invitation listing (issue 18)."],"J4":["Rename a project and update its description, policy, team and storage settings.","Archive a completed project; archived projects stay viewable but read-only.","Record every change in the project's history."],"K1":["Draft the architecture section as the workflow lands, not in the final week.","Fold in the evaluation results from Epic I as they arrive.","Record the limitations and the failure cases known and not fixed.","State which of the 29 defects were left unfixed, with the argument for each."],"K2":["Every member keeps a decision record from week one, written when the decision is made.","Record the option chosen, the alternatives considered, and why.","Where an AI tool was used, be able to explain and defend the result independently of it.","Review the records at the weekly meeting so nobody is reconstructing them from memory."],"K3":["Record what was tried, what worked, what failed and why.","Report the negative results from the casebook rather than filtering them out.","Trace each finding to a specific case in I2 so a reader can re-run it."],"K4":["Agree and freeze the demo dataset and the sequence of roles ahead of time.","Rehearse the full journey: project, policy, task, items, AI first pass, review, cross-validation, dispute, adjudication, release.","Rehearse against a clean environment from A3, not a developer's working database.","Record a fallback run in case the live demonstration fails.","Start rehearsing from W9 rather than the week of the demo — this is Risk 11 on the team's own register."]};
+
+/* ----------------------------------------------------------------
+   The SCRUM board. Each ticket names the stories it covers, so the
+   backlog can show what is ticketed and what is not. Ticket keys are
+   editable per story in the detail panel — record new ones here as
+   they are created on the board.
+ ----------------------------------------------------------------*/
+const TICKETS=[
+ ["SCRUM-1","Task queue: Create AI batch job and per-item job status models",["C2"]],
+ ["SCRUM-2","Task queue: Execute task annotation asynchronously through a worker",["C2"]],
+ ["SCRUM-3","Task queue: Retry failed items and preserve permanent failures",["C2"]],
+ ["SCRUM-5","Task queue: Display batch progress and per-item job status",["C2"]],
+ ["SCRUM-6","AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider",["C1"]],
+ ["SCRUM-7","AI-Provider: Stop generating fake annotations when the AI provider fails",["C3"]],
+ ["SCRUM-8","Organisation management:  Invitation & acceptance",["G5"]],
+ ["SCRUM-20","Project & Policy: Configure project review and annotation policies",["B2"]],
+ ["SCRUM-21","Task Lifecycle: Prevent cross-project task and task-item writes",["G3"]],
+ ["SCRUM-22","Task Lifecycle: Validate task-item status before database commit",["G4"]],
+ ["SCRUM-23","Task Lifecycle: Preserve lifecycle conflict responses as HTTP 409",["B5"]],
+ ["SCRUM-24","Task Lifecycle: Implement valid task lifecycle transitions",["B4"]],
+ ["SCRUM-25","Annotation: Enforce draft ownership",["D6"]],
+ ["SCRUM-26","Annotation: Make draft submission and annotation creation atomic",["D5"]],
+ ["SCRUM-27","Review / Annotation: Reviewer should be able to select the correct submitted annotation",["D4"]],
+ ["SCRUM-28","Annotation: Preventing finalized annotations from being overwritten",["D5"]],
+ ["SCRUM-29","Review: Retire or restrict legacy review mutation endpoints",["D2"]],
+ ["SCRUM-30","AI-Provider: Store & Display AI suggestions, failures and unavailable states",["C3"]],
+ ["SCRUM-31","Review: Record verdict, feedback & justification",["C5"]],
+ ["SCRUM-32","Review: Persist reviewer corrections as structured data",["D3"]],
+ ["SCRUM-34","Task Lifecycle: Make dataset registration transactional",["B5"]],
+ ["SCRUM-35","Dispute / Annotation: Implement \"Dispute & send back to annotator\"",["E2"]],
+ ["SCRUM-36","Dispute: Basic Functionality",["E1","E3","E4","E5","E6"]],
+ ["SCRUM-37","Provenance: Guarantee one canonical answer per task item",["H4"]],
+ ["SCRUM-38","Provenance: Preserve AI, annotator, reviewer and adjudicator outputs separately",["F3"]],
+ ["SCRUM-39","Provenance: Item-level provenance timeline",["F1","F5"]],
+ ["SCRUM-40","Provenance: Record correct audit actor types",["F4"]],
+ ["SCRUM-41","Provenance: Remove duplicate escalation audit changes",["F4"]],
+ ["SCRUM-42","Release & Export: Basic functionality",["H1","H2","H3","H6"]],
+ ["SCRUM-43","Release & Export: Align task completion and export readiness",["B6","H5"]],
+ ["SCRUM-44","Organisation Management: Users can only perform actions that are permitted by their roles.",["G1"]],
+ ["SCRUM-45","Project lifecycle: Update and archive a project",["J4"]],
+ ["SCRUM-46","Task queue: Trigger an AI run and route completed items to review",["C2"]],
+ ["SCRUM-47","Annotation: Connect the existing text annotation page to live APIs",[]],
+ ["SCRUM-48","Review: Assign or claim work and provide role queues",["D8"]],
+ ["SCRUM-49","Review: Execute accept, adjust, reject and dispute transitions",["C5","D3","E1"]],
+ ["SCRUM-50","Policy: Apply configured governance rules",["B2","G2"]],
+ ["SCRUM-51","Review: Independent second reviewer",["D7","E1"]],
+ ["SCRUM-52","Dispute: Adjudicator queue and authorization",["D8","E3","E6","G1"]],
+ ["SCRUM-53","Provenance: Source versioning",["F2"]],
+ ["SCRUM-68","Evaluation1: Scenario harness that drives the workflow end to end",["I1"]],
+ ["SCRUM-69","Evaluation2: Repeatable runs and regression reporting",["I1"]],
+ ["SCRUM-70","Evaluation3: Casebook structure and the adversarial categories",["I2"]],
+ ["SCRUM-71","Evaluation4: Grow the casebook to 40–60 cases",["I2"]],
+ ["SCRUM-72","Evaluation5: Reviewer agreement and AI suggestion quality",["I3"]],
+ ["SCRUM-73","Evaluation6: Measure what AI assistance does to human judgement",["I4"]],
+ ["SCRUM-74","Evaluation7: Integrity checks on provenance, roles and releases",["I5"]],
+ ["SCRUM-75","Evaluation8: Findings record including negative results",["I5"]],
+ ["SCRUM-81","Schema: Fix db setup issues",["A3"]],
+ ["SCRUM-82","Schema: Restore existing testcases",["A2"]],
+ ["SCRUM-84","Schema: Replace hardcoded credentials",["A4"]],
+ ["SCRUM-85","Task lifecycle: Create annotation and judgement tasks with a result shape",["B3"]],
+ ["SCRUM-86","Review: Prevent self-review of own annotations",["D1"]],
+ ["SCRUM-87","Annotation: Configurable AI suggestion visibility",["C4"]],
+ ["SCRUM-88","Organisation Management: Stable organisation identifier and URL",["J1"]],
+ ["SCRUM-89","Project: Overview of status and progress",["J2"]],
+ ["SCRUM-90","Organisation Management: Invite, remove and role-manage members",["J3"]],
+ ["SCRUM-91","Project lifecycle: Create a project scoped to an organisation",["B1"]]
+];
+/* A ticket carrying more than this many stories cannot be finished in a sprint. */
+const TICKET_MAX_STORIES=2;
+/* story id -> the tickets covering it, in board order */
+const TICKET_OF={};
+TICKETS.forEach(([k,,ids])=>ids.forEach(id=>{(TICKET_OF[id]=TICKET_OF[id]||[]).push(k);}));
+const ticketDef=k=>TICKETS.find(t=>t[0]===k);
+const ticketTitle=k=>{const t=ticketDef(k);return t?t[1]:"";};
+const parseTickets=v=>String(v||"").split(/[,\s]+/).map(x=>x.trim()).filter(Boolean);
+const defaultTickets=id=>(TICKET_OF[id]||[]).slice();
+
+const esc=t=>String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const escAttr=t=>esc(t).replace(/"/g,"&quot;");
+const $=s=>document.querySelector(s);
+
+const STATUSES=[["","Not started"],["working","Working"],["done","Completed"],["dropped","Discarded"]];
+const ICON={
+  "":'<svg class="stg st-empty" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 2.2"/></svg>',
+  working:'<svg class="stg st-working" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="8" r="2.6" fill="currentColor"/></svg>',
+  done:'<svg class="stg st-done" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="currentColor"/><path d="M4.9 8.2l2 2 4.2-4.3" fill="none" stroke="var(--surface)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  dropped:'<svg class="stg st-dropped" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.9 5.9l4.2 4.2M10.1 5.9l-4.2 4.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
+};
+const stLabel=v=>(STATUSES.find(s=>s[0]===v)||STATUSES[0])[1];
+
+/* ---------- CSV ---------- */
+function parseCSV(text){
+  const rows=[];let row=[],cell="",q=false;
+  text=String(text).replace(/^﻿/,"");
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; }
+      else cell+=c;
+    }else{
+      if(c==='"')q=true;
+      else if(c===","){row.push(cell);cell="";}
+      else if(c==="\r"){}
+      else if(c==="\n"){row.push(cell);rows.push(row);row=[];cell="";}
+      else cell+=c;
+    }
+  }
+  if(cell!==""||row.length){row.push(cell);rows.push(row);}
+  return rows.filter(r=>r.length>1||(r[0]||"").length>0);
+}
+function toCSV(rows){
+  return rows.map(r=>r.map(v=>{
+    v=String(v==null?"":v);
+    return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+  }).join(",")).join("\r\n")+"\r\n";
+}
+const splitList=v=>String(v||"").split("\n").map(s=>s.replace(/^\s*[-•*]\s+/,"").trim()).filter(Boolean);
+/* Acceptance criteria and subtasks are ordered lists. The ordinal is derived
+   from position, never stored — so inserting a line renumbers the rest for
+   free, and a renumber alone never marks a story as reworded. Read strips any
+   ordinal it finds; write and display put them back. */
+const ORDINAL=/^\s*\d{1,2}[.)]\s+/;
+const stripOrdinal=s=>String(s).replace(/^\s*[-•*]\s+/,"").replace(ORDINAL,"").trim();
+const splitOrdered=v=>String(v||"").split("\n").map(stripOrdinal).filter(Boolean);
+const numbered=list=>(list||[]).map((t,i)=>(i+1)+". "+t).join("\n");
+const splitNums=v=>String(v||"").split(",").map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+
+function rowsToStories(rows){
+  if(!rows.length)return [];
+  const head=rows[0].map(s=>String(s).trim());
+  const ix={};COLS.forEach(c=>{ix[c]=head.indexOf(c);});
+  const missing=COLS.filter(c=>ix[c]===-1&&OPTIONAL_COLS.indexOf(c)===-1);
+  if(missing.length)throw new Error(CSV_NAME+" is missing column(s): "+missing.join(", "));
+  const at=(r,c)=>ix[c]>-1?String(r[ix[c]]||"").trim():"";
+  return rows.slice(1).filter(r=>String(r[ix.id]||"").trim()).map(r=>({
+    id:String(r[ix.id]).trim(),
+    e:String(r[ix.epic]||"").trim(),
+    p:String(r[ix.priority]||"P1").trim(),
+    o:String(r[ix.owner]||"BE").trim(),
+    t:String(r[ix.name]||""),
+    s:String(r[ix.story]||""),
+    ac:splitOrdered(r[ix.acceptance_criteria]),
+    r:splitList(r[ix.related_issues]),
+    /* An absent column means an older CSV — seed it. An empty cell in a column
+       that exists means someone cleared it, and is left alone. */
+    sub:ix.subtasks>-1?splitOrdered(r[ix.subtasks]):(SUBTASKS[String(r[ix.id]).trim()]||[]).slice(),
+    f:splitNums(r[ix.defects]),
+    st:String(r[ix.status]||"").trim(),
+    al:String(r[ix.allocated_to]||"").trim(),
+    tk:ix.scrum>-1?parseTickets(r[ix.scrum]):defaultTickets(String(r[ix.id]).trim()),
+    src:(ix.source>-1?String(r[ix.source]||"").trim():"")||"shipped"
+  }));
+}
+function storiesToRows(list){
+  return [COLS].concat(list.map(x=>[
+    x.id,x.e,x.p,x.o,x.t,x.s,
+    numbered(x.ac),x.r.join("\n"),numbered(x.sub),x.f.join(","),
+    x.st||"",x.al||"",(x.tk||[]).join(", "),x.src||"shipped"
+  ]));
+}
+const seedStories=()=>SEED.map(x=>Object.assign({},x,{ac:x.ac.slice(),r:x.r.slice(),f:x.f.slice(),
+  sub:(SUBTASKS[x.id]||[]).slice(),st:"",al:"",tk:defaultTickets(x.id),src:"shipped"}));
+
+/* ---------- state ---------- */
+let ALL=[],handle=null,connected=false,dirty=false;
+const cur=id=>ALL.find(x=>x.id===id);
+/* SEED predates the subtasks column, so the default breakdown is attached here
+   and a story counts as edited when its subtasks differ from it. */
+const seedOf=id=>{const b=SEED.find(x=>x.id===id);
+  return b?Object.assign({},b,{sub:(SUBTASKS[id]||[]).slice()}):undefined;};
+const isCustom=id=>{const x=cur(id);return !!x&&x.src==="added";};
+const sameText=(a,b)=>a.t===b.t&&a.s===b.s&&
+  JSON.stringify(a.ac)===JSON.stringify(b.ac)&&
+  JSON.stringify(a.r)===JSON.stringify(b.r)&&
+  JSON.stringify(a.sub||[])===JSON.stringify(b.sub||[]);
+const isEdited=id=>{const x=cur(id),b=seedOf(id);return !!x&&!!b&&x.src!=="added"&&!sameText(x,b);};
+const isRetargeted=id=>{const x=cur(id);
+  return !!x&&x.src!=="added"&&(x.tk||[]).join()!==defaultTickets(id).join();};
+function nextId(epic){
+  let n=0;
+  ALL.forEach(x=>{if(x.e===epic){const m=/^[A-Z](\d+)$/.exec(x.id);if(m)n=Math.max(n,+m[1]);}});
+  return epic+(n+1);
+}
+function toast(msg){
+  const el=document.createElement("div");el.className="toast";el.textContent=msg;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+}
+function banner(msg,kind){
+  const b=$("#banner");
+  if(!msg){b.hidden=true;return;}
+  b.className="banner"+(kind?" "+kind:"");b.innerHTML=msg;b.hidden=false;
+}
+
+/* ---------- reading and writing the CSV ---------- */
+const canPick=()=>typeof window.showOpenFilePicker==="function";
+
+async function loadFromHandle(h){
+  const file=await h.getFile();
+  const list=rowsToStories(parseCSV(await file.text()));
+  if(!list.length)throw new Error(CSV_NAME+" has no story rows.");
+  handle=h;connected=true;dirty=false;
+  ALL=list;afterLoad();
+  banner("");
+  toast("Loaded "+list.length+" stories from "+CSV_NAME);
+}
+async function connectCSV(){
+  if(!canPick()){
+    banner("<b>This browser can't write files.</b> Chrome or Edge can save straight back to "+
+           "<span class='mono'>"+CSV_NAME+"</span>. Here, use <b>Save CSV</b> to download a replacement copy.","warn");
+    return;
+  }
+  try{
+    const [h]=await window.showOpenFilePicker({
+      types:[{description:"CSV",accept:{"text/csv":[".csv"]}}],multiple:false
+    });
+    await loadFromHandle(h);
+  }catch(err){
+    if(err&&err.name==="AbortError")return;
+    banner("<b>Couldn't open that file.</b> "+esc(err.message||String(err)),"bad");
+  }
+  refreshCsvUi();
+}
+async function writeCSV(){
+  const text=toCSV(storiesToRows(ALL));
+  if(connected&&handle){
+    try{
+      let p=await handle.queryPermission({mode:"readwrite"});
+      if(p!=="granted")p=await handle.requestPermission({mode:"readwrite"});
+      if(p!=="granted"){connected=false;refreshCsvUi();return false;}
+      const w=await handle.createWritable();
+      await w.write(new Blob(["﻿"+text],{type:"text/csv"}));
+      await w.close();
+      dirty=false;refreshCsvUi();
+      return true;
+    }catch(err){
+      banner("<b>Couldn't write "+CSV_NAME+".</b> "+esc(err.message||String(err)),"bad");
+      return false;
+    }
+  }
+  dirty=true;refreshCsvUi();
+  return false;
+}
+function downloadCSV(){
+  const text="﻿"+toCSV(storiesToRows(ALL));
+  const url=URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;a.download=CSV_NAME;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  dirty=false;refreshCsvUi();
+  toast(CSV_NAME+" downloaded — replace the file in this folder");
+}
+async function persist(){
+  if(connected)  { const okw=await writeCSV(); if(okw)toast("Saved to "+CSV_NAME); return; }
+  dirty=true;refreshCsvUi();
+}
+function refreshCsvUi(){
+  const b=$("#csvBtn");
+  b.textContent=connected?(dirty?"Save CSV":"CSV connected"):"Connect CSV";
+  b.classList.toggle("ok",connected&&!dirty);
+  b.title=connected
+    ?(dirty?"Write pending changes to "+CSV_NAME:"Edits are written straight to "+CSV_NAME)
+    :"Open "+CSV_NAME+" so edits can be written back to it";
+  $("#csvDirty").hidden=!dirty;
+}
+
+/* ---------- boot ---------- */
+function afterLoad(){renderEpics();refreshStatus();apply();}
+async function boot(){
+  renderChips();
+  $("#gapGrid").innerHTML=GAPS.map(([k,v])=>
+    `<div class="gap-cell"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join("");
+  renderDefects();
+  try{
+    const res=await fetch(CSV_NAME,{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    ALL=rowsToStories(parseCSV(await res.text()));
+    if(!ALL.length)throw new Error("no rows");
+    afterLoad();
+    banner("Showing <span class='mono'>"+CSV_NAME+"</span> read-only. Click <b>Connect CSV</b> and pick that file to save changes back into it.","");
+  }catch(err){
+    ALL=seedStories();
+    afterLoad();
+    banner("<b>Not connected to <span class='mono'>"+CSV_NAME+"</span>.</b> Showing the 59 stories built into this page. "+
+           "Click <b>Connect CSV</b> and pick <span class='mono'>"+CSV_NAME+"</span> from this folder to read and write it.","warn");
+  }
+  refreshCsvUi();
+}
+
+/* ---------- chrome ---------- */
+function renderDefects(){
+  $("#dmap").innerHTML=DEFECTS.map(([n,t,sev,story])=>`
+    <button class="d" data-story="${story}" title="Opens ${story}">
+      <span class="num">${n}</span>
+      <span class="dt">${esc(t)}</span>
+      <span class="sev ${sev}">${sev}</span>
+    </button>`).join("");
+}
+const storiesFor=k=>ALL.filter(x=>(x.tk||[]).indexOf(k)>-1);
+
+function rowHTML(id){
+  const x=cur(id);if(!x)return"";
+  const first=(x.al||"").split(/[,\n]/)[0].trim();
+  return `<button class="row${x.st==="dropped"?" dropped":""}" data-id="${x.id}">
+      <span title="${esc(stLabel(x.st))}">${ICON[x.st]||ICON[""]}</span>
+      <span class="sid">${x.id}</span>
+      <span class="title">${esc(x.t)}${isCustom(id)?'<em class="badge-new">new</em>':""}${isEdited(id)?'<em class="badge-edit">edited</em>':""}${first?`<em class="alloc-chip">${esc(first)}${/[,\n]/.test(x.al)?" +":""}</em>`:""}</span>
+      <span class="pri ${x.p}">${x.p}</span>
+      <span class="own" title="${(x.tk||[]).length?escAttr((x.tk||[]).join(", ")+" · workstream "+x.o):escAttr("No ticket yet · workstream "+x.o)}">${(x.tk||[]).length?esc((x.tk[0]||"").replace("SCRUM-","#"))+((x.tk||[]).length>1?"+":"")+"&#183;":""}${esc(x.o)}</span>
+      <span class="fx">${x.f.map(n=>`<b>#${n}</b>`).join("")}</span>
+    </button>`;
+}
+function refreshRow(id){
+  const el=document.querySelector('.row[data-id="'+id+'"]');
+  if(el)el.outerHTML=rowHTML(id);
+}
+function renderEpics(){
+  $("#epics").innerHTML=EPICS.map(([id,name,note,callout])=>{
+    const rows=ALL.filter(x=>x.e===id).map(x=>rowHTML(x.id)).join("");
+    return `<section class="epic" id="epic-${id}">
+      <div class="epic-head"><span class="epic-id">${id}</span><h2>${esc(name)}</h2></div>
+      ${note?`<p class="epic-note">${esc(note)}</p>`:""}
+      <div class="rows">${rows}<div class="empty" hidden>No stories match these filters.</div>
+        <button class="addrow" data-add="${id}">+ Add a story to ${id} — ${esc(name)}</button></div>
+      ${callout?`<div class="callout">${callout}</div>`:""}
+    </section>`;
+  }).join("");
+}
+function refreshStatus(){
+  const tally=v=>ALL.filter(x=>(x.st||"")===v).length;
+  const done=tally("done"),work=tally("working"),drop=tally("dropped");
+  const nEdit=ALL.filter(x=>isEdited(x.id)).length;
+  const nAdd=ALL.filter(x=>x.src==="added").length;
+  const nAlloc=ALL.filter(x=>x.al).length;
+  const nNoTicket=ALL.filter(x=>!(x.tk||[]).length).length;
+  $("#cStories").textContent=ALL.length;
+  $("#fCount").textContent="CS-57 · "+ALL.length+" stories";
+  $("#editStat").hidden=!(done||work||drop||nEdit||nAdd||nAlloc||nNoTicket);
+  $("#statSum").innerHTML=(done||work||drop)
+    ?`<span title="Completed">${ICON.done}${done}</span><span title="Working">${ICON.working}${work}</span><span title="Discarded">${ICON.dropped}${drop}</span>`:"";
+  const bits=[];
+  if(nNoTicket)bits.push(nNoTicket+" without a ticket");
+  if(nAdd)bits.push(nAdd+" new");
+  if(nEdit)bits.push(nEdit+" edited");
+  if(nAlloc)bits.push(nAlloc+" allocated");
+  $("#editCount").textContent=bits.join(" · ");
+  $("#resetBtn").disabled=!(nEdit||ALL.some(x=>x.src!=="added"&&(x.st||x.al||isRetargeted(x.id))));
+}
+
+/* ---------- filters ---------- */
+let fPri="",fOwn="",fQ="",fSt="~",fTk="";
+function mkChips(host,items,sel,onPick){
+  items.forEach(v=>{
+    const b=document.createElement("button");
+    b.className="chip";b.textContent=v.label;b.setAttribute("aria-pressed",String(v.val===sel));
+    b.addEventListener("click",()=>onPick(v.val));
+    host.appendChild(b);
+  });
+}
+function renderChips(){
+  const pf=$("#priFilters"),of=$("#ownFilters"),sf=$("#stFilters"),lf=$("#tkFilters");
+  [pf,of,sf,lf].forEach(h=>h.querySelectorAll(".chip").forEach(c=>c.remove()));
+  mkChips(sf,[{label:"All",val:"~"}].concat(STATUSES.map(([v,l])=>({label:l,val:v}))),fSt,v=>{fSt=v;renderChips();apply();});
+  mkChips(pf,[{label:"All",val:""},{label:"P0",val:"P0"},{label:"P1",val:"P1"},{label:"P2",val:"P2"}],fPri,v=>{fPri=v;renderChips();apply();});
+  mkChips(of,[{label:"All",val:""}].concat(OWNERS.map(o=>({label:o,val:o}))),fOwn,v=>{fOwn=v;renderChips();apply();});
+  mkChips(lf,[{label:"All",val:""},{label:"On the board",val:"~has"},
+               {label:"No ticket",val:"~none"},{label:"Oversized",val:"~big"}],
+    fTk,v=>{fTk=v;renderChips();apply();});
+}
+function apply(){
+  const q=fQ.trim().toLowerCase();
+  document.querySelectorAll(".epic").forEach(sec=>{
+    let shown=0;
+    sec.querySelectorAll(".row").forEach(r=>{
+      const x=cur(r.dataset.id);if(!x)return;
+      const hay=[x.id,x.t,x.s,x.o,x.al,(x.tk||[]).join(" "),(x.tk||[]).map(ticketTitle).join(" "),
+                 x.ac.join(" "),x.r.join(" "),(x.sub||[]).join(" "),
+                 x.f.map(n=>"#"+n).join(" ")].join(" ").toLowerCase();
+      const tk=x.tk||[];
+      const tkOk=!fTk||(fTk==="~none"?!tk.length
+        :fTk==="~has"?tk.length>0
+        :tk.some(k=>{const d=ticketDef(k);return d&&d[2].length>TICKET_MAX_STORIES;}));
+      const ok=(!fPri||x.p===fPri)&&(!fOwn||x.o.includes(fOwn))&&tkOk&&(fSt==="~"||(x.st||"")===fSt)&&(!q||hay.includes(q));
+      r.hidden=!ok;if(ok)shown++;
+    });
+    sec.querySelector(".empty").hidden=shown>0;
+    sec.hidden=shown===0&&(!!q||!!fPri||!!fOwn||!!fTk||fSt!=="~");
+  });
+}
+$("#q").addEventListener("input",e=>{fQ=e.target.value;apply();});
+
+/* ---------- detail panel ---------- */
+const dlg=$("#sheet");
+let curId=null,curIdx=-1,draftSt="",creating=false,draftOwn=[];
+const lines=v=>v.split("\n").map(l=>l.replace(/^\s*[-•*]\s+/,"").trim()).filter(Boolean);
+/* Ordered fields: drop whatever ordinals the author left in, so the list is
+   renumbered from position when it is written back. */
+const ordLines=v=>v.split("\n").map(stripOrdinal).filter(Boolean);
+const autosize=el=>{el.style.height="auto";el.style.height=(el.scrollHeight+2)+"px";};
+
+function open(id){
+  const i=ALL.findIndex(x=>x.id===id);if(i<0)return;
+  creating=false;curIdx=i;curId=id;
+  const x=cur(id),epic=EPICS.find(e=>e[0]===x.e);
+  dlg.innerHTML=`
+    <div class="sheet">
+      <div class="sheet-head">
+        <span class="hid">${x.id}</span>
+        <input class="f-title" id="fTitle" value="${escAttr(x.t)}" aria-label="Story name" spellcheck="false">
+        <button class="x" data-close aria-label="Close">&times;</button>
+      </div>
+      <div class="sheet-meta">
+        <span class="meta">EPIC <b>${x.e} · ${esc(epic?epic[1]:"")}</b></span>
+        <span class="meta">PRIORITY <b>${x.p}</b></span>
+        <span class="meta">OWNER <b>${esc(x.o)}</b></span>
+        <span class="meta">TICKET <b>${(x.tk||[]).length?esc(x.tk.join(", ")):"none yet"}</b></span>
+        ${x.f.length?`<span class="meta">CLOSES <b>${x.f.map(n=>"#"+n).join(", ")}</b></span>`:""}
+        ${isCustom(id)?`<span class="meta" style="color:var(--st-done)"><b>ADDED BY THE TEAM</b></span>`:isEdited(id)?`<span class="meta" style="color:var(--accent)"><b>REWORDED</b></span>`:""}
+      </div>
+      <div class="sheet-body">
+        <div class="statusrow" role="group" aria-label="Story status">
+          ${STATUSES.map(([v,label])=>`
+            <button class="stbtn" data-st="${v}" aria-pressed="${String((x.st||"")===v)}">${ICON[v]}<span>${label}</span></button>`).join("")}
+        </div>
+        <div class="field">
+          <label for="fStory">Story</label>
+          <textarea class="f" id="fStory" rows="3">${esc(x.s)}</textarea>
+        </div>
+        <div class="field">
+          <label for="fAc">Acceptance criteria <span class="hint">one per line · numbered on save</span></label>
+          <textarea class="f ord" id="fAc">${esc(numbered(x.ac))}</textarea>
+        </div>
+        <div class="field subs">
+          <label for="fSub">Subtasks <span class="hint">one per line · numbered on save · the work this story breaks into</span></label>
+          <textarea class="f sub ord" id="fSub" placeholder="What actually gets done, one line each.">${esc(numbered(x.sub))}</textarea>
+        </div>
+        <div class="field">
+          <label for="fRel">Related issues <span class="hint">one per line · **bold**</span></label>
+          <textarea class="f" id="fRel">${esc(x.r.join("\n"))}</textarea>
+        </div>
+        <div class="field alloc">
+          <label for="fTk">SCRUM ticket <span class="hint">key, or several separated by commas</span></label>
+          <textarea class="f" id="fTk" rows="1" placeholder="SCRUM-27 — leave blank if nothing covers this story yet">${esc((x.tk||[]).join(", "))}</textarea>
+          <label for="fAlloc">Allocated to: <span class="hint">who is responsible</span></label>
+          <textarea class="f" id="fAlloc" rows="1" placeholder="Name, or several separated by commas">${esc(x.al||"")}</textarea>
+        </div>
+      </div>
+      <div class="savebar" id="savebar" hidden>
+        <span class="sb-msg" id="sbMsg">Unsaved changes</span>
+        <button class="btn" data-discard>Discard</button>
+        <button class="btn primary" data-save>Save</button>
+      </div>
+      <div class="nav">
+        ${isCustom(id)
+          ?'<button data-delete title="Remove this story — it was added here, not part of the original 59">Delete story</button>'
+          :(isEdited(id)||x.st||x.al||isRetargeted(id))?'<button data-revert title="Restore this story to the version in the original backlog">Reset story</button>':""}
+        <button data-nav="-1"${i===0?" disabled":""}>&larr; Previous</button>
+        <button data-nav="1"${i===ALL.length-1?" disabled":""}>Next &rarr;</button>
+      </div>
+    </div>`;
+  if(!dlg.open)dlg.showModal();
+  draftSt=x.st||"";
+  dlg.querySelectorAll("textarea.f").forEach(t=>{autosize(t);t.addEventListener("input",()=>{autosize(t);checkDirty();});});
+  $("#fTitle").addEventListener("input",checkDirty);
+  dlg.querySelectorAll(".stbtn").forEach(b=>b.addEventListener("click",()=>setStatus(b.dataset.st)));
+  dlg.querySelector(".sheet-body").scrollTop=0;
+}
+const readForm=()=>({
+  t:$("#fTitle").value.trim(),s:$("#fStory").value.trim(),
+  ac:ordLines($("#fAc").value),r:lines($("#fRel").value),sub:ordLines($("#fSub").value),
+  st:draftSt,al:$("#fAlloc").value.trim(),tk:parseTickets($("#fTk").value)
+});
+const sameAll=(a,b)=>sameText(a,b)&&(a.st||"")===(b.st||"")&&(a.al||"")===(b.al||"")&&(a.tk||[]).join()===(b.tk||[]).join();
+const isDirty=()=>!creating&&dlg.open&&!!$("#fTitle")&&!!curId&&!sameAll(readForm(),cur(curId));
+function checkDirty(){if(creating)return;const b=$("#savebar");if(b)b.hidden=!isDirty();}
+function setStatus(v){
+  draftSt=v;
+  dlg.querySelectorAll(".stbtn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.st===v)));
+  checkDirty();
+}
+async function save(){
+  const f=readForm();
+  if(!f.t){toast("A story needs a name");$("#fTitle").focus();return;}
+  const x=cur(curId);
+  x.t=f.t;x.s=f.s;x.ac=f.ac;x.r=f.r;x.sub=f.sub;x.st=f.st;x.al=f.al;x.tk=f.tk;
+  refreshRow(curId);refreshStatus();apply();
+  await persist();
+  if(!connected)toast("Saved in the page — not yet written to "+CSV_NAME);
+  open(curId);
+}
+function creatingHasContent(){
+  return creating&&$("#fTitle")&&($("#fTitle").value.trim()||$("#fStory").value.trim()||$("#fAc").value.trim());
+}
+function confirmDiscard(){
+  if(creating)return !creatingHasContent()||confirm("Discard this new story?");
+  return !isDirty()||confirm("You have unsaved changes to this story. Discard them?");
+}
+
+/* ---------- new story ---------- */
+function openNew(epic){
+  creating=true;curId=null;draftSt="";draftOwn=["BE"];
+  const e=epic||"B";
+  dlg.innerHTML=`
+    <div class="sheet">
+      <div class="sheet-head">
+        <span class="hid" id="newId">${nextId(e)}</span>
+        <input class="f-title" id="fTitle" value="" placeholder="Short name — what the person gets" aria-label="Story name" spellcheck="false">
+        <button class="x" data-close aria-label="Close">&times;</button>
+      </div>
+      <div class="sheet-meta newmeta">
+        <label class="meta">EPIC
+          <select class="fsel" id="nEpic">
+            ${EPICS.map(([id,name])=>`<option value="${id}"${id===e?" selected":""}>${id} · ${esc(name)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="meta">PRIORITY
+          <select class="fsel" id="nPri">
+            <option value="P0">P0</option><option value="P1" selected>P1</option><option value="P2">P2</option>
+          </select>
+        </label>
+        <span class="meta">WORKSTREAM
+          <span class="mchips" id="nOwn">
+            ${OWNERS.map(o=>`<button class="mchip" data-own="${o}" aria-pressed="${String(o==="BE")}">${o}</button>`).join("")}
+          </span>
+        </span>
+      </div>
+      <div class="sheet-body">
+        <div class="statusrow" role="group" aria-label="Story status">
+          ${STATUSES.map(([v,label])=>`
+            <button class="stbtn" data-st="${v}" aria-pressed="${String(v==="")}">${ICON[v]}<span>${label}</span></button>`).join("")}
+        </div>
+        <div class="field">
+          <label for="fStory">Story</label>
+          <textarea class="f" id="fStory" rows="3" placeholder="As a …, I want …, because …"></textarea>
+        </div>
+        <div class="field">
+          <label for="fAc">Acceptance criteria <span class="hint">one per line</span></label>
+          <textarea class="f" id="fAc" placeholder="What this person can observe when it's done."></textarea>
+        </div>
+        <div class="field subs">
+          <label for="fSub">Subtasks <span class="hint">one per line · the work this story breaks into</span></label>
+          <textarea class="f sub" id="fSub" placeholder="What actually gets done, one line each."></textarea>
+        </div>
+        <div class="field">
+          <label for="fRel">Related issues <span class="hint">one per line · **bold**</span></label>
+          <textarea class="f" id="fRel" placeholder="Which of the 29 defects this closes, and why — or leave blank for net-new work."></textarea>
+        </div>
+        <div class="field alloc">
+          <label for="fTk">SCRUM ticket <span class="hint">key, or several separated by commas</span></label>
+          <textarea class="f" id="fTk" rows="1" placeholder="SCRUM-27 — leave blank if nothing covers this story yet"></textarea>
+          <label for="fAlloc">Allocated to: <span class="hint">who is responsible</span></label>
+          <textarea class="f" id="fAlloc" rows="1" placeholder="Name, or several separated by commas"></textarea>
+        </div>
+        <p class="hint-local">Saved into <span class="mono">${CSV_NAME}</span> as a new row marked <span class="mono">added</span>.</p>
+      </div>
+      <div class="savebar">
+        <span class="sb-msg" id="sbMsg">New story</span>
+        <button class="btn" data-close>Cancel</button>
+        <button class="btn primary" data-create>Create story</button>
+      </div>
+    </div>`;
+  if(!dlg.open)dlg.showModal();
+  dlg.querySelectorAll("textarea.f").forEach(t=>{autosize(t);t.addEventListener("input",()=>autosize(t));});
+  dlg.querySelectorAll(".stbtn").forEach(b=>b.addEventListener("click",()=>setStatus(b.dataset.st)));
+  dlg.querySelectorAll(".mchip").forEach(b=>b.addEventListener("click",()=>{
+    const o=b.dataset.own,i=draftOwn.indexOf(o);
+    if(i<0)draftOwn.push(o);else if(draftOwn.length>1)draftOwn.splice(i,1);
+    dlg.querySelectorAll(".mchip").forEach(c=>c.setAttribute("aria-pressed",String(draftOwn.indexOf(c.dataset.own)>-1)));
+  }));
+  $("#nEpic").addEventListener("change",()=>{$("#newId").textContent=nextId($("#nEpic").value);});
+  $("#fTitle").focus();
+}
+async function createStory(){
+  const name=$("#fTitle").value.trim();
+  if(!name){toast("Give the story a name");$("#fTitle").focus();return;}
+  const e=$("#nEpic").value;
+  const rec={
+    id:nextId(e),e:e,p:$("#nPri").value,
+    o:OWNERS.filter(o=>draftOwn.indexOf(o)>-1).join("/")||"BE",
+    t:name,s:$("#fStory").value.trim(),
+    ac:ordLines($("#fAc").value),r:lines($("#fRel").value),sub:ordLines($("#fSub").value),
+    f:[],st:draftSt,al:$("#fAlloc").value.trim(),tk:parseTickets($("#fTk").value),src:"added"
+  };
+  if(!rec.ac.length)rec.ac=["(to be written)"];
+  if(!rec.r.length)rec.r=["Added by the team — not in the original 29-defect audit."];
+  ALL.push(rec);
+  creating=false;
+  renderEpics();refreshStatus();apply();
+  await persist();
+  toast(connected?"Story "+rec.id+" written to "+CSV_NAME:"Story "+rec.id+" created — not yet written to "+CSV_NAME);
+  open(rec.id);
+}
+
+/* ---------- interactions ---------- */
+document.addEventListener("click",async e=>{
+  const addEpic=e.target.closest("[data-add]");
+  if(addEpic){if(confirmDiscard())openNew(addEpic.dataset.add);return;}
+  const row=e.target.closest(".row");if(row){if(confirmDiscard())open(row.dataset.id);return;}
+  const d=e.target.closest(".d");if(d){if(confirmDiscard())open(d.dataset.story);return;}
+  if(e.target.closest("[data-create]")){await createStory();return;}
+  if(e.target.closest("[data-delete]")){
+    if(!curId||!isCustom(curId)){toast("Only stories added here can be deleted");return;}
+    const x=cur(curId);
+    if(!confirm("Delete "+curId+" — “"+x.t+"”?\n\nThis story was added here, so deleting it removes it from "+CSV_NAME+" completely. This cannot be undone."))return;
+    ALL=ALL.filter(y=>y.id!==curId);
+    creating=false;dlg.close();
+    renderEpics();refreshStatus();apply();
+    await persist();
+    toast("Deleted "+curId);return;
+  }
+  if(e.target.closest("[data-save]")){await save();return;}
+  if(e.target.closest("[data-discard]")){open(curId);return;}
+  if(e.target.closest("[data-revert]")){
+    const b=seedOf(curId);if(!b)return;
+    if(!confirm("Restore "+curId+" to the original wording and subtasks, and clear its status and allocation?"))return;
+    const x=cur(curId);
+    x.t=b.t;x.s=b.s;x.ac=b.ac.slice();x.r=b.r.slice();x.sub=b.sub.slice();x.st="";x.al="";x.tk=defaultTickets(curId);
+    refreshRow(curId);refreshStatus();apply();
+    await persist();
+    open(curId);toast("Story reset");return;
+  }
+  if(e.target.closest("[data-close]")){if(confirmDiscard()){creating=false;dlg.close();}return;}
+  const nav=e.target.closest("[data-nav]");
+  if(nav){const n=curIdx+Number(nav.dataset.nav);if(ALL[n]&&confirmDiscard())open(ALL[n].id);}
+});
+dlg.addEventListener("click",e=>{if(e.target===dlg&&confirmDiscard())dlg.close();});
+dlg.addEventListener("cancel",e=>{if(!confirmDiscard())e.preventDefault();});
+document.addEventListener("keydown",e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="s"&&dlg.open){e.preventDefault();if(isDirty())save();}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="n"&&!dlg.open){e.preventDefault();openNew(null);}
+});
+window.addEventListener("beforeunload",e=>{
+  if(isDirty()||dirty){e.preventDefault();e.returnValue="";}
+});
+
+$("#addBtn").addEventListener("click",()=>{if(confirmDiscard())openNew(null);});
+$("#csvBtn").addEventListener("click",async()=>{
+  if(connected&&dirty){await writeCSV();toast("Saved to "+CSV_NAME);return;}
+  if(connected){toast("Already connected — edits write straight to "+CSV_NAME);return;}
+  if(!canPick()){downloadCSV();return;}
+  await connectCSV();
+});
+$("#resetBtn").addEventListener("click",async()=>{
+  const touched=ALL.filter(x=>x.src!=="added"&&(isEdited(x.id)||x.st||x.al||isRetargeted(x.id)));
+  if(!touched.length){toast("Nothing to reset");return;}
+  const added=ALL.filter(x=>x.src==="added").length;
+  const kept=added?"\n\nThe "+added+" story "+(added===1?"you added":"stories you added")+" here will be kept.":"";
+  if(!confirm("Clear every status, allocation and wording change on the "+SEED.length+" original stories, and restore their default subtasks and ticket links?"+kept))return;
+  ALL=ALL.map(x=>{
+    if(x.src==="added")return x;
+    const b=seedOf(x.id);
+    return b?Object.assign({},x,{t:b.t,s:b.s,ac:b.ac.slice(),r:b.r.slice(),sub:b.sub.slice(),st:"",al:"",tk:defaultTickets(x.id)}):x;
+  });
+  renderEpics();refreshStatus();apply();
+  await persist();
+  if(dlg.open&&curId&&!creating)open(curId);
+  toast("Original stories reset");
+});
+
+/* ---------- export ---------- */
+const MARK={"":"—",working:"○ Working",done:"✓ Completed",dropped:"✕ Discarded"};
+const today=()=>new Date().toISOString().slice(0,10);
+function download(name,text,mime){
+  const url=URL.createObjectURL(new Blob([text],{type:(mime||"text/markdown")+";charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function storyBlock(id,heading){
+  const x=cur(id);
+  const meta=["**"+x.p+"**","Owner: **"+x.o+"**"];
+  if((x.tk||[]).length)meta.push("Ticket: **"+x.tk.join(", ")+"**");
+  if(x.st)meta.push("Status: "+MARK[x.st]);
+  if(x.al)meta.push("Allocated to: "+x.al);
+  return [heading+" "+id+" — "+x.t,"",meta.join(" · "),"",
+    x.s||"_(story not written yet)_","",
+    "**Acceptance criteria**",...x.ac.map((a,i)=>(i+1)+". "+a),""]
+    .concat((x.sub||[]).length?["**Subtasks**",...x.sub.map((a,i)=>(i+1)+". [ ] "+a),""]:[])
+    .concat(["**Related issues**",...x.r.map(a=>"- "+a),""]);
+}
+function ticketRoster(){
+  const rows=TICKETS.map(([k,title,ids])=>{
+    const list=storiesFor(k);
+    return "| **"+k+"** | "+title+" | "+(list.map(x=>x.id).join(", ")||"—")+
+      (list.length>TICKET_MAX_STORIES?" _(split it)_":"")+" |";});
+  const spare=ALL.filter(x=>!(x.tk||[]).length).map(x=>x.id);
+  return ["## Board coverage","","| Ticket | Name | Stories |","| --- | --- | --- |",...rows,""]
+    .concat(spare.length?["Stories with no ticket yet: "+spare.join(", ")+
+      " — descriptions are in docs/task.md, section 3.",""]:[]);
+}
+function buildChangeLog(){
+  const tracked=ALL.filter(x=>x.src==="added"||isEdited(x.id)||x.st||x.al||isRetargeted(x.id));
+  if(!tracked.length){
+    return ["# Backlog change log","","Exported "+today()+" from user-stories.html · source: "+CSV_NAME,"",
+      "No changes recorded yet — no statuses set, nothing allocated, no stories added or reworded.",""].join("\n");
+  }
+  const board=tracked.map(x=>"| "+x.id+" | "+((x.tk||[]).join(", ")||"—")+" | "+MARK[x.st||""]+" | "+(x.al||"—")+" | "+x.p+" | "+x.t+(x.src==="added"?" _(new)_":"")+" |");
+  const newOnes=ALL.filter(x=>x.src==="added");
+  const reworded=ALL.filter(x=>isEdited(x.id)).flatMap(x=>{
+    const b=seedOf(x.id),ch=[];
+    if(x.t!==b.t)ch.push("name");
+    if(x.s!==b.s)ch.push("story");
+    if(JSON.stringify(x.ac)!==JSON.stringify(b.ac))ch.push("acceptance criteria");
+    if(JSON.stringify(x.sub||[])!==JSON.stringify(b.sub||[]))ch.push("subtasks");
+    if((x.tk||[]).join()!==defaultTickets(x.id).join())ch.push("ticket");
+    if(JSON.stringify(x.r)!==JSON.stringify(b.r))ch.push("related issues");
+    return ["### "+x.id+" — "+x.t,"","**Changed:** "+ch.join(", "),""]
+      .concat(storyBlock(x.id,"####").slice(2)).concat(["---",""]);
+  });
+  return ["# Backlog change log","",
+    "Exported "+today()+" from user-stories.html · source: "+CSV_NAME,""]
+    .concat(ticketRoster())
+    .concat(board.length?["## Status and allocation","",
+      "| Story | Ticket | Status | Allocated to | Pri | Name |","| --- | --- | --- | --- | --- | --- |",...board,""]:[])
+    .concat(newOnes.length?["## Stories added by the team","",
+      "Rows marked `added` in "+CSV_NAME+".",""]
+      .concat(newOnes.flatMap(x=>storyBlock(x.id,"###").concat(["---",""]))):[])
+    .concat(reworded.length?["## Reworded stories",""].concat(reworded):[])
+    .join("\n");
+}
+function buildFullDoc(){
+  const tally=v=>ALL.filter(x=>(x.st||"")===v).length;
+  const nAdd=ALL.filter(x=>x.src==="added").length;
+  const head=["# Hej Delivery Backlog","","**CS-57 · Client: Hunter Xu (Arc Intelligence)**","",
+    "Current state exported "+today()+" from "+CSV_NAME+". "+ALL.length+" stories"+
+    (nAdd?" ("+(ALL.length-nAdd)+" original, "+nAdd+" added by the team)":"")+
+    ", covering all 29 defects in `plans/issues.md`.","",
+    "| Completed | Working | Discarded | Not started |","| --- | --- | --- | --- |",
+    "| "+tally("done")+" | "+tally("working")+" | "+tally("dropped")+" | "+tally("")+" |","",
+    "## Where the platform stands today","","| Pillar | Gap |","| --- | --- |",
+    ...GAPS.map(([k,v])=>"| **"+k+"** | "+v+" |"),"",
+    "## Epics","","| Epic | Stories | Completed |","| --- | --- | --- |",
+    ...EPICS.map(([id,name])=>{
+      const inEpic=ALL.filter(x=>x.e===id);
+      return "| "+id+" — "+name+" | "+inEpic.length+" | "+inEpic.filter(x=>x.st==="done").length+" |";
+    }),""]
+    .concat(ticketRoster())
+    .concat(["---",""]);
+  const body=EPICS.flatMap(([id,name,note,callout])=>{
+    const inEpic=ALL.filter(x=>x.e===id);
+    if(!inEpic.length)return [];
+    return ["## Epic "+id+" — "+name,""]
+      .concat(note?["*"+note+"*",""]:[])
+      .concat(inEpic.flatMap(x=>storyBlock(x.id,"###")
+        .concat(x.src==="added"?["_Added by the team — not in the original backlog._",""]:[])))
+      .concat(callout?["> "+callout.replace(/<\/?b>/g,"**"),""]:[]);
+  });
+  const tail=["---","","## Defect coverage","",
+    "Every defect in `plans/issues.md`, attached to the story that closes it.","",
+    "| # | Issue | Severity | Closed by |","| --- | --- | --- | --- |",
+    ...DEFECTS.map(([n,t,sev,story])=>"| "+n+" | "+t+" | "+sev+" | **"+story+"** |"),"",
+    "## Where to start","",
+    "1. **A1–A5** — process, build, environment, credentials, vocabulary. Everything downstream depends on these.",
+    "2. **D3, D4, D5** — protect authoritative data.",
+    "3. **D1, D6, D8** — restore multi-user governance, get work to the right people.",
+    "4. **D2, G3, G4** — close the legacy review path and the cross-project bypass.",
+    "5. Then B → C → E/F → G → H → I in parallel by workstream, with **K2 running from day one**.","",
+    "## Client decisions needed first","",
+    "- **B4** — what the intended task lifecycle path is, and who may trigger each step.",
+    "- **D4** — one canonical annotation per item, or per-annotator submissions kept side by side.","",
+    "Both block implementation and shouldn't be decided by us alone.","",
+    "## Definition of done","",
+    "- Demonstrable **in the running app**, not just the API.",
+    "- New workflow logic ships **with tests in the same change**.",
+    "- Any listed defect has a test that **fails against the old behaviour**.",
+    "- Docs for changed states or contracts updated in the same change.",
+    "- Reviewed by someone **other than the author**.","",
+    "## Out of scope","",
+    "Real model training or fine-tuning · Label Studio integration · every modality at once (**text first**) · "+
+    "a generic workflow engine or universal ontology · formal compliance claims · marketplace, trust, billing or payout · "+
+    "fixing all 29 defects as a separate cleanup phase — each one is attached to the story that closes it.",""];
+  return head.concat(body).concat(tail).join("\n");
+}
+const xdlg=$("#exportDlg");
+function openExport(){
+  const nEdit=ALL.filter(x=>isEdited(x.id)).length;
+  const nAdd=ALL.filter(x=>x.src==="added").length;
+  const nTrack=ALL.filter(x=>x.st||x.al).length;
+  const bits=[];
+  if(nTrack)bits.push(nTrack+" tracked");
+  if(nEdit)bits.push(nEdit+" reworded");
+  if(nAdd)bits.push(nAdd+" added");
+  xdlg.innerHTML=`
+    <div class="picker">
+      <div class="picker-head">
+        <div><h3>Export the backlog</h3><p>Downloads a file to your computer.</p></div>
+        <button class="x" data-xclose aria-label="Close">&times;</button>
+      </div>
+      <button class="pick" data-doc="change">
+        <span class="pt">Change log <span class="pf">change_log.md</span></span>
+        <span class="pd">Only what differs from the original backlog — statuses, allocations, reworded stories and any stories added here.</span>
+        <span class="pm">${bits.length?esc(bits.join(" · ")):"nothing recorded yet"}</span>
+      </button>
+      <button class="pick" data-doc="full">
+        <span class="pt">Full backlog <span class="pf">current_user_stories.md</span></span>
+        <span class="pd">Every story as it stands now, with acceptance criteria, related issues, status and allocation.</span>
+        <span class="pm">${ALL.length} stories${nAdd?" · "+(ALL.length-nAdd)+" original + "+nAdd+" added":""}</span>
+      </button>
+      <button class="pick" data-doc="csv">
+        <span class="pt">Source data <span class="pf">${CSV_NAME}</span></span>
+        <span class="pd">The spreadsheet behind this page, exactly as it stands. Use this to replace the file in this folder, or to hand the data to someone else.</span>
+        <span class="pm">${ALL.length} rows · ${COLS.length} columns</span>
+      </button>
+      <div class="picker-foot"><button class="btn" data-xclose>Cancel</button></div>
+    </div>`;
+  xdlg.showModal();
+}
+xdlg.addEventListener("click",e=>{
+  if(e.target===xdlg||e.target.closest("[data-xclose]")){xdlg.close();return;}
+  const p=e.target.closest("[data-doc]");if(!p)return;
+  const k=p.dataset.doc;
+  if(k==="change"){download("change_log.md",buildChangeLog());toast("change_log.md downloaded");}
+  else if(k==="full"){download("current_user_stories.md",buildFullDoc());toast("current_user_stories.md downloaded");}
+  else{downloadCSV();}
+  xdlg.close();
+});
+$("#exportBtn").addEventListener("click",openExport);
+
+boot();
+</script>
+</body>
+</html>

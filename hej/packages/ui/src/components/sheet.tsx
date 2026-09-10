@@ -36,8 +36,6 @@ function SheetOverlay({
       data-slot="sheet-overlay"
       className={cn(
         "fixed inset-0 z-40 bg-slate-950/18 backdrop-blur-[1px] dark:bg-black/40",
-        "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200 data-[state=open]:ease-out",
-        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150 data-[state=closed]:ease-out",
         className
       )}
       {...props}
@@ -61,16 +59,14 @@ function SheetContent({
         data-slot="sheet-content"
         className={cn(
           "fixed z-50 flex min-h-0 flex-col border border-slate-900/10 bg-white/96 shadow-[0_18px_50px_rgba(15,23,42,0.14)] outline-none dark:border-white/10 dark:bg-slate-900/96 dark:shadow-[0_20px_60px_rgba(2,6,23,0.5)]",
-          "data-[state=open]:animate-in data-[state=open]:duration-250 data-[state=open]:ease-out",
-          "data-[state=closed]:animate-out data-[state=closed]:duration-150 data-[state=closed]:ease-out",
           side === "right" &&
-            "top-4 right-4 bottom-4 w-[min(380px,calc(100vw-2rem))] rounded-[1.1rem] data-[state=open]:slide-in-from-right-8 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-8 data-[state=closed]:fade-out-0",
+            "top-4 right-4 bottom-4 w-[min(380px,calc(100vw-2rem))] rounded-[1.1rem]",
           side === "left" &&
-            "top-4 left-4 bottom-4 w-[min(380px,calc(100vw-2rem))] rounded-[1.1rem] data-[state=open]:slide-in-from-left-8 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-8 data-[state=closed]:fade-out-0",
+            "top-4 left-4 bottom-4 w-[min(380px,calc(100vw-2rem))] rounded-[1.1rem]",
           side === "top" &&
-            "top-4 right-4 left-4 rounded-[1.1rem] data-[state=open]:slide-in-from-top-8 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-top-8 data-[state=closed]:fade-out-0",
+            "top-4 right-4 left-4 rounded-[1.1rem]",
           side === "bottom" &&
-            "right-4 bottom-4 left-4 rounded-[1.1rem] data-[state=open]:slide-in-from-bottom-8 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-8 data-[state=closed]:fade-out-0",
+            "right-4 bottom-4 left-4 rounded-[1.1rem]",
           className
         )}
         {...props}

@@ -98,18 +98,16 @@ export function HistoryDrawer({
       <div className="pointer-events-none fixed top-24 right-2 z-30 hidden h-[calc(100vh-7rem)] 2xl:block">
         <div
           className={cn(
-            "pointer-events-auto relative h-full w-[300px] max-w-[calc(100vw-1rem)] transition-transform duration-200 ease-out",
+            "pointer-events-auto relative h-full w-[300px] max-w-[calc(100vw-1rem)] transition-transform",
             open ? "translate-x-0" : "translate-x-[calc(100%-42px)]",
           )}
         >
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
-            aria-label={open ? "Collapse history panel" : "Expand history panel"}
-            aria-expanded={open}
-            className="absolute top-4 -left-10 flex h-10 w-10 items-center justify-center rounded-l-xl border border-r-0 border-slate-900/10 bg-white text-slate-700 transition-[background-color,color,transform] duration-150 ease-out hover:bg-stone-50 active:scale-[0.94] dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="absolute top-4 -left-10 flex h-10 w-10 items-center justify-center rounded-l-xl border border-r-0 border-slate-900/10 bg-white text-slate-700 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
           >
-            <ChevronRight className={cn("size-4 transition-transform duration-200 ease-out", open && "rotate-180")} />
+            <ChevronRight className={cn("size-4 transition-transform", open && "rotate-180")} />
           </button>
 
           <div className="hej-surface-dark flex h-full flex-col overflow-hidden rounded-[1.1rem] border border-slate-900/10 bg-white/94 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-white/10 dark:shadow-[0_18px_50px_rgba(2,6,23,0.45)]">

@@ -527,7 +527,7 @@ export function TaskDatasetRegistrationPanel({
                   type="button"
                   disabled={!canIntakeDataset}
                   onClick={() => setBatchMode(mode.id)}
-                  className={`rounded-full border px-3 py-1.5 text-sm transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] disabled:active:scale-100 ${
+                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                     batchMode === mode.id
                       ? "border-slate-950 bg-slate-950 text-stone-100"
                       : "hej-surface-soft border-slate-900/10 bg-white text-slate-700 hover:bg-stone-100 dark:border-white/10 dark:text-slate-300"
