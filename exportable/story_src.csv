@@ -23,14 +23,14 @@ A3,A,P0,SC,I can get a working copy of the platform running by myself,"As a team
 2. Drop tables in foreign-key-safe order so --reset works repeatedly against an already-seeded database instead of half-dropping the schema (issue 24).
 3. Add env_file to model_config in app/core/config.py:19 so a .env file is actually read (issue 23).
 4. Correct apps/hej-api/.env.example from the DAP_ prefix to HEJ_, which is what Settings expects (issue 23).
-5. Write the setup path in the README and have a second person follow it from a clean clone to seeded Admin, Reviewer and Annotator accounts.","23,24",working,Hanchen Wang,SCRUM-81,shipped
+5. Write the setup path in the README and have a second person follow it from a clean clone to seeded Admin, Reviewer and Annotator accounts.","23,24",done,Yi Geng,SCRUM-81,shipped
 A4,A,P0,SC,Platform credentials aren't sitting in shared code,"As an organisation administrator, I want the platform's service credentials kept out of the shared codebase, because a key that ships inside every copy of the code is a key I can't control, revoke or attribute.","1. No live credential is readable in the source code.
 2. Credentials are supplied per environment and can be rotated without a code change.
 3. The exposed key is rotated at the provider, not merely removed from the code.","**Issue 1** (live API key hardcoded in committed source) — this story's first criterion removes it, and the rotation criterion covers the part a code fix alone can't: the key is already public in every existing clone. Depends on **A3**, since configuration must actually load before a key can be supplied any other way.","1. Rotate the committed Gemini key at the provider — it is public in every existing clone and fork (issue 1).
 2. Remove the key default from gemini_api_key in app/core/config.py:15 so a missing key fails loudly (issue 1).
 3. Confirm the key is read from the environment only, and that the app starts with a clear error when it is absent.
 4. Add the key names to .env.example with placeholder values and a note on where the real key lives.
-5. Sequence after A3 — configuration has to load before a key can be supplied any other way.",1,working,Hanchen Wang,SCRUM-84,shipped
+5. Sequence after A3 — configuration has to load before a key can be supplied any other way.",1,done,Yi Geng,SCRUM-84,shipped
 A5,A,P0,SC,A status means the same thing wherever I see it,"As a project manager, I want a status, role or result to mean one thing across every screen, the API and the export, because the same item currently has different state names in different places and I can't tell whether two screens disagree because of a bug or because they're using different words for the same thing.","1. One agreed set of task states and one agreed set of item states, used by the screens, the API and the export alike.
 2. Where our design documents and the running code currently disagree, the difference is resolved deliberately and the documents updated to match what was built.
 3. A state a user can see is a state the workflow can actually reach.
@@ -53,7 +53,7 @@ B2,B,P0,BE,I can decide how carefully my project's work gets reviewed,"As a proj
 2. Put them on the project and task setup forms, with the client's 30% cross-review as the worked example.
 3. Show the policy in force on the project afterwards, correctable until the first task goes active.
 4. Freeze the resolved policy against the task so a later policy change cannot rewrite finished work.
-5. Stop at recording the choice faithfully — enforcement is G2.",,working,,"SCRUM-20, SCRUM-50",shipped
+5. Stop at recording the choice faithfully — enforcement is G2.",,,,"SCRUM-20, SCRUM-50",shipped
 B3,B,P0,BE/FE,I can create a task for a specific piece of work,"As a project manager, I want to create a task stating whether it is an annotation task or a judgement task and what kind of data it covers, because the client's two task categories need different work surfaces and different result shapes.","1. I can create a task under a project, choosing annotation or judgement and the task type.
 2. The task records what a finished result should look like (labels for annotation, verdict plus reasoning for judgement).
 3. Text tasks are fully workable end-to-end; image and video tasks can be created without breaking, but are not committed demo paths in this phase.",No open defects — task creation exists; what's missing is the lifecycle (**B4**) and the schema/policy binding that makes it meaningful.,"1. Add the annotation-versus-judgement distinction to TaskCreate and the task form.
@@ -69,7 +69,7 @@ B4,B,P0,BE,"My task moves through real states, not just “draft”","As a proje
 3. Add an activation endpoint and implement the transition table agreed in A5.
 4. Close dataset intake once a task is active so items cannot be added mid-review.
 5. Wire Activate / Pause / Complete into the task page, disabled with a reason when the transition is illegal.
-6. Check the state agrees across the project screen, the task screen and the export list.",28,working,,SCRUM-24,shipped
+6. Check the state agrees across the project screen, the task screen and the export list.",28,,,SCRUM-24,shipped
 B5,B,P0,BE,Loading a dataset either works or leaves nothing behind,"As a project manager, I want registering a batch of items to either fully succeed or fully fail, because a batch that half-loaded leaves me with a task I can't trust and no way to tell which items are real.","1. If item registration fails partway, no partial items, pointers or drafts remain.
 2. I can load a task with hundreds or thousands of items — the client's example is 1,000 video recordings under one task.
 3. If I try to load items at a point in the workflow that doesn't allow it, I'm told that clearly (“intake is closed for this task”), not shown a generic server error.","**Issue 16** (dataset registration isn't transactional) — “leaves nothing behind on failure” is precisely the missing all-or-nothing behaviour, so implementing this story removes the partial-state cleanup problem.
@@ -85,7 +85,7 @@ B6,B,P1,BE,“Done” means the same thing everywhere I look,"As a project manag
 **Issue 27** (export-eligibility list names an impossible “approved” status) — cleaned up in the same change, since the story requires the states shown to be states that can genuinely occur.","1. Write one is_item_finished() predicate and use it for both task completion and export eligibility.
 2. Reconcile task_service.py:82 (accepts reviewed, approved and canonicalized) with project_exports_service.py:55 (counts only canonicalized) (issue 19).
 3. Remove ""approved"" from FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES at task_service.py:83 — it is not a member of the status enum (issue 27).
-4. Add a test that a task marked complete never reports zero completed items in its export package.","19,27",working,,SCRUM-43,shipped
+4. Add a test that a task marked complete never reports zero completed items in its export package.","19,27",,,SCRUM-43,shipped
 C1,C,P1,BE,The AI assistant can be swapped without disrupting my work,"As a project manager, I want the platform's AI assistant to be replaceable, because the client intends to move from a mock to open-source or self-hosted models later and I don't want the workflow rebuilt when that happens.","1. The mock AI assistant can be replaced with a different one without changing any review, dispute or export behaviour.
 2. Which assistant and version produced a suggestion is recorded against the item.
 3. Everything downstream treats an AI suggestion as a suggestion, never as a finished answer.","No open defects — this is net-new capability the brief calls for (“a replaceable, typed model interface, with mock and live modes interchangeable”).","1. Define an AnnotationAssistant protocol, with MockAssistant as the default and GeminiPreannotator moved behind it.
@@ -93,7 +93,7 @@ C1,C,P1,BE,The AI assistant can be swapped without disrupting my work,"As a proj
 3. Replace the hand-rolled urllib call to Gemini with an OpenAI-compatible client so a local Ollama model and a hosted provider share one path.
 4. Record provider, model and version against every suggestion, and keep the registry in one place — the MVP duplicates it four times.
 5. Port TextAnalyzer's four text tasks from labeling_ai_assistnat_mvp, dropping its LLM-inferred field mapping and its writing of results to files.
-6. Check nothing downstream treats a suggestion as a finished answer.",,,Yi Geng,SCRUM-6,shipped
+6. Check nothing downstream treats a suggestion as a finished answer.",,working,Yi Geng,SCRUM-6,shipped
 C2,C,P0,BE,A large batch of items gets AI-annotated reliably,"As a project manager, I want to request AI annotation across a whole task and have it complete reliably in the background, because with a thousand items I can't sit and wait, and one failed item must not sink the batch.","1. I can trigger AI annotation for a task and keep working while it runs.
 2. Temporary failures are retried automatically; items that permanently fail are shown to me as failed rather than dropped.
 3. I can see how much of the batch is done, in progress or stuck.","No open defects — net-new. The client raised this as the central engineering requirement (retries, failed jobs, dead-letter handling, “a classic distributed system problem”), and there is currently no queue of any kind.","1. Choose the queue — a DB-backed job table with a worker loop, or a broker — and write the decision down.
@@ -109,7 +109,7 @@ C3,C,P0,BE,I'm told when the AI failed instead of being shown a fake answer,"As 
 3. Return a failed assist outcome carrying no annotation, so a failure can never be stored as an ordinary draft.
 4. Treat an unparseable model response as a failure, not as a candidate with a placeholder verdict.
 5. Show ""no AI suggestion"" as distinct from ""the AI suggested this"" on the review screen.
-6. Test that a failing assist leaves the item with no AI draft at all.",20,,Michael Max,"SCRUM-7, SCRUM-30",shipped
+6. Test that a failing assist leaves the item with no AI draft at all.",20,working,Michael Max,"SCRUM-7, SCRUM-30",shipped
 C4,C,P1,BE/FE,I can control whether reviewers see the AI's answer first,"As a project manager, I want to choose whether a task shows the AI suggestion up front, hides it until the human has committed, or runs human-only, because seeing the machine's answer first changes the answer people give.","1. I can select human-only, AI-first, or blind-then-reveal when setting up a task.
 2. In blind-then-reveal, the reviewer cannot see the AI suggestion until their own answer is recorded.
 3. Which mode was in force is recorded against the item, so results from different modes can be compared later (see I4).","No open defects — net-new, and worth flagging as a gap between our own documents: the inherited design describes only two modes, while the client brief requires three. Neither is implemented today.","1. Add human-only, AI-first and blind-then-reveal to task setup — the code has two modes, the brief requires three.
@@ -122,7 +122,7 @@ C5,C,P1,BE/FE,"I can record why I decided, not just what I decided","As a review
 2. Wire the field into the annotate workspace; task-item-workspace-sheet.tsx:997 already destructures the judgement fields.
 3. Keep the reasoning retrievable separately from the verdict it explains.
 4. Carry reasoning into the export alongside the decision.
-5. Settle with the client whether justification is required on accept, or only on reject, modify and dispute.",,,Parth,"SCRUM-31, SCRUM-49",shipped
+5. Settle with the client whether justification is required on accept, or only on reject, modify and dispute.",,working,Parth,"SCRUM-31, SCRUM-49",shipped
 D1,D,P0,BE,I can't approve my own work,"As a reviewer, I should not be able to approve an item I annotated myself, because a review that one person can perform on their own work is not a review, and any dataset built on it is indefensible.","1. Attempting to review my own annotation is refused, with a clear explanation.
 2. Only users holding a reviewer or expert role can perform review actions at all.
 3. The same restriction applies to dispute decisions, not just first-line review.","**Issue 7** (annotators can approve their own work) — the review endpoint currently checks only that you belong to the organisation. This story's first two criteria are exactly the two missing checks, so the defect closes as the story lands.","1. Refuse a review when the reviewer created the annotation under review — review_actions.py:206 checks organisation access only (issue 7).
@@ -144,7 +144,7 @@ D3,D,P0,BE,The correction I make is the answer that gets saved,"As a reviewer, w
 3. Show the correction, not the original, when the item is reopened.
 4. Carry the corrected value into the exported dataset.
 5. Keep the original annotation visible in history — corrected, not erased (with F3).
-6. Blocked until the client says who authors a reviewer's correction.",5,working,,"SCRUM-32, SCRUM-49",shipped
+6. Blocked until the client says who authors a reviewer's correction.",5,,,"SCRUM-32, SCRUM-49",shipped
 D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want certainty that the annotation in front of me belongs to the annotator it says it does, because on a double-annotated item the platform currently can't reliably tell, and I could approve or reject the wrong person's submission without any sign anything went wrong.","1. Opening an item for review always shows a specific, identified annotator's submission.
 2. On an item annotated by two people, both submissions are individually addressable — I never get an arbitrary one of the two.
 3. My decision is recorded against the submission I actually looked at.","**Issue 3** (reviewers can get shown the wrong annotator's work) — the “which annotation is current” pick is effectively random on multi-annotator items. This story requires a defined answer, which is the fix; issues.md notes the choice between one canonical annotation per item and per-annotator submissions is a product decision to settle with the client first.
@@ -152,7 +152,7 @@ D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want c
 2. Replace the effectively random ""latest annotation"" pick with the defined choice (issue 3).
 3. Make both submissions individually addressable on a double-annotated item.
 4. Record the decision against the submission the reviewer actually opened — impossible while draft.annotation_id is never written, the same root cause as issue 11.
-5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",working,,SCRUM-27,shipped
+5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",,,SCRUM-27,shipped
 D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to stay finalised unless someone deliberately reopens it, because a “locked” answer that a later submission can quietly change means no exported label can be defended.","1. Submitting new work against a finalised item is refused, or explicitly reopens review — never silently applied.
 2. Reopening a finalised item is a visible, attributable action.
 3. A submission either completes fully or not at all — it never leaves an item half-updated.","**Issue 2** (a finalised annotation can be silently overwritten) — currently a new draft updates the same record in place with no check on whether the item is already finalised. Criterion 1 is the missing check.
@@ -160,7 +160,7 @@ D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to 
 2. Make submit_draft one transaction; draft status, the annotation and the item status are three separate commits today (issue 11).
 3. Persist draft.annotation_id, which is declared on the model and never written (issue 11).
 4. Make reopening a finalised item an explicit, attributed action rather than a side effect.
-5. Test that a finalised item cannot be changed by a later submission.","2,11",working,"Hanchen Wang, Yi Geng","SCRUM-26, SCRUM-28",shipped
+5. Test that a finalised item cannot be changed by a later submission.","2,11",working,Hanchen Wang,"SCRUM-26, SCRUM-28",shipped
 D6,D,P0,BE,My unfinished work is mine,"As an annotator, I want my in-progress draft to be editable only by me, because right now anyone in the organisation can change, submit or delete my unfinished work — including submitting it before I'm ready.","1. Only I can edit, delete or submit my own draft.
 2. Someone else attempting it is refused, with a clear message.
 3. An administrator or reviewer override, if we allow one, is explicit and recorded in the item's history.","**Issue 6** (drafts have no ownership enforcement) — draft access is currently checked against organisation and project membership only, never against who owns the draft. This story's first criterion is that missing check.","1. Check draft ownership on update, delete and submit — drafts.py:158, :192 and :212 check org and project membership only (issue 6).
@@ -194,7 +194,7 @@ E2,E,P0,FE,I can send an item back to the annotator,"As an expert, I want to sen
 2. No backend work — POST /tasks/{id}/task-items/{id}/escalations/decision already accepts send_back, and lib/api/review-actions.ts:55 already types it.
 3. Attach the expert's note and return the item to the annotator's queue.
 4. Record who sent it back and why in the item's history.
-5. Test the round trip: the item reaches expert_send_back and shows as ""Returned"" in the annotate queue.",15,,Parth,SCRUM-35,shipped
+5. Test the round trip: the item reaches expert_send_back and shows as ""Returned"" in the annotate queue.",15,working,Parth,SCRUM-35,shipped
 E3,E,P1,BE,An expert's decision is recorded as its own decision,"As an expert, I want my adjudication recorded as a distinct decision that references the dispute it settles, because “who routed this to me” and “who decided it” are different facts and collapsing them destroys the audit trail.","1. An adjudication is a separate record from the routing that requested it.
 2. It references the item, the dispute, and the conflicting decisions it resolves.
 3. The annotator's original label, the reviewers' decisions and my adjudication all remain individually visible afterwards.","No open defects — net-new. This is the brief's requirement that annotator label, reviewer decision and adjudicated judgment are “preserved rather than collapsed into one final answer field.”","1. Record an adjudication as its own record, separate from the escalation routing that requested it.
@@ -280,7 +280,7 @@ G4,G,P1,BE/SC,The platform refuses states that can't exist,"As a project manager
 3. No item can be left in a state the workflow doesn't recognise.","**Issue 10** (invalid task status values get saved to the database) — the value is currently committed first and only rejected when the response is built, so the bad data survives. Criterion 1 inverts that order, which is the fix.","1. Type TaskItemStatusUpdate.status — it is a bare str at app/api/routes/tasks.py:52 (issue 10).
 2. Validate before writing rather than after the commit; the bad value survives in the database today.
 3. Return the valid options in the rejection so the caller can correct it.
-4. Test that an invalid status never reaches the database.",10,,Dishank Aswal,SCRUM-22,shipped
+4. Test that an invalid status never reaches the database.",10,working,Dishank Aswal,SCRUM-22,shipped
 G5,G,P0,BE,I can actually invite someone into my organisation,"As an organisation administrator, I want to invite a colleague and have them successfully join, because today no invitation can be accepted at all — which means I cannot onboard a second person through the normal route.","1. I can send an invitation and see it listed as pending.
 2. The invited person can accept it and gain access.
 3. What I'm shown about an invitation's state matches its real state.","**Issue 17** (organisation invitations are completely broken) — invitations are created as already-accepted internally while reporting “pending,” and acceptance always fails on a broken token contract. Criteria 2 and 3 cannot pass while either remains.

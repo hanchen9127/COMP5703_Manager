@@ -1,1 +1,0 @@
-"""hej-api application package."""
