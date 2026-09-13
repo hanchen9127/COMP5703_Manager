@@ -56,6 +56,3 @@ Thumbs.db
 .temp/
 .repo-backups/
 
-# Local agent/skill config - do not upload
-.agents/
-.claude/

@@ -40,7 +40,9 @@ Authoritative detail lives in `hej/docs/design/system/architecture_overview.md`,
 - **Frontend information architecture:**
   - Global: Dashboard, Organizations, Projects, Admin
   - Project: Overview, Tasks, Disputes, Exports, Policies
-  - Task: Overview, Setup, Items, Annotate / Judge, Review, Dispute, History
+  - Task: Overview, Setup, Items, Annotate / Judge, Review, Dispute, History, Finalized — the routes
+    under `apps/hej-web/app/tasks/[taskId]/`. `AGENTS.md` still describes an older four-tab scope
+    (Setup, Queue, Review, History)
 - **Workflow state authority** is `hej/docs/design/product/workflow_states.md`. Code enums currently
   differ — task items are `pending, annotated, returned, rejected, reviewed, disputed,
   expert_send_back, canonicalized` — which is a known risk (see `mission.md`).
@@ -69,7 +71,8 @@ Authoritative detail lives in `hej/docs/design/system/architecture_overview.md`,
 - **One command before every PR** is `npm run check`, which runs `test:api`, `test:web`,
   `typecheck:web` and `lint:web`.
 - **Evaluation harness** (I1, I2) is planned: scenario-level runs over a 40–60 case casebook, reusing
-  the gold fixtures in `labeling_ai_assistnat_mvp/app/data/text/`.
+  the gold fixtures from the client's `labeling_ai_assistnat_mvp` project (SCRUM-6). That project is not
+  in `hej` and not available locally yet; its location is to be confirmed.
 
 ## Tooling
 
@@ -126,7 +129,11 @@ From the backlog:
   - testing, including what was run manually
   - notes for reviewers
   - known limitations
-- **Reviews** are recorded in `docs/reviews/`. Squash-merge PRs that carry noisy merge commits.
+- **Merging:** PRs are merged with a merge commit, never squashed (decided 2026-09-14). Branches are
+  merged into one another, so squashing would duplicate that history and discard the reviewable
+  commits described above.
+- **Reviews** happen on the GitHub PR, which is the shared record. Detailed reviews are also kept in
+  `docs/reviews/`, which is local and not in git.
 
 ### Docs Sync
 
@@ -159,7 +166,7 @@ From `hej/AGENTS.md`:
 | --- | --- |
 | `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` — the big picture for each story, written with the `feature-spec` skill |
 | `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 29 defects) and its fix plan (`fix-plan.md`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
-| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are periodic downloads from the Google Sheet and the Jira board — **read-only locally**. `story_src.csv` is the backlog data behind `user-stories.html`, the PM and client view, and is the one file updated here. `README.md` explains the page and the CSV format |
+| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots Hanchen downloads by hand from the team's online Google Sheet and the Jira board — **read-only locally**, and possibly behind the live versions. `story_src.csv` is the backlog data behind `user-stories.html`, the client view: only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
 | `sandbox/` | Hanchen's personal files supporting work on his own branches — never uploaded to GitHub. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
 | `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`) |
 
@@ -198,6 +205,11 @@ sandbox/
 
 ### Tracking data: `shared/story_src.csv`
 
+`story_src.csv` is Hanchen's local, client-facing view of the backlog, not a team record. The live
+records are the online tracker and the Jira board; `shared/` holds hand-downloaded snapshots of them,
+and `story_src.csv` is updated from those snapshots later still. When current status matters, read the
+board and the tracker.
+
 **Format**
 - One row per story, 14 columns: `id, epic, priority, owner, name, story, acceptance_criteria,
   related_issues, subtasks, defects, status, allocated_to, scrum, source`. Keep the header unchanged.
@@ -226,8 +238,11 @@ sandbox/
     both are empty;
   - completed — the allocation already recorded, plus anyone who delivered;
   - not started — the allocation already recorded, plus any board assignee.
-- **Read-only:** never write to `CS-57_Contribution_Tracker.xlsx` or `Jira.csv`. Change
-  `story_src.csv` only through the skill's `apply` step.
+- **Read-only:** never write to `CS-57_Contribution_Tracker.xlsx` or `Jira.csv`.
+- **Who changes `story_src.csv`** (decided 2026-09-14): `status`, `allocated_to` and `scrum` change only
+  through the skill's `apply` step. Every other column — story text, acceptance criteria, related
+  issues, subtasks, defects, and new stories — is edited by Hanchen in `user-stories.html`. `apply`
+  refuses if the file changed after its report, so finish page edits before running a report.
 
 ## What We Are Not Using
 
