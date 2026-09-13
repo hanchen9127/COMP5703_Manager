@@ -1,0 +1,13 @@
+fix(web): make the read-only draft panel actually read-only (SCRUM-25)
+
+A draft held by another annotator showed a read-only notice and disabled
+buttons, but the editors stayed live -- the second annotator could type a full
+rationale and lose it on the first save. Verdict, Rationale, the three Notes
+editors, the image output, Quick verdicts and Format JSON now follow the same
+disabled condition as the buttons.
+
+The status banner no longer explains a held item as "Current status: Pending".
+Status and ownership are separate, mutually exclusive banners, so the amber
+note duplicated in both Actions blocks is gone.
+
+Five web tests, red against the previous behaviour. Story D6.
