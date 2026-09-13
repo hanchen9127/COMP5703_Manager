@@ -1,0 +1,14 @@
+docs: record draft ownership and the no-override decision (SCRUM-25)
+
+Draft mutation became author-only in a25d0ae and DraftRead gained
+created_by_name, with neither written down. AGENTS.md requires api_surfaces.md
+when API boundaries change.
+
+api_surfaces.md: capability is necessary but not sufficient -- draft writes
+also require authorship, while reads and reviewer approval deliberately do not.
+workflow_states.md: an unfinished draft belongs to its author while the item is
+in ANNOTATION_IN_PROGRESS, recorded as an invariant.
+
+Answers D6 criterion 3: no administrator or reviewer override, deliberately. A
+future one must be a named capability recorded in item history, not a silent
+bypass.

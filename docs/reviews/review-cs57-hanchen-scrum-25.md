@@ -9,7 +9,7 @@
 | `a25d0ae` — *fix(api): enforce draft ownership on draft write paths (SCRUM-25)* | 2026-09-11 | 4 files, +447 / −18 — the backend guard |
 
 **Evaluated against:** SCRUM-25 (story **D6** — "My unfinished work is mine"), defect **#6**
-**Plan under review:** [`../plans/plan.md`](../plans/plan.md) Commits 1 / 1d / 1f
+**Plan under review:** [`../sandbox/W6/plans/plan-SCRUM-25-26-28.md`](../sandbox/W6/plans/plan-SCRUM-25-26-28.md) Commits 1 / 1d / 1f
 
 ---
 
@@ -97,7 +97,7 @@ None of them take `disabled` or `readOnly`. A second annotator can type a full r
 item and only discover it is refused when both buttons turn out to be dead — the exact "inviting an
 edit that will be rejected" the commit message says it removes.
 
-`../plans/sandbox_scrum25_manual_test.md`'s look-before-saving step asserts the editor is **not
+`../sandbox/W6/tests/manual-test-SCRUM-25.md`'s look-before-saving step asserts the editor is **not
 editable**. The code does not do this; the walkthrough passes because the tester only checks the
 buttons.
 
@@ -146,7 +146,7 @@ but its only call site has already filtered to `pending` — dead branch.
   project scale; worth knowing before the item counts grow.
 - **Name disclosure widened.** `list_drafts` now returns colleague display names to any org member.
   Deliberate — the docstring says so — but it widens what an annotator can see, and bears on RQ-607
-  (annotator data isolation), which `plan.md` already flags as a known gap.
+  (annotator data isolation), which `plan-SCRUM-25-26-28.md` already flags as a known gap.
 - **Annotator column is on by default.** It went into `TaskItemTable`'s default column list, so all
   three consumers (`task-annotation-workspace`, `task-items-board`, `task-workbench`) get it. With
   `table-fixed`, the declared widths now total ~65rem — check it at narrow viewport widths.
@@ -176,7 +176,7 @@ but its only call site has already filtered to `pending` — dead branch.
 | --- | --- |
 | Criterion 1 — only the author can edit / delete / submit | ✅ backend — `drafts.py:177`, `:205`, `:240` |
 | Criterion 2 — refused with a clear message | ✅ 403 with a reason string naming the rule |
-| Criterion 3 — admin override decision recorded | ⚠️ decided ("no override this sprint") **only in `../plans/plan.md`**, a personal sprint doc. `grep` for draft ownership across `hej/docs/` returns zero hits |
+| Criterion 3 — admin override decision recorded | ⚠️ decided ("no override this sprint") **only in `../sandbox/W6/plans/plan-SCRUM-25-26-28.md`**, a personal sprint doc. `grep` for draft ownership across `hej/docs/` returns zero hits |
 | Subtask 4 — a second member cannot submit another's draft | ✅ `test_another_member_cannot_submit_a_pending_draft` |
 | Frontend behaviour in the running app | ❌ inverted on `/annotate` and `/review` — see [Blocking](#blocking--the-fix-does-not-reach-the-live-annotate-and-review-pages) |
 | Plan Commit 6 — Docs Sync | ❌ outstanding. `hej/AGENTS.md:130` requires `api_surfaces.md` when routes or boundaries change — this changed authorization on three routes **and** added `created_by_name` to `DraftRead`. Also `workflow_states.md`, `task-lifecycle.md` |
@@ -197,7 +197,7 @@ Worth recording, because the same gap will swallow the next fix of this shape.
   works. There is no step where **Charlie reopens the item after claiming it**, which is the exact
   state that breaks.
 
-**Add that step to `sandbox_scrum25_manual_test.md`**, next to the look-before-saving step added for
+**Add that step to `manual-test-SCRUM-25.md`**, next to the look-before-saving step added for
 the 1f defect. The pattern is the same both times: the walkthrough checked the second annotator and
 never re-checked the first.
 
@@ -269,7 +269,7 @@ this — `verify_user_owns_draft` returns early on `created_by is None`, and a f
 ownership conflict at all. The UI now blocks it, showing *"Read-only: another annotator is annotating
 this item"* while naming nobody, because nobody owns it.
 
-Not hypothetical for this project's data: `plan.md` records that before `a25d0ae`, *"essentially every
+Not hypothetical for this project's data: `plan-SCRUM-25-26-28.md` records that before `a25d0ae`, *"essentially every
 item annotated through the web app produces an unowned annotation"*. Every previously-annotated item
 in the dev database therefore carries an unclaimed submitted draft. Until this fix those pages were
 read-only for a different reason; this is the one remaining case.
@@ -322,7 +322,7 @@ assertions red — 3 for A1+A2, 1 for B1. The remaining new tests are over-corre
 annotator's submitted draft stays read-only; a status-blocked item still explains itself by status)
 and are green against both old and new implementations, as they should be.
 
-**Manual test** — `../plans/sandbox_scrum25_manual_test.md` rewritten in Chinese as 9 steps, with
+**Manual test** — `../sandbox/W6/tests/manual-test-SCRUM-25.md` rewritten in Chinese as 9 steps, with
 the three missing checks added at the points where they belong rather than appended: step 2 (reopen
 after claiming), step 4 (actually type into the disabled editor), step 9 (rework an unowned
 submitted draft).

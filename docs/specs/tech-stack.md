@@ -74,8 +74,11 @@ Authoritative detail lives in `hej/docs/design/system/architecture_overview.md`,
 ## Tooling
 
 - `uv run` for Python, `npm` for JavaScript, `turbo` for workspace tasks
+- Claude Code project skills in `.claude/skills/`: `tracking-sync` refreshes `shared/story_src.csv`, and
+  `feature-spec` writes and closes out feature specs
 - Local servers: `npm run dev:api` (port 8000) and `npm run dev:web` (port 3000)
-- Git hosting: GitHub `USYD-CS-Capstone/hej`; tracking in Jira project `SCRUM`
+- Git hosting: GitHub `USYD-CS-Capstone/hej`; work tracking on the Jira board (project `SCRUM`) and in
+  the CS-57 Contribution Tracker (Google Sheet)
 
 ## Quality Baseline
 
@@ -93,8 +96,8 @@ From the backlog:
 
 - Separate the tests that prove the fix (red before, green after) from the guards that stop it going
   too far (green both ways), and say which is which.
-- For multi-user behaviour, keep a manual walkthrough in `docs/plans/`, for example
-  `sandbox_scrum25_manual_test.md`:
+- For multi-user behaviour, keep a manual walkthrough in the week's `tests/` folder under
+  `docs/sandbox/`, for example `W6/tests/manual-test-SCRUM-25.md`:
   - use two different browsers;
   - include a **reload** step and a **look-before-acting** step;
   - use only state the script creates, not spent fixtures.
@@ -154,10 +157,77 @@ From `hej/AGENTS.md`:
 
 | Path | Role |
 | --- | --- |
-| `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` |
-| `stories/` | The backlog: `current_user_stories.md`, `issues.md`, `fix-plan.md`, `Jira.csv` export, `ProjectDescription.pdf` |
-| `plans/` | Per-ticket working plans and progress notes, sandbox scripts and manual walkthroughs, and `commits/` message drafts |
-| `reviews/` | Code reviews of team PRs and prepared PR descriptions |
+| `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` — the big picture for each story, written with the `feature-spec` skill |
+| `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 29 defects) and its fix plan (`fix-plan.md`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
+| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are periodic downloads from the Google Sheet and the Jira board — **read-only locally**. `story_src.csv` is the backlog data behind `user-stories.html`, the PM and client view, and is the one file updated here. `README.md` explains the page and the CSV format |
+| `sandbox/` | Hanchen's personal files supporting work on his own branches — never uploaded to GitHub. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
+| `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`) |
+
+### Personal sandbox: `docs/sandbox/`
+
+Supporting material for Hanchen's own branches (`CS57-Hanchen…`): planning, testing, learning and
+other working files. It is not part of the product, not a tracking record, and never goes to GitHub.
+
+```text
+sandbox/
+  README.md             layout and conventions
+  tools/                scripts reused every week (seed and reset local test data)
+  learning/             orientation and study notes that outlive a single week
+  W6/, W7/, …           one folder per week, holding only that week's material
+    README.md           week index: tickets, status, what each file is for
+    plans/              plan-<ticket>.md (how to implement it, commit by commit), progress-<ticket>.md
+    tests/              manual-test-<ticket>.md walkthroughs
+    scripts/            ticket-specific helpers, e.g. sandbox-<ticket>.py
+    commits/            commits-<ticket>.md index and commit-<ticket>-<n>-<slug>.txt drafts
+```
+
+**Conventions**
+- **Naming:** a ticket-specific file is named `<type>-<ticket>`, for example `plan-SCRUM-25-26-28.md`,
+  `manual-test-SCRUM-25.md`. Files in `tools/` and `learning/` keep descriptive names.
+- **Where a file goes:** anything used across weeks lives in `tools/` or `learning/`. A plan that
+  continues into the next week stays in the week it was written, and the next week's `README.md`
+  links back to it — never copy it.
+- **Specs versus sandbox:** the story's feature spec in `docs/specs/` states the big picture; a sandbox
+  plan describes how Hanchen implements one ticket that week. Each links to the other instead of
+  restating it.
+- **Create a week's subfolders only when needed.**
+- **Scripts must not depend on their folder depth.** Locate the `hej` repo by searching upward
+  (see `tools/reset_work_data.py`), and write run instructions with paths that survive a move.
+- **No secrets and no database copies in `sandbox/`.** The dev database stays in
+  `hej/apps/hej-api/`; scripts that change it back it up first.
+
+### Tracking data: `shared/story_src.csv`
+
+**Format**
+- One row per story, 14 columns: `id, epic, priority, owner, name, story, acceptance_criteria,
+  related_issues, subtasks, defects, status, allocated_to, scrum, source`. Keep the header unchanged.
+- `status` is blank (not started), `working`, `done` or `dropped`.
+- `allocated_to` takes one name or several separated by commas, using the tracker's roster names —
+  Tim Chung is `Tok Tin Chung`.
+- `scrum` is generated from the board; `source` is `shipped` for the original 59 stories.
+- Preserve the byte format when writing: UTF-8 with BOM, CRLF between rows, LF inside multi-line
+  cells, minimal quoting. Python's `csv` writer with `QUOTE_MINIMAL` and `lineterminator='\r\n'`
+  reproduces the file byte for byte.
+
+**Update rules** (agreed 2026-09-13; applied by the `tracking-sync` skill in
+`.claude/skills/tracking-sync/`)
+- **Board source:** whichever download is newer — the tracker's *Jira Statistics* snapshot or
+  `Jira.csv`. Where the two disagree, report it.
+- **`done`** when the tracker's latest entry for the story says *Story complete? = Yes*, or every ticket
+  for the story is Done on the board. Gaps found by checking the code are reported, not written into
+  the CSV.
+- **`working`** when a story ticket is In Progress or In Review, or the tracker's latest entry says
+  *No — more work to come*.
+- **Not started** (blank) when every ticket is To Do and nothing is logged, even if the CSV said
+  `working`.
+- **Never downgraded automatically:** `done` and `dropped`. Change these by hand after agreement.
+- **`allocated_to`**, using tracker roster names (aliases in the skill's `scripts/aliases.json`):
+  - in progress — board assignees plus anyone who delivered a logged PR; keep the existing value if
+    both are empty;
+  - completed — the allocation already recorded, plus anyone who delivered;
+  - not started — the allocation already recorded, plus any board assignee.
+- **Read-only:** never write to `CS-57_Contribution_Tracker.xlsx` or `Jira.csv`. Change
+  `story_src.csv` only through the skill's `apply` step.
 
 ## What We Are Not Using
 

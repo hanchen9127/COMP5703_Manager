@@ -47,8 +47,9 @@ These specs are written for:
 - **Hanchen Wang, project manager.** The purpose of this folder is to track the *whole team's*
   progress against the brief — every pillar, story and defect — not only the tickets allocated to one
   person.
+- **The client (Arc Intelligence)**, who follows progress through `shared/user-stories.html`.
 - **The CS-57 team** — Hanchen Wang, Jingwei Lin, Yi Geng, Kanishka Kathait, Michael Max, Parth,
-  Dishank Aswal and Tim Chung — as the shared statement of what we are building and in what order.
+  Dishank Aswal and Tim Chung (Tok Tin Chung in the tracker) — as the shared statement of what we are building and in what order.
 - **Coding agents working in `hej`**, which should load `mission.md`, `tech-stack.md` and `roadmap.md`
   before writing a feature spec or touching code.
 
@@ -68,10 +69,11 @@ The brief's expected outcomes, stated as things we can check:
 - [ ] **A reusable evaluation harness and a casebook of 40–60 end-to-end cases**, including adversarial
   ones, measuring quality, collaboration and integrity.
 - [ ] **Automated, integration, permission, provenance and end-to-end tests.**
-- [ ] **Every Critical defect in `stories/issues.md` closed**, and every defect left unfixed carries an
+- [ ] **Every Critical defect in `info/issues.md` closed**, and every defect left unfixed carries an
   argued decision rather than silence.
 - [ ] **Findings documentation, per-member decision records, a technical report, and a live or recorded
-  end-to-end demonstration.** See [Risks](#risks) — these currently have no backlog owner.
+  end-to-end demonstration.** Their stories (K1–K4) are set aside for now — see
+  [Stories Set Aside](#stories-set-aside).
 
 Dataset quality must never be reduced to a single unexplained score.
 
@@ -87,11 +89,31 @@ From the brief and the backlog's out-of-scope list:
 - Marketplace, trust, billing or payout — future extensions around the shared core, not part of it
 - A separate cleanup phase for the 29 defects — each is closed by the story it belongs to
 
+## Stories Set Aside
+
+Six stories are *Discarded* in the backlog and have no Jira ticket. **By decision on 2026-09-14 they
+are set aside for now:** not scheduled in `roadmap.md`, not given feature specs, and not counted in
+roadmap coverage. They stay `dropped` in `story_src.csv`. Only Hanchen reopens them.
+
+| Story | Title | What stays true while it is set aside |
+| --- | --- | --- |
+| A1 | Changes are reviewed before they reach the platform | `hej` has no CI, PR template, CODEOWNERS or branch protection; review before merge is a team habit, not enforced |
+| A5 | A status means the same thing wherever I see it | Design docs and code use different state vocabularies; B4, B6 and G4 each fix one disagreement |
+| K1 | A reader can understand the system without us | No technical report is planned |
+| K2 | Each of us can defend our own design decisions | No per-member decision records are planned |
+| K3 | What didn't work is recorded as carefully as what did | I5's findings record (SCRUM-75, W11) produces much of this content |
+| K4 | The end-to-end demonstration works when it matters | No demonstration is planned; the full journey first runs on real screens after W11 |
+
+The brief still lists findings, decision records, a technical report and a demonstration among its
+expected outcomes, so these appear under [Risks](#risks).
+
 ## Progress Snapshot — W6 (2026-09-13)
 
-**Basis:** story status from `stories/current_user_stories.md`; entries marked *verified* were checked
-against `origin/main` on 2026-09-13. Jira lags the code — D6 is merged but still "In Progress" — so
-**git is the source of truth for status.**
+**Basis.** Story status follows the team's records: the Jira board and the contribution tracker,
+downloaded into `shared/`, are applied to `shared/story_src.csv`, which drives `user-stories.html`.
+Entries marked *verified* were separately checked against `origin/main` on 2026-09-13. Where the
+records and the code disagree, the record stands and the gap is listed in the defect table and under
+[Risks](#risks).
 
 ### By epic
 
@@ -99,18 +121,18 @@ against `origin/main` on 2026-09-13. Jira lags the code — D6 is merged but sti
 | --- | --- | --- | --- | --- | --- |
 | A — Trustworthy Foundations | 5 | A2, A3, A4 | — | — | A1, A5 |
 | B — Setting Up Work | 6 | B1, B3 | B5 | B2, B4, B6 | — |
-| C — AI-Assisted First Pass | 5 | — | C1, C3, C5 | C2, C4 | — |
-| D — Review & Cross-Validation | 8 | — | D1, D2, D5, D6 | D3, D4, D7, D8 | — |
+| C — AI-Assisted First Pass | 5 | C3 | C1, C5 | C2, C4 | — |
+| D — Review & Cross-Validation | 8 | D2, D6 | D5 | D1, D3, D4, D7, D8 | — |
 | E — Disagreement & Dispute | 6 | — | E2 | E1, E3, E4, E5, E6 | — |
-| F — Provenance & History | 5 | — | F1 | F2, F3, F4, F5 | — |
-| G — Roles, Permissions & Orgs | 5 | — | G1, G3, G4, G5 | G2 | — |
+| F — Provenance & History | 5 | — | — | F1–F5 | — |
+| G — Roles, Permissions & Orgs | 5 | G1, G3 | G4, G5 | G2 | — |
 | H — Release & Export | 6 | — | — | H1–H6 | — |
-| I — Evaluation | 5 | — | I1 *(Jira only)* | I2–I5 | — |
+| I — Evaluation | 5 | — | I1 | I2–I5 | — |
 | J — Organisations & Dashboard | 4 | — | — | J1–J4 | — |
 | K — Evidence & Handover | 4 | — | — | — | K1–K4 |
-| **Total** | **59** | **5** | **13** | **35** | **6** |
+| **Total** | **59** | **10** | **8** | **35** | **6** |
 
-### Defects (`stories/issues.md`)
+### Defects (`info/issues.md`)
 
 | # | Defect | Severity | Story | Status on `main` |
 | --- | --- | --- | --- | --- |
@@ -119,16 +141,16 @@ against `origin/main` on 2026-09-13. Jira lags the code — D6 is merged but sti
 | 3 | Reviewer shown the wrong annotator's work | High | D4 | Open — blocked on client decision |
 | 4 | Finalised item exports conflicting answers | **Critical** | H4 | Open |
 | 5 | Reviewer corrections not saved | **Critical** | D3 | Open — blocked on client decision |
-| 6 | Drafts have no ownership enforcement | **Critical** | D6 | ✅ Fixed *(verified)*; story awaits status update and second review |
+| 6 | Drafts have no ownership enforcement | **Critical** | D6 | ✅ Fixed *(verified)*; story complete |
 | 7 | Annotators can approve their own work | **Critical** | D1 | Partial — approval paths guarded *(verified)*; dispute decisions are not: an admin can escalate and finalise their own work |
-| 8 | Legacy review API rewrites approval history | **Critical** | D2 | Partial — `PATCH` and `DELETE /reviews/{review_id}` and `POST /reviews/{review_id}/submit` still live *(verified)* |
-| 9 | Cross-project / cross-org write bypass | High | G3 | Fix in PR #14, reviewed |
-| 10 | Invalid status values saved | High | G4 | Fix in PR #9; bare `str` still on `main` *(verified)* |
+| 8 | Legacy review API rewrites approval history | **Critical** | D2 | Partial — story logged complete in the tracker, but `PATCH` and `DELETE /reviews/{review_id}` and `POST /reviews/{review_id}/submit` are still live *(verified)* |
+| 9 | Cross-project / cross-org write bypass | High | G3 | Fix in PR #14 — logged complete in the tracker, but not merged and no reviewer recorded *(verified)* |
+| 10 | Invalid status values saved | High | G4 | Fix in PR #9, logged but not merged; bare `str` still on `main` *(verified)* |
 | 11 | Draft submission not atomic | High | D5 | Open — scheduled W7 |
 | 12, 13 | Frontend typecheck and test failures | High | A2 | ✅ Closed |
 | 14 | Backend export tests fail to run | High | H5 | Likely closed — verify under H5 |
 | 15 | Dispute send-back not implemented | High | E2 | Open — placeholder still on `main` *(verified)* |
-| 16 | Dataset registration not transactional | High | B5 | Fix in PR #11 |
+| 16 | Dataset registration not transactional | High | B5 | Fix in PR #11, logged but not merged *(verified)* |
 | 17 | Invitations completely broken | High | G5 | Fix on branch `CS57-Tim`, no PR yet |
 | 18 | Pending-invitation listing unreachable | High | G5 | Likely closed — verify under G5 |
 | 19 | Completion and export disagree on "done" | High | B6 | Open |
@@ -138,7 +160,7 @@ against `origin/main` on 2026-09-13. Jira lags the code — D6 is merged but sti
 | 25, 26 | Vacuous frontend test; misleading backend mock | Low | A2 | ✅ Closed |
 | 27 | Impossible `"approved"` status in export rule | Low | B6 | Open |
 | 28 | Task can never leave `draft` | High | B4 | Open — blocked on client decision |
-| 29 | Intake 409 reported as 500 | Medium | B5 | Open — verify whether PR #11 covers it |
+| 29 | Intake 409 reported as 500 | Medium | B5 | Fix in PR #9 per the tracker, not merged *(verified)* |
 
 **Six Critical defects: 1 fixed, 2 partial, 3 open.**
 
@@ -146,23 +168,29 @@ against `origin/main` on 2026-09-13. Jira lags the code — D6 is merged but sti
 
 | Risk | Why it matters | Mitigation owner |
 | --- | --- | --- |
-| **Required deliverables have no backlog owner.** K1 technical report, K2 per-member decision records, K3 findings including negative results, K4 end-to-end demonstration — all *Discarded* in the backlog, yet all listed as expected outcomes in the brief. | Assessed, and impossible to reconstruct honestly in the final fortnight. K2 in particular must be written when decisions are made. | Hanchen to confirm with the client and unit who owns them; not scheduled in the roadmap |
-| **No enforced review or CI.** A1 is discarded; `hej` has no CI workflow, PR template, CODEOWNERS or branch protection, and `main` has taken direct commits. | "Reviewed by someone other than the author" in the Definition of Done is enforced only socially. | Team; raise at weekly sync |
-| **State vocabulary drift.** A5 is discarded; the design docs say `draft/active/paused/completed/archived` and `FINALIZED`, while the code says `canonicalized` and a different task set (inherited Risks 4 and 10). | B4, B6, G4 and H5 each fix a screen disagreement; against two vocabularies the disagreement returns. | Kanishka and Dishank, who own the status stories |
+| **Stories set aside (A1, A5, K1–K4).** The brief expects findings, decision records, a technical report and a demonstration (K1–K4); review is not enforced by CI or branch protection and `main` has taken direct commits (A1); design docs and code use different state vocabularies (A5). | Brief deliverables are assessed, and K2 in particular is hard to reconstruct later. Without A1, the Definition of Done's independent review is enforced only socially; without A5, fixes in B4, B6, G4 and H5 can drift apart. | None for now, by decision (2026-09-14) — Hanchen revisits; see [Stories Set Aside](#stories-set-aside) |
+| **The last planned week has no slack.** Nine stories finish only in W11, including P0 H6, because each sits on W9–W10 work. | Any carry-over from W7–W10 pushes them past the plan. | Replanning rule 2 at every weekly meeting; H6 first in W11 |
 | **Client decisions block P0 work.** B4 (task lifecycle path), D4 (canonical annotation versus per-annotator submissions), D3 (who authors a reviewer's correction), E3 (where an item goes after a dispute). | D4 gates F3, H4 and I4; B4 gates task activation. | Hanchen — obtain in W7 |
-| **Work assignment does not exist.** Task items have no assignee field (D8). | D7, E1, the E2 return-to-queue and I3 all assume it; RQ-607 ("annotators only see items assigned to them") is unmet. | Jingwei and Parth, W8 |
-| **Evaluation is a primary deliverable and is at zero.** | 40–60 cases cannot be written in one week; each story should contribute its own cases as it lands. | Michael, from W7 |
-| **Release is the largest build gap.** H1–H6 depend on F1, F2, F3 and D4. | A slip in provenance or the canonical decision cascades into release. | Dishank, Kanishka and Hanchen, W9–W10 |
-| **Governance gaps found in review (2026-09-13).** Project-scoped roles are defined but never honoured, so G3's "access to one project" cannot exist; an admin can escalate and self-finalise their own item. | G3 cannot close as the story reads; D1 criterion 3 is unmet. | Jingwei; product decision on project-scoped roles |
+| **Work assignment does not exist.** Task items have no assignee field (D8). | D7, E1, the E2 return-to-queue and I3 all assume it; RQ-607 ("annotators only see items assigned to them") is unmet. | The W8 groups for SCRUM-48 |
+| **Evaluation is a primary deliverable and is at zero.** | 40–60 cases cannot be written in one week; each story should contribute its own cases as it lands. | The evaluation groups from W7 (SCRUM-68 onward); every group adds cases for its own tickets |
+| **Release is the largest build gap.** H1–H6 depend on F1, F2, F3 and D4. | A slip in provenance or the canonical decision cascades into release. | The release groups, W9–W10 (SCRUM-64 to SCRUM-66, SCRUM-37) |
+| **Governance gaps found in review (2026-09-13).** Project-scoped roles are defined but never honoured, so G3's "access to one project" cannot exist; an admin can escalate and self-finalise their own item. | G3 cannot close as the story reads; D1 criterion 3 is unmet. | The W7 review-governance group (SCRUM-86, SCRUM-29 follow-up); product decision on project-scoped roles through Hanchen |
 | **Parallel branches edit the same files.** PRs #9 and #14 both touch `tasks.py`; D5 and the review stories share `DraftService`. | Late merges conflict and regress each other. | Merge open PRs in W7 before new work starts |
+| **Tracking records run ahead of the code.** On 2026-09-13 the tracker logs PRs #9, #11 and #14 as merged when none is on `main`, and marks D2 and G3 complete while verified gaps remain. `story_src.csv` follows the tracker by decision. | `user-stories.html` and the tracker's Client Report are built from these records, so the client view can overstate progress. | Hanchen — reconcile tracker, board and `main` at each weekly sync |
 
 ## How We Work
 
 - **Language.** Discussion is in **Chinese** — team chat, meetings, and working with coding agents.
   Every written artefact is in **English**: specs, docs, code and comments, commit messages, PR
   descriptions, reviews and Jira text.
-- **Status comes from git.** A story is done when it is on `main` and meets the Definition of Done in
-  `tech-stack.md`, not when a ticket says so. `roadmap.md` is updated after each weekly sync.
+- **Status comes from the team's records; code is checked against them.**
+  - Members log each merged PR in the contribution tracker (a Google Sheet) and move tickets on the
+    Jira board. Hanchen downloads both into `shared/` periodically; locally they are read-only.
+  - `shared/story_src.csv` is updated from those two files with the `tracking-sync` skill, following
+    the rules in `tech-stack.md`, and `user-stories.html` presents it to Hanchen and the client.
+  - Where the records disagree with `origin/main`, the record is kept and the discrepancy is raised
+    at the weekly sync rather than silently corrected.
+  - `roadmap.md` is updated after each weekly sync.
 - **Client and product decisions go through Hanchen**, and are written into the `hej` docs in the same
   change that relies on them. An example is the decision that there is no admin override on draft
   writes, recorded in `api_surfaces.md`.
@@ -171,11 +199,19 @@ against `origin/main` on 2026-09-13. Jira lags the code — D6 is merged but sti
   that is faster than reading it is not acceptable.
 - **AI tools are permitted, and the member stays responsible.** Whoever submits AI-assisted work must
   be able to explain and defend every line without appeal to the tool.
-- **Spec-driven feature work.** For each roadmap item:
-  1. Create `docs/specs/YYYY-MM-DD-<story-id>-<slug>/` containing `plan.md` (task groups),
-     `requirements.md` (scope, decisions, context) and `validation.md` (success criteria and merge
-     readiness).
-  2. Resolve open questions *before* writing those files.
-  3. Implement in small, reviewable commits.
-  4. Validate against `validation.md`.
-  5. Mark the item done in `roadmap.md`, then replan the following week.
+- **Spec-driven feature work, at two levels kept apart.**
+  - **The feature spec is the big picture**, one per story, written with the `feature-spec` skill in
+    `docs/specs/YYYY-MM-DD-<story-id>-<slug>/`:
+    - `requirements.md` — scope, out of scope, decisions, context, stakeholders
+    - `plan.md` — numbered task groups by ticket and layer, mapped to the roadmap's weekly groups
+    - `validation.md` — the Definition of Done as checks
+
+    Open questions are resolved before the files are written.
+  - **The sandbox is the week-by-week implementation** of Hanchen's own tickets:
+    `docs/sandbox/W<n>/plans/plan-<ticket>.md` holds the commit-by-commit detail and links back to the
+    spec.
+  - Implement in small, reviewable commits and validate against `validation.md`. Then:
+    1. mark the story ✅ in `roadmap.md`;
+    2. log it in the tracker;
+    3. run `tracking-sync`;
+    4. replan the following week.

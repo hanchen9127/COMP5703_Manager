@@ -1,0 +1,13 @@
+fix(web): pick each annotator's own draft on every surface (SCRUM-25)
+
+The viewer argument to applyApiDraftsToMockItem defaulted to null and two of
+four call sites omitted it, including the annotate and review pages -- which
+re-hydrate over the correctly hydrated items they are handed. With no viewer
+every claimed draft reads as someone else's, so an annotator who saved and
+reloaded was locked out of their own work. The argument is now required.
+
+An unclaimed draft that is already submitted is claimable too, not just a
+pending one. Every draft written before a25d0ae is unowned, so returned items
+refused their author a rework the API would have accepted.
+
+Four web tests, red against the previous behaviour. Issue 6, story D6.
