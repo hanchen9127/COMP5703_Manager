@@ -1,0 +1,15 @@
+test: move the last two test files onto the shared database fixture
+
+PR #24 moved 10 test files onto conftest's shared fixture; these two merged
+after it was cut and kept their own in-memory SQLite engines, so the PostgreSQL
+CI job never reached the SCRUM-26 atomicity or SCRUM-28 finalised-write tests.
+
+test_finalised_item_writes.py takes the session fixture. test_draft_submission
+_atomicity.py takes the engine fixture and builds its own session, because it
+must keep autoflush=False to match app.core.database.SessionLocal, which is
+what its rollback assertions depend on.
+
+The per-file engines never registered the foreign_keys pragma, so both fixtures
+referenced users that were never inserted; the rows are now real.
+
+Suite passes on both databases: 299 passed, 2 skipped, 147 subtests.

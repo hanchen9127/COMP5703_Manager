@@ -1,0 +1,13 @@
+docs: record atomic submission and the draft's annotation link (SCRUM-26)
+
+api_surfaces.md: the finalized-item refusal is a domain error that the draft
+service maps to 409, and any new HTTP caller must map it too. Submitting a
+draft is one transaction covering the draft, its annotation, annotation_id,
+the item status and the draft_submitted history row, so an error response
+means nothing was submitted. The submit response returns annotation_id.
+
+workflow_states.md: submission moves the item to CANDIDATE_AVAILABLE in one
+step or not at all, recorded as a note on the TaskItem lifecycle and as an
+invariant.
+
+Story D5 (SCRUM-26), issue 11.

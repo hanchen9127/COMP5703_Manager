@@ -1,0 +1,17 @@
+refactor(api): raise a domain error from the finalised-item guard (SCRUM-26)
+
+assert_task_item_accepts_draft_writes raised HTTPException(409). That suits
+the draft routes, but the AI batch worker (PR #22) applies the same guard
+outside any request and had to catch an HTTP exception to make a domain
+decision.
+
+The guard now raises TaskItemFinalisedError, which carries the item id and
+status, with the message unchanged. DraftService maps it to 409 in the one
+place it calls the guard, so every draft route returns the same status and
+detail as before.
+
+The guard's unit tests now expect the domain error. The route-level tests in
+test_finalised_item_writes.py pass without edits, which shows the 409
+mapping holds.
+
+Story D5 (SCRUM-26); agreed at the review of PR #22.

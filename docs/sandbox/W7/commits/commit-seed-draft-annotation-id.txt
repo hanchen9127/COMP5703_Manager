@@ -1,0 +1,14 @@
+fix: link seeded drafts to the annotation they produced
+
+submit_draft() writes draft.annotation_id since SCRUM-26, but init_data.py
+created its 10 drafts without one, so every freshly seeded database still
+showed the issue-11 shape: a submitted draft with nothing saying which
+annotation it produced. Review (D4) reads that column, so demo data could not
+be followed from a submission to its annotation.
+
+Each seeded draft now points at step 4's first annotation for the same task
+item, which already shares the draft's author. Items without annotations keep
+None, which is what an unsubmitted draft looks like.
+
+Verified by re-seeding: 10 of 10 drafts carry an annotation_id, and the draft
+and annotation authors match.

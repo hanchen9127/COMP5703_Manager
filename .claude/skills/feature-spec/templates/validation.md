@@ -34,7 +34,7 @@ The reviewer is named on the PR and in the contribution tracker.
 
 - PR logged in the contribution tracker with *Story complete? = Yes*
 - SCRUM tickets moved to Done on the board
-- `specs/roadmap.md` row marked ✅ and `tracking-sync` run
+- Merged to `origin/main`, then `specs/roadmap.md` row marked ✅ and `tracking-sync` run
 
 ## Not Required
 

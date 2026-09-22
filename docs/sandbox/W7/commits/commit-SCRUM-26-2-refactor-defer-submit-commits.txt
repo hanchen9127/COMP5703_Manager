@@ -1,0 +1,16 @@
+refactor(api): let the submit path defer its commits (SCRUM-26)
+
+DraftRepository.update, AnnotationRepository.create and .update and
+TaskItemRepository.update each committed on their own, so the three writes a
+draft submission makes could not share a transaction (issue 11).
+
+Each now takes a keyword-only commit flag, defaulting to True. With False it
+flushes instead, so the caller's later queries see the write while the
+transaction stays open. The shape copies DraftRepository.create from PR #11.
+The flag is keyword-only because the update methods take **kwargs, where a
+stray "commit" would be silently ignored as an unknown field.
+
+No behaviour change: every caller keeps the default, and the suite passes
+unchanged (264 passed).
+
+Story D5 (SCRUM-26), issue 11.

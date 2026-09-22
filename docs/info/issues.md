@@ -12,6 +12,8 @@ The most serious problems are not build/polish issues — they're incorrect auth
 
 Rows are numbered 1→29 in the order the "Recommended Priority Order" section below implies — number 1 is the first thing to fix. `fix-plan.md` uses this same numbering for its sections.
 
+Row 30 was found later, during development, and is appended rather than inserted: its number carries no priority. Its root cause, reproduction and the decision the fix has to make first are in `fix-plan.md` § 30.
+
 | # | Issue | Impact | Severity |
 | --- | --- | --- | --- |
 | 1 | A live API key is hardcoded in committed source | The Gemini key is a field default in `config.py`, tracked in git, so it's in every clone and fork. Because the `.env` bug below means no key can be supplied any other way, this shared, publicly-committed credential is what every developer actually spends against. | Medium |
@@ -43,6 +45,7 @@ Rows are numbered 1→29 in the order the "Recommended Priority Order" section b
 | 27 | Export-eligibility list names a status that can't exist | `"approved"` is not a member of the task-item status enum, so the set silently behaves as if it weren't there. No behavioural bug, but a reader auditing export rules concludes there's an `approved` state and goes looking for the transition that produces it. | Low |
 | 28 | A task can never leave `draft`, so intake never closes | `draft → completed` is the only task-status transition the API supports — there's no activation endpoint and no `status` field on the update schema. Dataset intake stays open for a task's entire life (items can be added while others are being reviewed), and the `in_review`/`ready`/`disputed` export states can never occur. | High |
 | 29 | Lifecycle conflicts in dataset intake are reported as server errors | The registration route catches every exception, so a deliberate `409` ("intake only allowed while the task is draft or ready") reaches the client as a `500`. Clients and alerting can't tell an invalid workflow transition from an outage. | Medium |
+| 30 | A task or project that has items can never be deleted | Both delete endpoints fail with a foreign-key error and return `500`. It applies to *every* task that has had a dataset registered, even one whose items carry no annotation work at all, so in practice no real task can be deleted. Underneath sits an unanswered product question: whether deleting a task that already holds review history should be permitted rather than merely made to work. | Medium |
 
 ## Release Risk
 

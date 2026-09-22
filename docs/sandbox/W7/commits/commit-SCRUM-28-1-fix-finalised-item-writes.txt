@@ -1,0 +1,27 @@
+fix(api): refuse new annotation work on finalised task items (SCRUM-28)
+
+Submitting a draft checked the draft's own status but never the task item's, so
+_create_annotation_from_draft overwrote the author's annotation in place: a
+canonicalized item kept its status while the answer under it changed, and the
+approving review still pointed at it.
+
+task_service.py gains assert_task_item_accepts_draft_writes beside
+assert_task_item_status_update_allowed, reading the same
+TERMINAL_TASK_ITEM_STATUSES. draft_service.py calls it from create_draft,
+update_draft and submit_draft, ahead of each path's own status check, so the
+annotator is told the item is finalised rather than that their draft is in the
+wrong state. delete_draft stays open -- it removes no annotation. A draft write
+naming an unknown task item is now 404 instead of a foreign-key 500.
+
+Reopening a finalised item is not implemented and the refusal says so: who may
+reopen one is open with the client (follow-up F5).
+
+Reverting the three calls turns five of the six tests in
+test_finalised_item_writes.py red, including the one pinning the stored
+annotation and its approving review after an attempted resubmission. The sixth
+-- returned and expert_send_back still accept a submission -- is green either
+way, guarding rework against a widened terminal set.
+
+Docs: workflow_states.md, api_surfaces.md, task-lifecycle.md.
+
+Closes issue 2. D5 criterion 1.

@@ -166,7 +166,7 @@ From `hej/AGENTS.md`:
 | --- | --- |
 | `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` — the big picture for each story, written with the `feature-spec` skill |
 | `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 29 defects) and its fix plan (`fix-plan.md`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
-| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots Hanchen downloads by hand from the team's online Google Sheet and the Jira board — **read-only locally**, and possibly behind the live versions. `story_src.csv` is the backlog data behind `user-stories.html`, the client view: only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
+| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots of the team's online Google Sheet and the Jira board, fetched by `tracking-sync download` or downloaded by hand, and possibly behind the live versions. `Jira.csv` is never edited, only replaced whole by a fresh export; `tracking-sync` refreshes the tracker's snapshot tabs and may append log rows, which Hanchen copies back into the online sheet (see *Tracking data*). `story_src.csv` is the backlog data behind `user-stories.html`, the client view: only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
 | `sandbox/` | Hanchen's personal files supporting work on his own branches — never uploaded to GitHub. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
 | `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`) |
 
@@ -206,7 +206,7 @@ sandbox/
 ### Tracking data: `shared/story_src.csv`
 
 `story_src.csv` is Hanchen's local, client-facing view of the backlog, not a team record. The live
-records are the online tracker and the Jira board; `shared/` holds hand-downloaded snapshots of them,
+records are the online tracker and the Jira board; `shared/` holds downloaded snapshots of them,
 and `story_src.csv` is updated from those snapshots later still. When current status matters, read the
 board and the tracker.
 
@@ -215,7 +215,7 @@ board and the tracker.
   related_issues, subtasks, defects, status, allocated_to, scrum, source`. Keep the header unchanged.
 - `status` is blank (not started), `working`, `done` or `dropped`.
 - `allocated_to` takes one name or several separated by commas, using the tracker's roster names —
-  Tim Chung is `Tok Tin Chung`.
+  Tim Chung, whom records before 2026-09-16 call `Tok Tin Chung` (the skill's alias maps it).
 - `scrum` is generated from the board; `source` is `shipped` for the original 59 stories.
 - Preserve the byte format when writing: UTF-8 with BOM, CRLF between rows, LF inside multi-line
   cells, minimal quoting. Python's `csv` writer with `QUOTE_MINIMAL` and `lineterminator='\r\n'`
@@ -223,13 +223,25 @@ board and the tracker.
 
 **Update rules** (agreed 2026-09-13; applied by the `tracking-sync` skill in
 `.claude/skills/tracking-sync/`)
-- **Board source:** whichever download is newer — the tracker's *Jira Statistics* snapshot or
-  `Jira.csv`. Where the two disagree, report it.
-- **`done`** when the tracker's latest entry for the story says *Story complete? = Yes*, or every ticket
-  for the story is Done on the board. Gaps found by checking the code are reported, not written into
-  the CSV.
-- **`working`** when a story ticket is In Progress or In Review, or the tracker's latest entry says
-  *No — more work to come*.
+- **Board source:** always `Jira.csv` (decided 2026-09-16). The tracker's *Jira Statistics* tab is a
+  snapshot of it that the skill refreshes, so the tracker's download date says nothing about which is newer.
+- **Pending rows** (the tracker's own convention, recorded 2026-09-18). A Contribution Log row is written
+  when a pull request is **opened**, not when it merges. Until a reviewer passes it, *Review OK?* is
+  blank: the row records a PR awaiting review, and that PR is not merged. So the log's first column on a
+  pending row is the date it was logged. That column was headed *Date merged* until the online sheet
+  renamed it *Date* (seen 2026-09-21); the scripts accept either heading. A pending row is not a discrepancy — the report lists it as awaiting
+  review. *Review OK?* takes three values: blank (pending), `OK` (reviewed and passed) and `SELF-REVIEW`
+  (reviewed by its own author, which the Definition of Done does not accept).
+- **`done`** when the tracker's latest entry for the story says *Story complete? = Yes* **and its
+  *Review OK?* is `OK`**, or every ticket for the story is Done on the board. A *Yes* on a pending row
+  means the work is in review, not finished; a *Yes* on a `SELF-REVIEW` row fails the Definition of
+  Done's review by someone other than the author. Either counts as `working`. Gaps found by checking
+  the code are reported, not written into the CSV.
+- **`working`** when a story ticket is In Progress or In Review, the tracker's latest entry says
+  *No — more work to come*, or its latest *Yes* is pending or self-reviewed.
+- **Checking rows against git.** Only a reviewed row makes a claim git can contradict: an `OK` row whose
+  PR is not merged into `origin/main` is flagged. So is the reverse — a pending row whose PR git shows
+  already merged, meaning the review happened, or was skipped, without the row being updated.
 - **Not started** (blank) when every ticket is To Do and nothing is logged, even if the CSV said
   `working`.
 - **Never downgraded automatically:** `done` and `dropped`. Change these by hand after agreement.
@@ -238,11 +250,75 @@ board and the tracker.
     both are empty;
   - completed — the allocation already recorded, plus anyone who delivered;
   - not started — the allocation already recorded, plus any board assignee.
-- **Read-only:** never write to `CS-57_Contribution_Tracker.xlsx` or `Jira.csv`.
+- **`scrum`** (decided 2026-09-16): add a board ticket when its `Jira.csv` description links the story —
+  "Related to user story X" or "Story \*X\*". Additions only: a ticket is never removed automatically,
+  because the CSV also carries links the board descriptions do not state (SCRUM-81, 82 and 84 for A2–A4,
+  for example). Subtasks are not listed; they inherit their parent's stories. Status and allocation are
+  worked out from the extended list. A board ticket that maps to no story is reported.
+- **Read-only:** never edit `Jira.csv`. It is only ever replaced whole by a fresh board export — by
+  hand, or by `download`, which produces the same file.
+- **Downloading the snapshots** (decided 2026-09-18). `tracking-sync download` fetches both snapshots
+  before a report, so they no longer depend on a manual download:
+  - **Credentials** live in `docs/.env` — `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `TRACKER_URL` —
+    outside every git repository. They are never printed, never copied into `hej/`, and the Jira token
+    should carry read-only scopes, so a mistake cannot change the board.
+  - **Jira** comes from the same all-fields CSV export the board's *Export* button produces, ordered by
+    `created DESC` with a byte-order mark added, which makes it byte-identical to a manual download
+    (verified 2026-09-18).
+  - **The tracker** comes from the sheet's xlsx export. The sheet is viewable by link, so no Google
+    credential is needed, and the link itself is therefore a secret.
+  - **All or nothing.** Both files are fetched and checked first — the Jira header must match, the
+    workbook must hold its six tabs — and only then replace the copies in `shared/`. The replaced copies
+    are kept in a temporary folder whose path is printed.
+  - **Read-only against the live records.** `download` never writes to the board or the sheet. Copying
+    `apply`'s tracker changes back to the online sheet stays manual.
+- **Writing the tracker** (decided 2026-09-16). `apply` may write the downloaded
+  `CS-57_Contribution_Tracker.xlsx`, and only these parts:
+  - *Jira Statistics* — the snapshot cells regenerated from `Jira.csv`: the headline counts, workload by
+    person, waiting and dropped stories, and every row of *Every issue on the board*. The nine Owner cells
+    and every formula are left alone. The *IN SPRINT* figure and each person's in-sprint count match a
+    sprint whose name **begins with** the week token: the board renames sprints as it goes — `W7` became
+    `W7 Lock down review data` — and an exact match silently counts zero (decided 2026-09-18). The
+    week token `Break` matches the board's `Mid-semester Break` sprint (decided 2026-09-19);
+  - *Lists* — each story's tickets (column P, the same as `story_src.csv`'s `scrum`), its board status
+    (column Y: `Dropped`; `Not on board` with no ticket; `Done` when every ticket is Done; `In progress`
+    when any ticket has left To Do; otherwise `To Do`), and the ticket list behind the log's dropdown
+    (column Z);
+  - *Contribution Log* — an existing row is never changed, reordered or deleted, and `apply` checks every
+    one is byte-for-byte identical afterwards. With `--git`, it appends a row for each PR merged into
+    `origin/main` that no row logs, filling only what git proves — date merged, member (the PR head
+    commit's author, left blank when not on the roster), PR number and link — for the member to
+    complete. The ticket dropdown covers `Lists!$Z$2:$Z$200`;
+  - the workbook's *Jira Statistics* filter range, and recalculation on open.
+
+  *Start Here*, *Dashboard* and *Client Report* are never written. Text goes in as inline strings, so the
+  shared-string table is untouched.
+- **Week calendar** (decided 2026-09-19). The tracker's weeks follow the board and `roadmap.md`: the
+  mid-semester break is its own week, `Break`, between W8 and W9, and W12 ends on 1 Nov with the
+  project. **Since 2026-09-19 weeks run Thursday to Wednesday**, closing after the Wednesday client
+  meeting: W7 is 14–23 Sep, `Break` is 1–7 Oct and W12 is 29 Oct–1 Nov; weeks before W7 keep their
+  Monday–Sunday dates. The week table in *Lists* (columns T–V) is the only source of week labels:
+  the Contribution Log's *Week* column looks the date up in it, and the Dashboard's per-week rows count
+  its labels. This was a one-time change, made by hand with Hanchen's approval rather than by `apply`:
+  the week table was relabelled, every *Week* formula in the Log was rewritten to the lookup, and the
+  Dashboard's per-week rows were relabelled. The *Week* value of every existing row was checked to be
+  unchanged. **Second hand change, 2026-09-19** (approved by Hanchen): the week table's dates were moved to
+  Thursday–Wednesday from W7 on, and its headers became *Starts* / *Ends*. Only the *Lists* part changed,
+  and none of the 21 logged rows changed week. **Third hand change, 2026-09-21** (approved by Hanchen): *Story complete?* on six Log rows — PRs #19, #22,
+  #23, #24, #25 and #27 — set to `No - more work to come`, because their stories (D5, C2, B2, C1) were not
+  finished; #22's was blank. Each cell was copied from an existing `No` cell so the text matches the dropdown;
+  only those six cells changed. D5 and C1 still became `done` by the board rule (every ticket Done), which
+  Hanchen accepted.
+- **The online tracker stays the record.** After `apply` writes the tracker, Hanchen copies the refreshed
+  *Jira Statistics* and *Lists* tabs, and any appended log rows, into the online sheet before anyone logs
+  new work; otherwise the next download overwrites them.
 - **Who changes `story_src.csv`** (decided 2026-09-14): `status`, `allocated_to` and `scrum` change only
   through the skill's `apply` step. Every other column — story text, acceptance criteria, related
-  issues, subtasks, defects, and new stories — is edited by Hanchen in `user-stories.html`. `apply`
-  refuses if the file changed after its report, so finish page edits before running a report.
+  issues, subtasks, defects, and new stories — is edited by Claude directly in `story_src.csv`, on
+  Hanchen's decision and never by hand (changed 2026-09-22; it was Hanchen, in `user-stories.html`). The
+  page reads the CSV at runtime, so it needs no edit; its `SEED` is the original text and stays unchanged.
+  Writes use the same format as `apply` (UTF-8 with BOM, CRLF, minimal quoting). `apply` refuses if the file
+  changed after its report, so finish story edits before running a report.
 
 ## What We Are Not Using
 

@@ -1,0 +1,20 @@
+fix(api): make draft submission atomic and record its annotation (SCRUM-26)
+
+Submitting a draft wrote the draft, its annotation and the item status in
+three separate commits, and the route wrote the draft_submitted history row
+in a fourth. A failure between them left a submitted draft with no
+annotation, or a submission that had gone through while the caller saw an
+error. draft.annotation_id was never written.
+
+submit_draft now makes its writes with commit=False and commits once, rolling
+back on any error. It records the annotation it produced in
+draft.annotation_id. With commit=False the caller owns the transaction: the
+submit route adds the history row to it, then commits, and returns the
+annotation_id. A marked place inside the transaction is left for SCRUM-48's
+submission limit, and one before the commit for F1's event (SCRUM-62).
+
+test_draft_submission_atomicity.py uses a real SQLite session and fails all
+five tests on the previous commit. One existing mock assertion gains
+commit=False; the behaviour it guards is unchanged.
+
+Closes issue 11. Story D5 (SCRUM-26).

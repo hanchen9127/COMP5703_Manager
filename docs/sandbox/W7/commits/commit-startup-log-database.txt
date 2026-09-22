@@ -1,0 +1,12 @@
+feat: name the database in use at API startup
+
+PostgreSQL is the default since PR #24 and SQLite is opt-in, but nothing told a
+running process which one it ended up on. A stale DATABASE_URL left in .env is
+enough to run the API on SQLite while a PostgreSQL server sits idle beside it,
+and the failure is silent.
+
+Startup now logs the backend and its location through uvicorn's own logger,
+before init_db(): "Database: postgresql (postgres:5432/hej_dev)" or
+"Database: sqlite (./hej_dev.db)". The password is never part of the line.
+
+Raised as a follow-up in the review of PR #24.

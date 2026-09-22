@@ -68,7 +68,9 @@ When the user says the story is done:
 1. Go through `validation.md` check by check. Run the automated ones yourself; ask the user to confirm
    the manual ones.
 2. If everything passes:
-   - mark the story's row ✅ in `roadmap.md` and add the spec folder link;
+   - once the work is merged to `origin/main` and meets the Definition of Done, mark the story's
+     row ✅ in `roadmap.md` and add the spec folder link; until then mark it 🟡 — roadmap marks
+     follow the code, not the tracker;
    - remind the user to log the PR in the tracker and move tickets to Done;
    - offer to run `tracking-sync`.
 3. If a check fails, list what is missing and leave the roadmap unchanged.

@@ -1,0 +1,12 @@
+docs: several annotators may work one item (D8, client answer 2026-09-17)
+
+workflow_states.md still said one annotator works an item at a time and a
+second sees it as held. The client answered on 2026-09-17 that an item may
+have several annotators, the number set per task, with drafts uncapped and
+submissions limited to that number, and that there is no assignment.
+
+The TaskItem lifecycle note now says so. Each unfinished draft still belongs
+to its author (D6). The limit and the queues are built in SCRUM-48, and the
+web app's single-annotator display changes in SCRUM-93.
+
+Story D8.

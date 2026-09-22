@@ -1,6 +1,6 @@
 # HEJ Fix Plan
 
-Technical plan for each issue in `issues.md`, numbered 1–29 to match that file's Impact Table (see its numbering — 1 is highest priority, 29 is lowest). Section **3–4** covers two Impact Table rows (3 and 4) in one write-up, since both are downstream of the same root cause — no single canonical annotation per item — and share one fix.
+Technical plan for each issue in `issues.md`, numbered 1–30 to match that file's Impact Table (see its numbering — 1 is highest priority, 29 is lowest). Section **3–4** covers two Impact Table rows (3 and 4) in one write-up, since both are downstream of the same root cause — no single canonical annotation per item — and share one fix. Section **30** was found later, during development, and is appended: its number carries no priority.
 
 ---
 
@@ -63,6 +63,11 @@ At first this looked like a seed-script bug, but it isn't — it's a faithful re
 ---
 
 ## 5. Reviewer corrections are never actually persisted
+
+> **Overtaken in part by the client, 2026-09-15 (question 3).** Each author keeps their own version, so the
+> first option in step 1 below — writing the correction into the annotator's `annotation_data` — is ruled
+> out. A reviewer's correction is a new version authored by the reviewer, kept beside the annotator's.
+> Which version a release carries is still open (follow-up F1). The work is D3, SCRUM-32, in W9.
 
 The frontend (`task-item-workspace-sheet.tsx`, `handleReviewAction`) sends a reviewer's corrected value as `final_payload`/`final_verdict`. The backend handler (`app/api/routes/review_actions.py`, ~lines 229-267) only does `notes_parts.append(f"final_payload={payload.final_payload.strip()[:500]}")` (and the same for `final_verdict`) — folding the correction into `review_notes`, a free-text field on the new `ReviewDB` row. The item's status still transitions to `next_item_status` (e.g. `canonicalized`) a few lines later, but `annotation.annotation_data` — the actual canonical content — is never reassigned. The reviewer's correction is captured only as truncated text in a notes/audit field; the stored and exported value remains the original, un-corrected annotation.
 
@@ -272,6 +277,11 @@ def list_project_exports(
 ---
 
 ## 15. Dispute send-back not wired
+
+> **Done, then overtaken by the client, 2026-09-15 (question 4).** The send-back below was wired in PR #17
+> (E2). The client has since ruled that after adjudication an item goes back to the **reviewer**, and the
+> expert may not finalise — so `decide_escalation`'s `finalize` outcome and its send-back to the
+> annotator both change under E3 (SCRUM-52's E3 part, W10). Kept here as the record of what E2 did.
 
 `components/task-dispute-desk.tsx` has the full UI (decision selector including `"send_back"` at line 227, decision type at line 40) but short-circuits with a placeholder toast at lines 93-96 and 214-219: *"Send back to annotator is not wired yet."*
 
@@ -657,6 +667,171 @@ The correct status code and message are both present — nested inside a server-
 3. Audit the other broad `except Exception` handlers in `app/api/routes/` for the same swallow (`members.py`'s `accept_invitation` has the same shape but does re-raise `HTTPException` first, at lines 220-221 — that is the pattern to copy).
 
 **Verify:** POST dataset registration against a `completed` task and assert the response is `409` with the domain message intact, not `500`. Add the same assertion for any other lifecycle guard reachable through this route.
+
+---
+
+## 30. A task or project that has items can never be deleted
+
+*Found by Michael on 2026-09-17 while designing SCRUM-1's foreign keys; reproduced and traced by Hanchen the
+same day against `main` at `17673c8`. Not part of the original audit, so this section is appended rather than
+slotted by priority.*
+
+**Symptom.**
+
+`DELETE /projects/{project_id}/tasks/{task_id}` and `DELETE /organizations/{org_id}/projects/{project_id}`
+raise `sqlite3.IntegrityError: FOREIGN KEY constraint failed`. Neither route catches it, so the client
+receives a `500`. No test covers either path.
+
+**Root cause — two layers.**
+
+**Layer 1: delete ordering, which is what actually fails today.** `TaskDB` declares cascades to
+`data_pointers` and to `task_items`, but nothing declares that `task_items.data_pointer_id` depends on
+`data_pointers.id` — there is no relationship between those two models. SQLAlchemy therefore picks an
+order freely, and it deletes the data pointer first:
+
+```text
+DELETE FROM data_pointers WHERE data_pointers.id = ?   params=('dp_1',)
+-> FOREIGN KEY constraint failed
+```
+
+That is the **first** statement issued, so the failure happens before any annotation work is reached.
+This is why deleting a task fails even when its items are untouched, which is broader than a missing
+cascade would explain.
+
+**Layer 2: children of `task_items`, which would fail next.** Once the ordering is fixed, deleting a
+task item is blocked in turn by rows that reference it with no cascade and no `ondelete`:
+
+| Child of `task_items` | Deleting the item |
+| --- | --- |
+| `annotations` | ✅ allowed — the relationship declares `cascade="all, delete-orphan"` |
+| `drafts` | ❌ `FOREIGN KEY constraint failed` |
+| `predictions` | ❌ `FOREIGN KEY constraint failed` |
+| `task_item_escalations` | ❌ `FOREIGN KEY constraint failed` |
+
+`reviews` reference both `annotations` and `task_items`, so they follow the same pattern.
+
+**Reproduction.**
+
+Standard library plus the app's own models; no server and no database file. Run from
+`apps/hej-api` with `PYTHONPATH=.`:
+
+```python
+from datetime import UTC, datetime
+
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.models.db_models import Base, DataPointerDB, DraftDB, ProjectDB, TaskDB, TaskItemDB
+
+engine = create_engine(
+    "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+)
+
+
+@event.listens_for(engine, "connect")
+def _foreign_keys_on(dbapi_connection, _record):
+    # The same pragma app/core/database.py sets.
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
+
+@event.listens_for(engine, "before_cursor_execute")
+def _log_deletes(conn, cursor, statement, params, context, executemany):
+    if statement.strip().upper().startswith("DELETE"):
+        print(f"  {statement.strip().splitlines()[0]}   params={params}")
+
+
+Base.metadata.create_all(engine)
+db = sessionmaker(bind=engine)()
+db.add(ProjectDB(id="proj_1", organization_id="1", name="P"))
+db.add(
+    TaskDB(
+        id="task_1",
+        project_id="proj_1",
+        title="T",
+        judgment_question="Q",
+        task_type="text",
+        annotation_mode="human_first",
+        label_schema_ref="default",
+    )
+)
+db.add(DataPointerDB(id="dp_1", task_id="task_1", location_ref="x"))
+db.add(
+    TaskItemDB(
+        id="item_1",
+        task_id="task_1",
+        data_pointer_id="dp_1",
+        external_item_ref="e1",
+        status="pending",
+    )
+)
+# Add a draft to see layer 2; the failure below happens with or without it.
+db.add(
+    DraftDB(
+        id="draft_1",
+        task_item_id="item_1",
+        annotation_type="annotation",
+        status="pending",
+        draft_data={},
+        created_at=datetime.now(UTC),
+    )
+)
+db.commit()
+
+try:
+    db.delete(db.query(TaskDB).filter(TaskDB.id == "task_1").first())
+    db.commit()
+    print("deleted")
+except Exception as exc:
+    db.rollback()
+    print(f"failed: {type(exc).__name__}")
+```
+
+Expected output, on `main`:
+
+```text
+  DELETE FROM data_pointers WHERE data_pointers.id = ?   params=('dp_1',)
+failed: IntegrityError
+```
+
+Deleting the project instead of the task fails the same way, because it cascades into the task.
+
+**Fix — the decision comes first.**
+
+Making the delete work is the smaller half. The larger question is **whether a task holding annotation
+and review history should be deletable at all**. Cascading erases the provenance the platform exists to
+keep, so refusing with a `409` — and offering archival instead — may be the right answer. That choice
+belongs with the task lifecycle, story B4 (SCRUM-24), which now owns it: the client answered "anything
+reasonable, no hard requirement" on 2026-09-17, so the path is ours to define and write down.
+
+1. **Settle the policy first**, with B4, and record it in `workflow_states.md`: is a task holding
+   annotation or review work deletable, or refused?
+2. **Fix the ordering regardless of the policy.** Declare the missing relationship so SQLAlchemy knows
+   `task_items` depends on `data_pointers` — for example `data_pointer = relationship("DataPointerDB")`
+   on `TaskItemDB` with a matching `back_populates` — or give `task_items.data_pointer_id` an explicit
+   `ondelete` and let the database order it. Without this, even an untouched task cannot be removed.
+3. **If the policy is "deletable":** add `ondelete="CASCADE"` to the `task_item_id` foreign keys on
+   `drafts`, `predictions`, `reviews` and `task_item_escalations`, with `passive_deletes=True` on the
+   owning relationships, so the database does the work in one statement rather than the ORM loading
+   every child.
+4. **If the policy is "refused":** count the dependent rows first and raise a `409` naming what blocks
+   the delete, and name the archival path a project manager should use instead — even if archival is
+   not built yet.
+5. **Stop the `500` either way.** Both routes currently let `IntegrityError` escape. This is the same
+   failure mode as issue 29: a workflow refusal reported as an outage.
+
+**Verify:** route-level tests for both endpoints — a task whose items carry no work, and a task with a
+draft, a prediction and an escalation — asserting the documented outcome and never a `500`. There are no
+tests on either route today. The same pair for `DELETE /organizations/{org_id}/projects/{project_id}`,
+which cascades into its tasks.
+
+**Severity.** Recorded as Medium in `issues.md`: it breaks a documented endpoint completely and reports
+the breakage as a server error, but corrupts no data, bypasses no governance rule, and sits outside the
+demo path. It becomes High if the pilot needs task deletion.
+
+---
 
 ---
 

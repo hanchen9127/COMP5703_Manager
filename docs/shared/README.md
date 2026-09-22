@@ -9,19 +9,26 @@ Two files, meant to travel together in this folder:
 
 **Where status really lives.** The team's live records are the contribution tracker, a shared online
 Google Sheet, and the Jira board. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` in this folder are
-snapshots Hanchen downloads by hand: read-only, and possibly behind the live versions. `story_src.csv`
-is updated from those snapshots later still, so it lags both. For the team's current status, read the
-board and the tracker.
+snapshots fetched by `tracking-sync download` (or downloaded by hand), possibly behind the live versions.
+`Jira.csv` is never edited, only replaced whole by a fresh export. The tracker
+download is refreshed by `tracking-sync`: its *Jira Statistics* and *Lists* snapshot tabs are regenerated
+from `Jira.csv`, and a row can be appended for a merged PR nobody logged — existing Contribution Log rows
+are never changed. Hanchen then copies those changes into the online sheet. `story_src.csv` is updated
+from the downloads later still, so it lags both. For the team's current status, read the board and the
+tracker.
 
 ## Who changes what
 
-| Columns | Changed by |
+| What | Changed by |
 |---|---|
-| `status`, `allocated_to`, `scrum` | The `tracking-sync` skill only (`.claude/skills/tracking-sync/`) — report, confirm, apply. Rules: `../specs/tech-stack.md` → *Tracking data* |
-| Everything else — `story`, `acceptance_criteria`, `related_issues`, `subtasks`, `defects`, and new stories | Hanchen, in `user-stories.html` |
+| `story_src.csv` — `status`, `allocated_to`, `scrum` | The `tracking-sync` skill only (`.claude/skills/tracking-sync/`) — report, confirm, apply. Rules: `../specs/tech-stack.md` → *Tracking data* |
+| `story_src.csv` — everything else: `story`, `acceptance_criteria`, `related_issues`, `subtasks`, `defects`, and new stories | Hanchen, in `user-stories.html` |
+| Tracker — *Contribution Log* rows | Team members, in the online sheet. `tracking-sync` only appends a row for a merged PR nobody logged, for its member to complete |
+| Tracker — *Jira Statistics* snapshot, and *Lists* columns P, Y and Z | `tracking-sync`, from `Jira.csv`; Hanchen copies them into the online sheet |
+| `Jira.csv` | Nobody here — it is the board export |
 
-`tracking-sync`'s apply step refuses if `story_src.csv` changed after its report, so finish page edits
-before running a report — or run the report again.
+`tracking-sync`'s apply step refuses if `story_src.csv`, the tracker or `Jira.csv` changed after its
+report, so finish page edits before running a report — or run the report again.
 
 ## Using it
 
@@ -51,7 +58,7 @@ One row per story, fourteen columns:
 - `acceptance_criteria`, `related_issues` and `subtasks` hold one item per line inside a single quoted cell.
 - `acceptance_criteria` and `subtasks` are **ordered lists**, stored as `1. …`, `2. …`. The numbers come from position, not from what you type: add a line in the middle and everything below renumbers itself on save. Whatever ordinals a cell already has are ignored on read, so a duplicate or a gap can't appear. `related_issues` stays unnumbered.
 - `status` is blank, `working`, `done` or `dropped`, set by `tracking-sync`. `done` and `dropped` are never downgraded automatically.
-- `scrum` is the SCRUM tickets covering the story — several separated by commas, blank where nothing covers it. Set by `tracking-sync` from the Jira snapshot; don't edit it here.
+- `scrum` is the SCRUM tickets covering the story — several separated by commas, blank where nothing covers it. Set by `tracking-sync`, which adds a ticket whose Jira description links the story and never removes one; don't edit it here.
 - `source` is `shipped` for the original 59 — every current row — and `added` for stories written later. That's what lets the page mark a story as new and allow deleting it; the original 59 can only be reset, never deleted.
 - The file is UTF-8 with a BOM, CRLF between rows and LF inside multi-line cells. Excel or Sheets may not keep that format, so edit through the page rather than a spreadsheet.
 
@@ -71,7 +78,7 @@ Use the **Ticket** filter in the toolbar to narrow the backlog to *On the board*
 
 Coverage: **53 of 59 stories carry a ticket.** The six without one are the stories set aside — A1, A5 and K1–K4 (`../specs/mission.md` → *Stories Set Aside*).
 
-The board snapshot, `Jira.csv`, holds 58 tasks and 14 subtasks under 10 epics. Subtasks are not listed against stories: each inherits its parent task's stories, so listing both would double-count.
+The board snapshot, `Jira.csv`, holds 59 tasks and 15 subtasks under 10 epics (downloaded 2026-09-16). Subtasks are not listed against stories: each inherits its parent task's stories, so listing both would double-count.
 
 A ticket covering more than two stories is *oversized*: more than one sprint's work. Four are, and the **Oversized** filter finds them:
 
