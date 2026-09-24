@@ -5,24 +5,24 @@ the affected rows in `../specs/roadmap.md` lose their ⏳ once an answer arrives
 
 2026-09-14 由 Hanchen 记录。客户答复后写回本文件，并同步写入 `hej` 文档；`../specs/roadmap.md` 中相关行在得到答复后去掉 ⏳。
 
-**Status as of 2026-09-22 / 截至 2026-09-22 的状态:** answered 1 (in part), 2, 3, 4, 5, 6, 7. Question 6
-was answered in the client's written round of 2026-09-21, which also answered seven further questions —
-see the section "Round 1 of 2026-09-21" at the end of this file (source: `../shared/client-qa.md`). Of the follow-ups, **F4 and F6 are answered**;
-**F1, F2, F3 and F5 are still open — drafted as Round 2 on 2026-09-22, for the 2026-09-23 client meeting**
-(`../sandbox/W8/msg/client-qa-round2.md`), not yet sent. Roadmap and mission were updated for the
-2026-09-21 answers on 2026-09-22.
+**Status as of 2026-09-24 / 截至 2026-09-24 的状态:** **every question is answered.** Questions 1–7 are
+answered; question 6 in the written Round 1 of 2026-09-21, which also answered seven further questions.
+**The written Round 2 of 2026-09-24 answered F1, F2, F3 and F5 and four new questions** — and **corrected
+question 4**: an expert's adjudication no longer goes back to a reviewer (R2-1). See the "Round 1" and
+"Round 2" sections at the end of this file (source: `../shared/client-qa.md`). Roadmap and mission were
+updated for Round 1 on 2026-09-22 and for Round 2 on 2026-09-24, together with `../shared/story_src.csv` (new stories B7, B8, D9).
 
-已答复 1（部分）、2、3、4、5、6、7。问题 6 已在 2026-09-21 客户的书面答复中回答，该轮还回答了另外七个问题，
-见本文件末尾的“2026-09-21 第一轮”一节（来源：`../shared/client-qa.md`）。追问中 **F4 和 F6 已答复**；
-**F1、F2、F3、F5 仍未答复——已于 2026-09-22 拟好第二轮问题**（`../sandbox/W8/msg/client-qa-round2.md`），
-用于 2026-09-23 的客户会议，尚未发送。roadmap 和 mission 已于 2026-09-22 按 2026-09-21 的答复更新。
+**所有问题都已答复。**问题 1–7 已答复；问题 6 在 2026-09-21 的书面第一轮中答复，该轮还回答了另外七个问题。
+**2026-09-24 的书面第二轮答复了 F1、F2、F3、F5 和四个新问题**——并**修正了问题 4**：专家裁决不再退回 reviewer
+（R2-1）。见本文件末尾的“第一轮”和“第二轮”两节（来源：`../shared/client-qa.md`）。roadmap 和 mission 已于
+2026-09-22 按第一轮、2026-09-24 按第二轮更新，`../shared/story_src.csv` 同步更新（新增 story B7、B8、D9）。
 
 | # | Topic / 主题 | Priority / 优先级 | Needed by / 最晚答复 | Blocks / 阻塞 | Answer / 答复 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Canonical vs per-annotator annotations / 权威标注还是各自保留 | Must ask / 必须问 | End of W7 (20 Sep) | D4, D3, F3, H4, I4 — SCRUM-27, 32, 37, 38, 73 | **Partly** — per-author versions are kept, the annotator count is set per task (2026-09-17, also answering F4), and the AI is an author; which version is released is still open — F1 / **部分答复**：按作者保留各自版本，标注人数按任务配置（2026-09-17，同时答复 F4），AI 也是作者；发布哪个版本仍未确定，见 F1 |
+| 1 | Canonical vs per-annotator annotations / 权威标注还是各自保留 | Must ask / 必须问 | End of W7 (20 Sep) | D4, D3, F3, H4, I4 — SCRUM-27, 32, 37, 38, 73 | **Answered** — per-author versions are kept, the annotator count is set per task (2026-09-17, also answering F4), and the AI is an author; a release carries one authoritative output plus the full history (F1, answered 2026-09-24 as R2-2) / **已答复**：按作者保留各自版本，标注人数按任务配置（2026-09-17，同时答复 F4），AI 也是作者；发布携带一个权威输出加完整历史（F1，2026-09-24 以 R2-2 答复） |
 | 2 | Task lifecycle / 任务状态流转 | Must ask / 必须问 | End of W7 (20 Sep) | B4 — SCRUM-24 | **Answered** — "anything reasonable, no hard requirement"; we decide and write it down / **已答复**：合理即可，没有硬性要求，由我们决定并写入文档 |
 | 3 | Who authors a reviewer's correction / 审核修改算谁的 | Must ask / 必须问 | End of W8 (27 Sep) | D3 — SCRUM-32 | **Answered** — each author has their own version / **已答复**：不同作者有各自的版本 |
-| 4 | What happens after adjudication / 裁决之后怎么处理 | Must ask / 必须问 | End of W9 (4 Oct) | E3 — SCRUM-52 (E3 part), SCRUM-58 | **Answered** — back to the reviewer; the expert may not finalise / **已答复**：退回 reviewer，专家不能直接定稿 |
+| 4 | What happens after adjudication / 裁决之后怎么处理 | Must ask / 必须问 | End of W9 (4 Oct) | E3 — SCRUM-52 (E3 part), SCRUM-58 | **Corrected 2026-09-24 (R2-1)** — the expert's adjudication is final: Accept, Return to the open workflow, or Reject; it does not go back to a reviewer. *Superseded:* "back to the reviewer; the expert may not finalise" / **2026-09-24 修正（R2-1）**：专家裁决即终局——接受、退回正常流程或驳回，不再回到 reviewer。*已作废：*“退回 reviewer，专家不能直接定稿” |
 | 5 | Default role for invited members / 被邀请成员的默认角色 | Confirm / 建议确认 | This week (W7) | J3 — SCRUM-90 | **Answered** — role chosen at invitation; no default / **已答复**：邀请时必须分配角色，不设默认角色 |
 | 6 | Project-level access isolation / 项目级权限隔离 | Confirm / 建议确认 | Before W8 (21 Sep) | G3 scope | **Answered 2026-09-21** — yes, required, enforced in the backend for reads and writes; see R1-6 / **已答复**：需要，后端对读和写都要执行，见 R1-6 |
 | 7 | Justification on accept / 接受时是否必须填写理由 | Confirm / 建议确认 | Next weekly meeting | C5 default — SCRUM-31 | **Answered** — always required on accept / **已答复**：接受时无论如何都必须填写理由 |
@@ -238,6 +238,10 @@ is preserved as superseded.
 
 ## 4. After an expert adjudicates a dispute, what happens to the item? / 专家裁决之后，item 怎么处理？
 
+> **Corrected by the client on 2026-09-24 — see R2-1.** The answer recorded below (back to the reviewer) is
+> superseded: the expert Accepts, Returns or Rejects, and that is final for the dispute. / **客户已于
+> 2026-09-24 修正——见 R2-1。**下面记录的答复（退回 reviewer）已作废：专家接受、退回或驳回，对该争议即为终局。
+
 **English**
 
 After an expert settles a dispute, should the item:
@@ -408,22 +412,19 @@ the next client meeting.
 
 | # | From / 来源 | Question (English) | 问题（中文） |
 | --- | --- | --- | --- |
-| F1 | Q1, Q3 | With every author keeping their own version, which version is released for an item — one chosen at finalisation, or all versions with their authors? | 每个作者都保留自己的版本时，一个 item 发布的是哪个版本：定稿时选出的一个，还是带着作者信息的全部版本？ |
-| F2 | Q4 | When the item returns to the reviewer, is it the same reviewer or a different one? Is the expert's decision binding on the reviewer, or only guidance? Can the reviewer send it to adjudication again? | item 退回 reviewer 时，是原来的 reviewer 还是另一位？专家的决定对 reviewer 有约束力，还是仅供参考？reviewer 能否再次提交裁决？ |
-| F3 | Q7 | Is a justification also required on reject, modify and dispute, or may those stay configurable? | 拒绝、修改和发起争议时也必须填写理由吗，还是这几种可以保留为可配置？ |
+| F1 | Q1, Q3 | ✅ **Answered 2026-09-24 (R2-2):** release output = the authoritative resolution; release provenance = the complete judgement history. | ✅ **2026-09-24 答复（R2-2）：**发布输出＝权威结论；发布溯源＝完整判断历史。 |
+| F2 | Q4 | ✅ **Answered 2026-09-24 (R2-1), correcting Q4:** the expert Accepts, Returns (to the open workflow) or Rejects; final for the dispute; no second review. | ✅ **2026-09-24 答复（R2-1），修正 Q4：**专家接受、退回（正常流程）或驳回；对该争议为终局；不再二次审核。 |
+| F3 | Q7 | ✅ **Answered 2026-09-24 (R2-4):** required on accept, reject, modify and escalate — not configurable. | ✅ **2026-09-24 答复（R2-4）：**接受、拒绝、修改、升级都必须填写——不可配置。 |
 | F4 | Q3 | ✅ **Answered 2026-09-17** through question 1: several annotators per item, the number set per task. | ✅ **2026-09-17 通过问题 1 答复**：一个 item 可以多个标注人，人数按任务配置。 |
-| F5 | D5 (SCRUM-28) | Once an item is finalised, who may reopen it? Does reopening send it back to review, and is the finalised answer kept as a superseded version? Until this is answered, new work against a finalised item is refused. | 已定稿的 item 由谁重新打开？重新打开后是否回到审核，原定稿答案是否作为被取代的版本保留？答复之前，对已定稿 item 的新提交一律拒绝。 |
+| F5 | D5 (SCRUM-28) | ✅ **Answered 2026-09-24 (R2-3):** the project owner reopens directly; other roles may request (can be parked); the item returns to the open workflow; the finalised answer stays as a superseded version. | ✅ **2026-09-24 答复（R2-3）：**项目负责人可直接重开；其他角色可申请（可暂缓）；item 回到正常流程；原定稿答案保留为被取代版本。 |
 | F6 | Q1 (2026-09-17) | ✅ **Answered the same day** by the client's own correction: each annotator submits their own version, and the (N+1)-th submission is refused. | ✅ **同日由客户的修订答复**：每个标注人各自提交自己的版本，第 N+1 次提交被拒绝。 |
 
-F4 and F6 are both answered. The F4 section below is kept and records what the answers mean for the work.
-**F1, F2, F3 and F5 are drafted as Round 2** (`../sandbox/W8/msg/client-qa-round2.md`, 2026-09-22), in that
-priority order — F5 blocks D5's already-merged refusal logic, F2 blocks this week's SCRUM-58, F1 blocks W10's
-H1, F3 is lowest urgency. Not yet sent; answers get written back into this file the same way Round 1's did.
+All six follow-ups are answered. The F4 section below is kept and records what the answers mean for the
+work. F1, F2, F3 and F5 were sent as Round 2 (drafted in `../sandbox/W8/msg/client-qa-round2.md`, 2026-09-22)
+and answered on 2026-09-24 — see the "Round 2" section at the end of this file.
 
-F4 和 F6 都已答复。下面的 F4 一节保留，记录这些答复对开发意味着什么。
-**F1、F2、F3、F5 已拟成第二轮**（`../sandbox/W8/msg/client-qa-round2.md`，2026-09-22），按这个优先顺序——F5
-挡着 D5 已合并的拒绝逻辑，F2 挡着本周的 SCRUM-58，F1 挡着 W10 的 H1，F3 最不急。尚未发送；答复回来后按
-Round 1 的方式写回本文件。
+六个追问都已答复。下面的 F4 一节保留，记录这些答复对开发意味着什么。F1、F2、F3、F5 作为第二轮发出（草稿见
+`../sandbox/W8/msg/client-qa-round2.md`，2026-09-22），于 2026-09-24 得到答复——见本文件末尾的“第二轮”一节。
 
 ---
 
@@ -799,8 +800,384 @@ protection*——即 A1 的“没有他人的批准审核，任何改动都不�
 
 ### What this round did not answer / 这一轮没有回答的问题
 
-**F1, F2, F3 and F5 are unchanged and still open.** F5 — who may reopen a finalised item — is the one D5
+*(Superseded 2026-09-24: all four were answered in Round 2 below.)* **F1, F2, F3 and F5 are unchanged and still open.** F5 — who may reopen a finalised item — is the one D5
 waits on. **Drafted as Round 2 on 2026-09-22** for the 2026-09-23 meeting — see the Follow-up questions
 section above and `../sandbox/W8/msg/client-qa-round2.md`. / **F1、F2、F3、F5 没有变化，仍未答复。** D5 在等的
 是 F5——谁能重开已定稿的 item。**已于 2026-09-22 拟成第二轮**，用于 2026-09-23 的会议——见上文“追问”一节和
 `../sandbox/W8/msg/client-qa-round2.md`。
+
+---
+
+## Round 2 of 2026-09-24 — the client's written answers / 2026-09-24 第二轮：客户的书面答复
+
+Source: `../shared/client-qa.md`, exported on 2026-09-24 from the same online document (the link is in
+`docs/.env` as `CLIENT_QA_URL`). Round 2 was drafted on 2026-09-22 (`../sandbox/W8/msg/client-qa-round2.md`)
+and extended with questions 5–8 before it was sent. Questions are numbered **R2-1 to R2-8**. **R2-1 to R2-4
+are follow-ups F2, F1, F5 and F3** — all four are now answered. The quotations are the client's own words;
+*Reading* and *Effect* are ours.
+
+来源：`../shared/client-qa.md`，2026-09-24 从同一份在线文档导出（链接在 `docs/.env` 的 `CLIENT_QA_URL`）。
+第二轮于 2026-09-22 拟稿（`../sandbox/W8/msg/client-qa-round2.md`），发送前又加了第 5–8 题。问题记为
+**R2-1 至 R2-8**。**R2-1 至 R2-4 就是追问 F2、F1、F5、F3**——四个现在都已答复。引文是客户原话；*解读*和
+*影响*是我们的。
+
+| # | Topic / 主题 | Answer in one line / 一句话答复 | Touches / 涉及 |
+| --- | --- | --- | --- |
+| R2-1 (F2) | After adjudication / 裁决之后 | **Corrects question 4:** the expert's decision is final for the dispute — Accept, Return or Reject; it does not go back to a reviewer / **修正问题 4：**专家裁决对该争议是终局——接受、退回或驳回；不再回到 reviewer | E3, E4, E6 — W8 group 8 |
+| R2-2 (F1) | What a release carries / 发布包含什么 | Output = the authoritative resolution; provenance = the complete judgement history / 输出是权威结论；溯源是完整判断历史 | H1, H2, H4, F3 |
+| R2-3 (F5) | Reopening a finalised item / 重开已定稿 item | Project owner reopens directly; others may request; back to the open workflow; old answer kept as superseded / 项目负责人可直接重开；其他人只能申请；回到正常流程；原答案保留为被取代版本 | D5, F4, H4 |
+| R2-4 (F3) | Justification beyond accept / 接受以外的理由 | **Yes** — accept, reject, modify and escalate all require one / **需要**——接受、拒绝、修改、升级都必须填 | C5, D3, E2 |
+| R2-5 | Minimum provenance / 最低溯源要求 | An item-level list and a manifest-level list; item drill-down is enough, no project-wide timeline / 给出 item 级和 manifest 级清单；item 下钻足够，不需要全项目时间线 | F1, F2, F3, F5, H2 |
+| R2-6 | Subtype vs `annotation_type` / subtype 与 `annotation_type` | Agreed: subtype becomes an optional template; a task-level `annotation_type` picks the editor / 同意：subtype 变为可选模板；由任务级 `annotation_type` 选编辑器 | B3 (follow-on work) |
+| R2-7 | Cross-review / 交叉复核 | **Supplies**, not stacks; sampled review is a **gate**; the AI first pass is never an approval, and never canonical unreviewed / **补足**而非叠加；抽样复核是**关卡**；AI 首轮不算批准，未经人工审核绝不成为定稿 | D7, G2, B2, C4 |
+| R2-8 | Governance models / 治理模式 | Defined by the authority needed to canonicalise; Expert Gate on every item; Arbitration-ready = a dispute **must** reach independent adjudication (needs a field); no self-adjudication / 按定稿所需权限定义；Expert Gate 每个 item 都要专家确认；Arbitration-ready＝争议**必须**进入独立裁决（需要字段）；不得裁决自己经手的工作 | G2, E5, B2, E3 |
+
+### Two requests at the top of the document / 文档开头的两条要求
+
+> **Action required:** For any important decision we make, please create an ADR (Architecture Decision
+> Record) under `docs/adr/`, using the naming format `adr00N_short_title.md`.
+>
+> **A suggestion:** Going forward, would it be better to raise product/design questions as GitHub issues in
+> the repo, label them `QA`, and assign or tag me? I can answer there, and you can then either close the
+> issue as a clarification, convert it into an implementation task, or link it to a PR.
+
+- *Reading / 解读:* the ADR is a **requirement**; `docs/adr/` means the `hej` repository. The first
+  candidates are decisions this round settles or asks us to own: the adjudication outcomes (R2-1), release
+  output vs provenance (R2-2), `annotation_type` replacing subtype (R2-6), the governance models (R2-8),
+  policy versions (R1-7) and the source-record projection (R1-1). The GitHub-issue route is a question to
+  answer — adopting it would move Q&A out of the Google Doc and this file's export step. / ADR 是**要求**；
+  `docs/adr/` 指 `hej` 仓库。第一批候选是本轮定下或要求我们自己决定的事项：裁决结果（R2-1）、发布输出与溯源
+  （R2-2）、`annotation_type` 替代 subtype（R2-6）、治理模式（R2-8）、policy 版本（R1-7）、源记录投影（R1-1）。
+  GitHub issue 的方式是一个需要回复的问题——采用后问答会从 Google Doc 和本文件的导出步骤中移走。
+
+### The principle stated before the answers / 答复前先说明的原则
+
+> **Disagreement is not merely an exception that the workflow should eliminate. It is first-class,
+> high-value data.** Who disagreed, on what, why, under which guideline/policy, and how the disagreement was
+> resolved—or remained unresolved—should be preserved. A canonical answer is a production outcome; the
+> disagreement lineage is also an important research/evaluation asset.
+
+- *Reading / 解读:* this is E4's story ("Resolving a dispute doesn't erase the disagreement") promoted to a
+  product principle. It also makes **"resolved as ambiguous"** a legitimate end state (R2-1). / 这是把 E4
+  （“解决争议不会抹掉分歧”）上升为产品原则。它也让**“以歧义结案”**成为合法的终态（R2-1）。
+
+### R2-1. After adjudication, who reviews next? (F2) / 裁决之后由谁审核？（F2）
+
+**Client answer / 客户答复:**
+
+> I want to correct one part of my earlier answer: an expert adjudication should not normally go back to a
+> reviewer for another decision. The expert exists to resolve a disagreement that ordinary
+> annotation/review could not resolve.
+>
+> I would expect three expert actions:
+>
+> - Accept: accept one of the existing judgements as the resolved answer.
+> - Return: none of the existing judgements is satisfactory; return the item, with a reason, to the normal
+>   open workflow for new annotation/review. The previous dispute remains in its lineage.
+> - Reject: reject the disputed result/dispute as a valid resolution. It does not proceed automatically to
+>   another review stage.
+>
+> The expert's adjudication is therefore final for that dispute. Only a Return reopens the item.
+> Also, "resolved" does not necessarily mean that one answer won. An item may be resolved as genuinely
+> ambiguous/unresolved. The customer may later decide whether to exclude it or otherwise handle it in a
+> release.
+
+- *Reading / 解读:* **question 4's answer ("back to the reviewer; the expert may not finalise") is
+  withdrawn.** An adjudication has one of three outcomes, each final for that dispute: **Accept** picks an
+  existing judgement; **Return** sends the item, with a reason, to the open workflow (new annotation and
+  review) and keeps the dispute in its lineage; **Reject** closes the dispute without a winner and starts
+  nothing. A dispute may also end as **ambiguous/unresolved**, which release (H3/H4) must be able to exclude
+  or carry. *Our reading, to confirm in the ADR:* Reject leaves the item unresolved — the "ambiguous" end
+  state — and the project owner decides what happens next (for example through R2-3's reopen). /
+  **问题 4 的答复（“退回 reviewer，专家不能直接定稿”）作废。**裁决有三种结果，对该争议都是终局：**Accept**
+  选定一个已有判断；**Return** 带理由把 item 退回正常流程（重新标注和审核），争议留在其沿袭中；**Reject** 结束
+  争议、不选胜者，也不触发下一步。争议还可以以**歧义/未解决**结案，发布（H3/H4）要能排除或携带它。*我们的理解，
+  在 ADR 中确认：*Reject 让 item 停在未解决——即“歧义”终态——由项目负责人决定下一步（例如通过 R2-3 的重开）。
+- *Effect / 影响:*
+  - **W8 group 8 (Hanchen, E3/E4) changes scope mid-week.** "The expert no longer finalising" and the exit
+    check "sends the item back to the reviewer" are both wrong now. The adjudication record needs an
+    outcome (accept / return / reject), the selected judgement for Accept, and a required reason; Accept
+    canonicalises through the adjudication, and Return reuses R2-3's reopen path. / **W8 第 8 组（Hanchen，
+    E3/E4）本周中途改范围。**“专家不再定稿”和 exit check“退回 reviewer”现在都不对了。裁决记录需要结果
+    （accept / return / reject）、Accept 时选定的判断、必填理由；Accept 通过裁决定稿，Return 复用 R2-3 的重开路径。
+  - `mission.md` (the Adjudicate row), `roadmap.md` and the E3, E4 and E6 text in `story_src.csv` state the
+    old rule and need rewriting. / `mission.md`（Adjudicate 一行）、`roadmap.md` 和 `story_src.csv` 里 E3、
+    E4、E6 的文字写的是旧规则，需要改写。
+
+### R2-2. Which version of an item does a release carry? (F1) / 发布携带 item 的哪个版本？（F1）
+
+**Client answer / 客户答复:**
+
+> Keep all versions and their provenance, but distinguish them from the authoritative released result.
+>
+> A released item should identify its resolved/canonical output, if one exists, while also preserving or
+> linking to all annotation attempts, AI first-pass outputs, reviewer corrections, disputes, and
+> adjudication decisions.
+>
+> So:
+>
+> release output = authoritative resolution,
+> release provenance = complete judgement history
+>
+> Do not flatten the history into only the final answer.
+
+- *Reading / 解读:* both of our options, in two layers. Each released item has **at most one** authoritative
+  output ("if one exists" — an ambiguous item from R2-1 may have none), plus a link to every version and
+  decision behind it. / 两个选项都要，分两层。每个发布的 item **至多一个**权威输出（“如果存在”——R2-1 的歧义
+  item 可能没有），外加指向其背后所有版本和决定的链接。
+- *Effect / 影响:* F1 no longer blocks anything. **H4 (SCRUM-37)** can start: one canonical value per item,
+  the rest kept and shown as superseded — its ⏳ and every F1 fallback row in `roadmap.md` go. H1/H2 carry
+  the output and link the provenance. / F1 不再阻塞任何工作。**H4（SCRUM-37）**可以开始：每个 item 一个权威值，
+  其余保留并显示为被取代——`roadmap.md` 里它的 ⏳ 和所有 F1 fallback 行都去掉。H1/H2 携带输出并链接溯源。
+
+### R2-3. Who may reopen a finalised item? (F5) / 谁能重开已定稿的 item？（F5）
+
+**Client answer / 客户答复:**
+
+> The project owner may reopen a finalised item directly.
+>
+> Annotators, reviewers, and experts may request reopening. If implementing the request workflow is too
+> large for this iteration, it can be parked, but the permission distinction should remain clear.
+>
+> A reopened item returns to the normal open workflow, rather than simply resuming at the previous review
+> step.
+>
+> The previous finalised answer must remain in history as a superseded version. It should never be
+> overwritten.
+
+- *Reading / 解读:* **reopen** is a project-owner capability; **request reopen** belongs to the other roles
+  and may be parked. A reopen does not resume review — the item goes back to open work. / **重开**是项目
+  负责人的权限；**申请重开**属于其他角色，可以暂缓。重开不是恢复审核——item 回到开放的标注工作。
+- *Effect / 影响:* D5's refusal logic (SCRUM-28, done) stays. The missing half is a reopen action gated on
+  the project-owner capability, which marks the finalised answer superseded (F4 and H4 read that) and puts
+  the item back in the available-work list (D8). R2-1's Return uses the same path, so it is built once.
+  **Decided 2026-09-24:** a new story, **D9** (SCRUM-110), in the mid-semester break; requests from other roles are out of scope (Hanchen's reply in the online document). / D5 的拒绝逻辑
+  （SCRUM-28，已完成）保留。缺的一半是受项目负责人权限控制的重开操作：把定稿答案标为被取代（F4、H4 读取），并把
+  item 放回可领取工作列表（D8）。R2-1 的 Return 走同一路径，只建一次。**2026-09-24 决定：**新建 story **D9**（SCRUM-110），排在期中假期；其他角色的申请不在范围内（Hanchen 在在线文档中的回复）。
+
+### R2-4. Is a justification required beyond "accept"? (F3) / 接受以外是否也必须填写理由？（F3）
+
+**Client answer / 客户答复:**
+
+> Yes.
+>
+> A justification should be required for substantive reviewer actions including:
+>
+> - accept
+> - reject
+> - modify
+> - escalate to dispute
+>
+> The reason is part of the judgement/provenance record, not merely UI commentary.
+
+- *Reading / 解读:* not configurable — every substantive reviewer action requires a reason, stored as part
+  of the record. / 不可配置——每个实质性审核操作都要理由，理由作为记录的一部分保存。
+- *Effect / 影响:* C5 (done) enforces it on accept. **To check in the code:** whether reject, modify (D3)
+  and escalate already refuse an empty justification on the backend; any that do not are a defect against
+  C5. / C5（已完成）在 accept 上强制。**要在代码里核实：**reject、modify（D3）和 escalate 是否已在后端拒绝空理由；
+  没有的，算 C5 的缺陷。
+
+### R2-5. Minimum provenance for a released item / 发布 item 的最低溯源要求
+
+Asked as: our export already carries the requester, item references, annotation creators, the AI model (as
+notes), timestamps, and review decisions with justifications; we assumed guideline versions and earlier
+attempts were missing. Is Task History's item-level drill-down enough?
+
+**Client answer / 客户答复:**
+
+> At item level, I would expect enough information to reconstruct how this released judgement came to
+> exist, including at least:
+>
+> source/item identity and source version/reference; task instructions/guideline version; policy version;
+> annotation attempts; AI first-pass/model information where applicable; human actors and timestamps;
+> review decisions and justifications; disputes and expert/adjudication decisions; reopen/supersession
+> lineage; and the final resolution used by the release.
+>
+> Because the platform may not store the customer's underlying data, the source reference should be stable
+> enough to identify the exact source/version used.
+>
+> At release level, the manifest should identify the release/version, included items, which
+> resolution/version was selected for each item, and the relevant task/guideline/policy versions.
+>
+> The existing item-level drill-down is the important requirement. I do not require a complete
+> chronological project-wide timeline in the dashboard. A project activity view may be useful
+> operationally, but the essential property is that a released item can be traced backwards completely.
+
+- *Reading / 解读:* a checklist. **Item level (10):** source identity and version; guideline version;
+  policy version; annotation attempts; AI first pass and model; human actors and timestamps; review
+  decisions and justifications; disputes and adjudications; reopen/supersession lineage; the selected
+  resolution. **Manifest level (4):** release id/version; included items; the resolution selected per item;
+  task, guideline and policy versions. / 一份清单。**item 级（10 项）：**源标识及版本；指南版本；policy 版本；
+  标注尝试；AI 首轮及模型；人员及时间；审核决定及理由；争议及裁决；重开/取代沿袭；所选结论。**manifest 级（4 项）：**
+  发布 id/版本；包含的 item；每个 item 所选结论；任务、指南和 policy 版本。
+- *Effect / 影响:*
+  - This becomes the acceptance criteria of **F1** (events), **F2** (guideline and policy version on each
+    annotation) and **H2** (manifest). The AI model moves from free-text notes to a recorded field (F3). /
+    这成为 **F1**（事件）、**F2**（每条标注的指南和 policy 版本）和 **H2**（manifest）的验收标准。AI 模型从
+    自由文本备注改为记录字段（F3）。
+  - "A stable source reference" means B5 intake keeps a source version, not just a path. / “稳定的源引用”
+    意味着 B5 导入要保留源版本，而不只是路径。
+  - **A project-wide timeline is not required** — F5 (SCRUM-106) stays an item-level screen; a project
+    activity view is optional. / **不需要全项目时间线**——F5（SCRUM-106）保持为 item 级页面；项目活动视图可选。
+
+### R2-6. Task subtype and `annotation_type` / 任务 subtype 与 `annotation_type`
+
+Asked as: our proposal to add a task-level `annotation_type`, chosen from the editors Hej supports, so that
+backend result mapping and the frontend editor both read it and the subtype is only a starting template.
+
+**Client answer / 客户答复:**
+
+> Yes, this approach is much closer to what I mean.
+> If the actual task can be expressed through:
+> input data + instructions/examples + output schema
+> and the existing annotation/review machinery can handle it faithfully, then a new hard-coded task subtype
+> is unnecessary.
+> The subtype can therefore become an optional starting template rather than part of the task ontology.
+> Using a task-level `annotation_type` to select the compatible renderer/editor is reasonable. I would think
+> of this as the human annotation surface / result representation, not as the task itself.
+> A genuinely new type only needs explicit implementation when it requires a new interaction surface or
+> different system behaviour.
+
+- *Reading / 解读:* the proposal is accepted. `annotation_type` is the **annotation surface**, not the
+  task's identity; the subtype becomes a template. / 方案被接受。`annotation_type` 是**标注界面**，不是任务的
+  身份；subtype 变为模板。
+- *Effect / 影响:* follow-on work to B3 (done): make `annotation_type` a task-level setting read by result
+  mapping and the editor choice, and demote `task_subtype`. Now story **B8** (SCRUM-112, mid-semester break); needs an ADR and a ticket. /
+  B3（已完成）的后续：把 `annotation_type` 设为任务级设置，供结果映射和编辑器选择读取，降级 `task_subtype`。
+  现为 story **B8**（SCRUM-112，期中假期）；需要一份 ADR 和一张票。
+
+### R2-7. Cross-review: supplies or stacks, gate or audit, and the AI / 交叉复核：补足还是叠加、关卡还是审计、AI
+
+**Client answer / 客户答复:**
+
+> **Supplies or stacks?**
+> Supplies. If the policy requires two approvals and cross-review provides the second independent approval,
+> that satisfies the two-approval requirement. It should not silently become three reviews.
+>
+> **Gates or audits?**
+> For sampled cross-review, treat it as a gate. A sampled item should not canonicalise until its required
+> cross-review completes. Unsampled items proceed normally.
+>
+> If you later want post-hoc auditing, that should be a separate concept rather than overloading
+> cross-review.
+>
+> **Does an AI annotation get cross-reviewed?**
+> AI first-pass is not an approval or reviewer slot. It is an AI-produced candidate/first pass.
+>
+> The human judgement/review that may become canonical is what the review policy governs. If that item is
+> selected for cross-review, the human-reviewed result goes through cross-review. The AI first-pass remains
+> part of the provenance.
+>
+> Under no circumstances can the AI first pass become the canonical answer without being reviewed by humans.
+
+- *Reading / 解读:* all three of our proposals accepted. Cross-review **counts toward** the approvals
+  required; a sampled item is **held** until its cross-review completes; the AI never fills an approval
+  slot, and **no item canonicalises on AI output alone** — a hard invariant. / 我们的三条提议全部被接受。
+  交叉复核**计入**所需批准数；被抽中的 item 在复核完成前**不能定稿**；AI 不占批准名额，**任何 item 都不能只凭
+  AI 输出定稿**——这是硬性不变量。
+- *Effect / 影响:* D7 (SCRUM-51) and G2 (SCRUM-50) build the gate and the counting this way; the Dual
+  sign-off default (2 approvals + 100% cross-review) costs two looks, not three. The AI invariant needs a
+  backend check and a test (C4, and I2's break cases). / D7（SCRUM-51）和 G2（SCRUM-50）按此实现关卡和计数；
+  Dual sign-off 默认值（2 次批准 + 100% 复核）是两次审核，不是三次。AI 不变量需要后端检查和测试（C4，以及 I2 的
+  破坏性用例）。
+
+### R2-8. Governance models: Expert Gate and Arbitration-ready / 治理模式：Expert Gate 与 Arbitration-ready
+
+**Client answer / 客户答复:**
+
+> I would define these by **what authority is required before an item may be resolved/canonicalised**,
+> rather than as UI presets.
+>
+> **Standard**
+> A normal reviewer approval is sufficient to canonicalise an item. Disputes may still be escalated to an
+> expert when needed.
+>
+> **Dual sign-off**
+> Two independent approvals are required. Cross-review can provide the second approval. If those judgements
+> disagree, the item enters dispute.
+>
+> **Expert Gate**
+> Every item requires expert confirmation before it can become canonical, whether or not a dispute occurred.
+>
+> A normal path might therefore be:
+>
+> *annotation → review → expert gate → canonical*
+>
+> If the policy is one reviewer plus one expert gate, I would normally set cross-review to 0% rather than
+> adding a third mandatory look. Additional cross-review can still be configured deliberately.
+>
+> The expert should not approve an item that they themselves annotated or reviewed.
+>
+> **Arbitration-ready**
+> This is **NOT** about disputes being statistically more likely. It is a governance guarantee:
+>
+> **if a dispute occurs, it must reach independent adjudication.**
+>
+> That is what distinguishes it from Dual sign-off. Dual sign-off specifies how ordinary agreement is
+> established; Arbitration-ready specifies what must happen when agreement fails.
+>
+> So yes, the model needs an explicit rule/field representing that adjudication is mandatory on dispute.
+>
+> An arbitrator should not arbitrate a dispute involving work that they annotated or reviewed themselves.
+>
+> The broader design principle behind Expert Gate and Arbitration-ready is that the platform should not
+> merely make disagreement disappear. It should preserve the disagreement, its reasons, and the authority
+> structure through which it was resolved.
+
+- *Reading / 解读:* the four presets are **policies over authority**, not labels. Two need new stored
+  values: an **expert-gate** requirement (every item) and an **adjudication-mandatory-on-dispute** rule. One
+  independence rule covers both expert roles: **no expert confirms or adjudicates work they annotated or
+  reviewed** — an extension of D1's self-approval guard. Expert Gate's default cross-review is 0%. / 四个
+  预设是**关于权限的策略**，不是标签。需要两个新的存储值：**专家关卡**要求（每个 item）和**争议必须裁决**规则。
+  一条独立性规则覆盖两类专家角色：**专家不得确认或裁决自己标注或审核过的工作**——是 D1 自审保护的扩展。
+  Expert Gate 默认交叉复核为 0%。
+- *Effect / 影响:* G2 (SCRUM-50) and B2's `ResolvedPolicy` gain the two fields; E5 (SCRUM-107, "escalation
+  matches the assurance my project needs") is where the Arbitration-ready guarantee is enforced; E3's
+  adjudicator check and the Expert Gate step both apply the independence rule. Expert Gate adds a workflow
+  step (review → expert confirmation → canonical) — **decided 2026-09-24:** folded into G2's criteria rather than a new story. / G2（SCRUM-50）和 B2 的 `ResolvedPolicy` 增加这两个字段；E5（SCRUM-107）负责执行 Arbitration-ready
+  的保证；E3 的裁决人检查和 Expert Gate 步骤都适用独立性规则。Expert Gate 新增一个工作流步骤（审核 → 专家确认
+  → 定稿），——**2026-09-24 决定：**并入 G2 的验收标准，不新建 story。
+
+### Later additions to Round 1 in the online document / 在线文档中对第一轮的后续补充
+
+Found in the 2026-09-24 export under Round 1's questions; they refine the answers recorded above. /
+2026-09-24 导出时在第一轮各题下发现的补充，细化了上文记录的答复。
+
+- **R1-1 — JSONL import is in scope.** Yi reported that intake treats a whole `.jsonl` file as one item.
+  Hunter: *"Direct import of the provided JSONL datasets should be in scope… each record should become an
+  item"*; the concept is **one source record = one item**, not "one task = one paragraph", and
+  preprocessing into `.txt` files is only a local workaround. On Hanchen's proposal to let the AI find the
+  field: *"The annotation target should be determined by the task/schema, not by the AI"* — **source record
+  → task/schema projection → annotation payload**. No universal mapping engine; whether the owner defines
+  the input schema or supported types ship adapters is ours to propose. **Effect:** B5 intake needs a
+  record-splitting import and an explicit projection per task — now story **B7** (SCRUM-111, W8), with an ADR first. / **R1-1——JSONL 直接导入在范围内。**Yi 报告导入把整个 `.jsonl` 当成一个 item。Hunter：每条记录
+  应成为一个 item；概念是**一条源记录＝一个 item**，预处理成 `.txt` 只是本地权宜之计。对 Hanchen 让 AI 自行找
+  字段的提议：标注目标由任务/schema 决定，不由 AI 决定——**源记录 → 任务/schema 投影 → 标注内容**。不做通用映射
+  引擎；由任务负责人定义输入 schema 还是由支持的类型提供适配器，由我们提议。**影响：**B5 导入需要按记录拆分，并为
+  每个任务显式定义投影——现为 story **B7**（SCRUM-111，W8），先写 ADR。
+- **R1-3 — confirmed.** With an empty label list, label instructions are omitted, but *"make sure the
+  expected output structure is still explicit for that task."* / **R1-3——已确认。**标签列表为空时省略标签说明，
+  但该任务的预期输出结构仍须明确。
+- **R1-5 — relaxed, then settled by R2-6.** A separate subtype is needed only for *different system
+  behaviour*; the test is *"Can this task be expressed faithfully by instructions (prompts) + examples +
+  output schema, with the existing annotation/review machinery unchanged?"* The stable concepts are *input
+  data + task/judgement instruction + expected output + provenance*; the annotation UI is an interaction
+  layer, not the task ontology. / **R1-5——放宽，并由 R2-6 定案。**只有需要不同系统行为时才需要独立 subtype；
+  稳定概念是输入数据＋任务/判断说明＋预期输出＋溯源；标注界面是交互层，不是任务本体。
+- **R1-6 — our reply sent.** Hanchen answered that isolation is treated as nice-to-have because the roadmap
+  is full until mid-W12 (final demo; W13 report), matching the decision of 2026-09-22. No client response
+  yet. / **R1-6——我们的回复已发出。**Hanchen 回复：因 roadmap 排满到 W12 中（最终演示；W13 报告），隔离作为
+  nice-to-have，与 2026-09-22 的决定一致。客户尚未回应。
+- **R1-7 — our reply sent:** *"Sure, the policy will be editable."* / **R1-7——我们的回复已发出：**policy 将可编辑。
+- The **branch-protection** request is no longer in the document: rulesets on a private repository need the
+  organisation on GitHub Team, which Hunter cannot arrange (2026-09-23). A1 stays set aside. / **branch
+  protection** 请求已不在文档中：私有仓库要启用规则集，组织需要升级到 GitHub Team，Hunter 无法办理（2026-09-23）。
+  A1 仍搁置。
+
+### What is still open / 仍未决的事项
+
+**No client question is open.** The GitHub-issue suggestion is accepted: Hanchen replied on 2026-09-24 that
+**from Round 3, questions go to the client as GitHub issues labelled `QA`** in the `hej` repository, not in
+the Google Doc. What remains ours is the ADRs the client asked for. / **没有未答复的客户问题。**已接受 GitHub
+issue 的建议：Hanchen 于 2026-09-24 回复，**从第三轮起，问题以带 `QA` 标签的 GitHub issue 发给客户**（在 `hej`
+仓库），不再用 Google Doc。剩下要我们做的是客户要求的 ADR。

@@ -1,0 +1,7 @@
+Hi Jason, thanks for the clarification! That’s really helpful, especially the detail about PR #29 and created_by IS NULL being how AI submissions are identified.
+
+I’ve already implemented the human submission count using only annotations where created_by IS NOT NULL, so AI annotations won’t consume one of the required human slots. The annotation queue also doesn’t filter only on pending status ,it determines availability based on the number of human submissions, so an annotated item with an AI first pass and 0 human submissions will still be available for human annotation. I’ll re-check the submission/refusal path once PR #29 is merged to make sure an AI submission itself can never be refused by the human submission limit.
+
+Also, SCRUM-48 turned out to be quite a large backend ticket 😅. So far I’ve implemented the required_annotators configuration, the human submission limit, the annotation work queue with role/capacity/final-state filtering, and the API-level independence rule that prevents annotators from seeing other annotators’ answers before submitting their own. I’ve also added regression tests around these flows.
+
+I’m currently working through the remaining parts: per-user draft visibility, the review queue and reviewer independence, the adjudication queue, and then the final history/provenance checks and regression testing. I’m aiming to have the ticket finished by EOD today.

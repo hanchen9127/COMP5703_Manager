@@ -1,5 +1,66 @@
 ﻿Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Project type,Project lead,Project lead id,Project description,Priority,Resolution,Assignee,Assignee Id,Reporter,Reporter Id,Creator,Creator Id,Created,Updated,Last Viewed,Resolved,Due date,Votes,Description,Environment,Watchers,Watchers,Watchers Id,Watchers Id,Original estimate,Remaining Estimate,Time Spent,Work Ratio,Σ Original Estimate,Σ Remaining Estimate,Σ Time Spent,Security Level,Custom field (Development),Custom field (Issue color),Custom field (Rank),Sprint,Custom field (Start date),Custom field (Story point estimate),Custom field (Team),Custom field (Vulnerability),Comment,Parent,Parent key,Parent summary,Status category,Status category changed
-"Review: Review actions always move item status, and state cannot diverge from history",SCRUM-109,10137,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:32 AM,22/Sep/26 12:32 AM,22/Sep/26 1:52 AM,,,0,"{noformat}Related to user story D2
+Task lifecycle: Choose the annotation surface per task (annotation_type),SCRUM-112,10172,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,24/Sep/26 4:43 PM,24/Sep/26 4:44 PM,24/Sep/26 4:44 PM,,,0,"{code:sql}{noformat}Related to user story B8
+
+BACKEND AND FRONTEND
+
+Added 2026-09-24 from the client's answer R2-6, which accepted our proposal. Follow-on to B3 (SCRUM-85).
+
+Today task_class, task_type and task_subtype decide the result format and which previewer and editor the draft and review pages use. Drafts and annotations already carry an annotation_type column (DraftDB, AnnotationDB), and _normalize_annotation_payload (app/api/routes/tasks.py:711) already maps results by it — but annotation_type is not a task-level setting. Subtype presets live in app/core/annotation_schemas.py and TASK_SUBTYPE_OPTIONS in components/task-create-form.tsx.
+
+Client answer: ""The subtype can therefore become an optional starting template rather than part of the task ontology. Using a task-level annotation_type to select the compatible renderer/editor is reasonable. I would think of this as the human annotation surface / result representation, not as the task itself. A genuinely new type only needs explicit implementation when it requires a new interaction surface or different system behaviour.""
+
+# First, an ADR in docs/adr/: annotation_type is the annotation surface, the subtype is a template. List the supported annotation types — one per editor that exists today — and the output-schema shape each accepts.
+# TaskDB gains annotation_type, chosen on the task form from the supported list. Existing tasks are migrated from their current subtype so nothing changes for them.
+# Backend result mapping and the frontend editor choice on the draft and review pages both read the task's annotation_type instead of task_subtype. Drafts and annotations take their annotation_type from the task.
+# Subtype presets stay as optional, editable starting points for instructions and output schema. Choosing one no longer fixes the editor.
+# A task whose output schema the chosen editor cannot render is refused at creation with a clear reason.
+# No new editors are built here.
+# Tests: a task's drafts and review page use the editor its annotation_type names; an incompatible schema is refused; a task created before the migration still opens in the editor it used before.
+{noformat}
+{code}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:w9,Mid-semester Break,,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,24/Sep/26 4:43 PM
+Task lifecycle: Import a JSONL dataset as one item per record,SCRUM-111,10171,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,24/Sep/26 4:38 PM,24/Sep/26 4:40 PM,24/Sep/26 4:39 PM,,,0,"{noformat}{noformat}Related to user story B7
+
+ONLY BACKEND (plus the upload hint on the dataset panel)
+
+Added 2026-09-24 from the client's follow-up answer to R1-1. Found by Yi: the text picker lists .jsonl, but upload_texts (app/api/routes/uploads.py:272) makes one task item per uploaded file — the whole file becomes one payload_preview and external_item_ref is the file name. FewNERD records had to be copied into separate .txt files by hand.
+
+Client answer: ""Direct import of the provided JSONL datasets should be in scope. A JSONL file should not be treated as one task item. [...] each record should become an item."" And: ""The annotation target should be determined by the task/schema, not by the AI."" The model is: source record -> task/schema projection -> annotation payload. No universal data-mapping engine.
+
+# First, an ADR in docs/adr/ (the client's required format, adr00N_short_title.md): does the task owner name the payload field (for example payload_preview.text) in the task configuration, or do supported task types ship a fixed adapter? Recommend one, with the trade-off, before coding.
+# A .jsonl upload creates one task item per record, not one per file. A malformed line fails the whole upload with the line number — registration stays all-or-nothing through register_dataset (app/services/task_service.py:626, B5).
+# Each item keeps its full source record for provenance. external_item_ref, split and source_record_id stay attached to the item; external_item_ref comes from the record, not the file name.
+# The payload given to the annotator and sent to the AI is only the part the task defines (the projection) — never the whole record.
+# gold_annotations (and any other evaluation-only field the task names) is stored but never shown in the annotate or review views and never sent to the AI. It stays available to the evaluation harness (I1, SCRUM-68/69).
+# The source reference is stable enough to identify the exact source and version used — DataPointer.source_version_ref is hard-coded to ""v1"" by every upload route today (uploads.py:361 for text); record a real source version instead (client answer R2-5).
+# Plain .txt uploads keep working as today: one file, one item.
+# Tests with the FewNERD sample (dataset/text_dataset/fewnerd in the capstone folder, outside the repo — copy a few records into a test fixture): N records give N items; payload_preview.text is the annotation payload; gold_annotations never reaches the AI prompt or the annotator's view; a malformed line leaves nothing behind.
+{noformat}
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000nc:,"W8 Route work, record decision",,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,24/Sep/26 4:38 PM
+Review: Project owner reopens a finalised item,SCRUM-110,10170,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,24/Sep/26 4:37 PM,24/Sep/26 4:42 PM,24/Sep/26 4:42 PM,,,0,"{noformat}{noformat}Related to user story D9
+
+BACKEND AND FRONTEND
+
+Added 2026-09-24 from the client's answer R2-3. D5 (SCRUM-26, SCRUM-28) built the refusal: a finalised item refuses every new draft, edit and submission. This ticket builds the deliberate way back.
+
+Client answer: ""The project owner may reopen a finalised item directly. [...] A reopened item returns to the normal open workflow, rather than simply resuming at the previous review step. The previous finalised answer must remain in history as a superseded version. It should never be overwritten.""
+
+Out of scope (Hanchen's reply to the client, 2026-09-24): requests to reopen from annotators, reviewers and experts. Only the project owner reopens.
+
+# A reopen action on a canonicalized task item, allowed only to a user holding the MANAGE_PROJECT capability (app/core/permissions.py — task_owner and admin today). Everyone else is refused on the backend with 403, not only hidden in the UI.
+# The reopen requires a reason and records who reopened, when and why.
+# The finalised answer is marked superseded, never edited or deleted. It stays visible in the item's history.
+# The item leaves canonicalized and returns to the open workflow: it appears in the available-work list (D8, SCRUM-48/93) for new annotation, and its annotation and review requirements count afresh for the new round.
+# The finalised-item guard (TaskItemFinalisedError, app/services/task_service.py:188) still refuses writes to items that are finalised; its message ""Reopening a finalised item is not available yet."" is updated to point at the reopen action.
+# The reopen is recorded as a provenance event on F1's event record (SCRUM-62), not only in the activity log.
+# Frontend: a Reopen button on the finalised-item view, shown to the project owner only, asking for a reason. The superseded answer is shown in the item's history.
+# Tests: a reviewer's or annotator's reopen is refused; the owner's reopen keeps the old answer as superseded and makes the item claimable again; a reopen without a reason is refused.
+
+Collaboration:
+- SCRUM-99 (E3, W8): the expert's Return outcome sends an item back to the open workflow the same way (client answer R2-1). W8 sets the item back to open work directly; once this ticket lands, Return calls this path. Agree the function with Hanchen.
+- SCRUM-38 (F3, W9): ""superseded"" must be the same supersession model F3 records.
+{noformat}
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:w3,Mid-semester Break,,1.5,,,,10041,SCRUM-13,Annotation & Human Judgement,To Do,24/Sep/26 4:37 PM
+"Review: Review actions always move item status, and state cannot diverge from history",SCRUM-109,10137,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:32 AM,22/Sep/26 12:32 AM,22/Sep/26 5:08 PM,,,0,"{noformat}Related to user story D2
 
 ONLY BACKEND
 
@@ -9,7 +70,7 @@ SCRUM-29 closed D2's first part: the legacy review writes return 410 (PR #6). D2
 # A test proves item status and review history cannot diverge: after any sequence of review actions, the item's status matches what its latest decision implies.
 
 Same file as SCRUM-86 (review_actions.py): land after SCRUM-86, or in the same PR.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:wq,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:32 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wq,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:32 AM
 "Release: Show real releases, policy and history on the project screens",SCRUM-108,10136,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:15 AM,22/Sep/26 12:16 AM,22/Sep/26 12:16 AM,,,0,"{noformat}Related to user story H6
 
 Replaces SCRUM-67 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W11.
@@ -20,7 +81,7 @@ Replaces SCRUM-67 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W11
 # Figures on these screens agree with the task screen and the dashboard.
 
 Needs H1 and H2 — there are no real releases to display until they exist.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000mv:,W11,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:15 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000mv:,W11,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:15 AM
 Dispute: Make the escalation posture configurable and enforced,SCRUM-107,10135,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:15 AM,22/Sep/26 12:16 AM,22/Sep/26 12:58 AM,,,0,"{noformat}Related to user story E5
 
 Replaces SCRUM-60 (deleted 2026-09-22 with its parent SCRUM-36). Planned for W11, after G2.
@@ -30,7 +91,7 @@ Replaces SCRUM-60 (deleted 2026-09-22 with its parent SCRUM-36). Planned for W11
 # The posture in force is visible on the project.
 
 The gate values already exist on OrganizationPolicyDB and are never enforced. Read them through SCRUM-50's resolved-policy contract (resolve_for_task), not from the policy tables directly; the enforcement itself is G2.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000mn:,W11,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:15 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000mn:,W11,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:15 AM
 Provenance: Show an item's whole timeline on one screen,SCRUM-106,10134,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:14 AM,22/Sep/26 12:15 AM,22/Sep/26 12:15 AM,,,0,"{noformat}Related to user story F5
 
 Replaces SCRUM-63 (deleted 2026-09-22 with its parent SCRUM-39). Planned for W11.
@@ -40,7 +101,7 @@ Replaces SCRUM-63 (deleted 2026-09-22 with its parent SCRUM-39). Planned for W11
 # The timeline is reachable from the review screen without losing the reviewer's place.
 
 Needs F1's events and shows supersession as F3 records it.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000mf:,W11,,2.0,,,,10044,SCRUM-16,Provenance & Audit History,To Do,22/Sep/26 12:14 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000mf:,W11,,2.0,,,,10044,SCRUM-16,Provenance & Audit History,To Do,22/Sep/26 12:14 AM
 Release: Refuse a release that fails its pre-release checks,SCRUM-105,10133,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:13 AM,22/Sep/26 12:20 AM,22/Sep/26 12:14 AM,,,0,"{noformat}Related to user story H3
 
 Replaces SCRUM-66 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W10.
@@ -51,7 +112,7 @@ Replaces SCRUM-66 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W10
 # Check against the recorded decisions, never against someone asserting that review happened.
 
 Uses H4's canonical-value rule (SCRUM-37) to recognise superseded versions.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000m7:,W10,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:13 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000m7:,W10,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:13 AM
 Release: Produce a manifest for every release,SCRUM-104,10132,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:13 AM,22/Sep/26 12:20 AM,22/Sep/26 12:13 AM,,,0,"{noformat}Related to user story H2
 
 Replaces SCRUM-65 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W10.
@@ -61,7 +122,7 @@ Replaces SCRUM-65 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W10
 # The release's contents can be checked against the manifest independently.
 
 Needs F1 (provenance pointers) and F2 (versions). Written only after H3's gate passes.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000lz:,W10,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:13 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000lz:,W10,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:13 AM
 Dispute: Connect the dispute and arbitration screens,SCRUM-103,10131,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:12 AM,22/Sep/26 12:13 AM,22/Sep/26 12:13 AM,,,0,"{noformat}Related to user story E6
 
 Replaces SCRUM-61 (deleted 2026-09-22 with its parent SCRUM-36). Planned for W10, alongside SCRUM-52's E6 part.
@@ -70,7 +131,7 @@ Replaces SCRUM-61 (deleted 2026-09-22 with its parent SCRUM-36). Planned for W10
 # Build or delete the three routes that return notFound() — /disputes/[id], /arbitration/[id] and /exports/[id] — and record which and why.
 # Verify rather than rebuild: the task dispute and finalized desks already read live data.
 # An action taken on these screens changes real state, and the change survives a refresh.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000lr:,W10,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:12 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000lr:,W10,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:12 AM
 Release: Create an immutable release artefact,SCRUM-102,10130,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:10 AM,22/Sep/26 12:20 AM,22/Sep/26 12:11 AM,,,0,"{noformat}Related to user story H1
 
 Replaces SCRUM-64 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W9.
@@ -80,8 +141,8 @@ Today's export list is derived live from task status (project_exports_service.py
 # A release record stores the items as they were at the moment of release.
 # Later changes to the underlying items leave an existing release untouched.
 # Each release has a stable identifier and an artefact that can be downloaded again unchanged.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000lj:,W9,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:10 AM
-Dispute: Detect reviewer disagreement automatically,SCRUM-101,10129,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:10 AM,22/Sep/26 12:11 AM,22/Sep/26 12:10 AM,,,0,"
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000lj:,W9,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:10 AM
+Dispute: Detect reviewer disagreement automatically,SCRUM-101,10129,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:10 AM,24/Sep/26 4:26 PM,22/Sep/26 12:10 AM,,,0,"
 
 {noformat}Related to user story E1
 
@@ -93,8 +154,8 @@ Replaces SCRUM-57 (deleted 2026-09-22 with its parent SCRUM-36). Planned for W9,
 # Disputed items are excluded from release until resolved.
 
 Needs D7's second review and disagreement flag (SCRUM-51, W8) and D8's queues.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000lb:,W9,,1.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:10 AM
-Dispute: Keep the disagreement after the dispute is resolved,SCRUM-100,10128,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:07 AM,22/Sep/26 12:21 AM,22/Sep/26 2:05 AM,,,0,"Replace subtask 59
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000lb:,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:10 AM
+Dispute: Keep the disagreement after the dispute is resolved,SCRUM-100,10128,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:07 AM,22/Sep/26 12:21 AM,23/Sep/26 6:52 PM,,,0,"Replace subtask 59
 
 {noformat}Related to user story E4
 
@@ -104,8 +165,8 @@ Replaces SCRUM-59 (deleted 2026-09-22 with its parent SCRUM-36). Moved forward f
 # A resolved item's history still shows the original disagreement.
 # Reports can tell a contested item from a unanimous one.
 # A test proves that resolving a dispute deletes and overwrites nothing.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000l3:,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:21 AM
-Dispute: Record an expert adjudication as its own decision,SCRUM-99,10127,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:06 AM,22/Sep/26 12:21 AM,22/Sep/26 12:16 AM,,,0,"Replace subtask 58
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000l3:,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:21 AM
+Dispute: Record an expert adjudication as its own decision,SCRUM-99,10127,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:06 AM,22/Sep/26 12:21 AM,23/Sep/26 7:22 PM,,,0,"Replace subtask 58
 
 {noformat}Related to user story E3
 
@@ -118,8 +179,8 @@ Replaces SCRUM-58 (deleted 2026-09-22 with its parent SCRUM-36). Moved forward f
 
 Disputes opened by hand through escalation exist today, so this does not wait for E1. E1 (W9) then opens the same record automatically — agree its shape with Parth before W8 ends.
 Open: client follow-up F2 — same reviewer or another, and whether the expert's decision binds. Asked at the 2026-09-23 meeting.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000kv:,"W8 Route work, record decision",,1.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:21 AM
-Provenance: Record the production history of every label,SCRUM-98,10126,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:05 AM,22/Sep/26 12:21 AM,22/Sep/26 12:09 AM,,,0,"Replace SCRUM-39 + subtask 62
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000kv:,"W8 Route work, record decision",,1.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:21 AM
+Provenance: Record the production history of every label,SCRUM-98,10126,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:05 AM,23/Sep/26 6:53 PM,23/Sep/26 6:53 PM,,,0,"Replace SCRUM-39 + subtask 62
 
 {noformat}Related to user story F1
 
@@ -137,11 +198,11 @@ Add a provenance event record, distinct from AuditLogDB, and write an event at e
 
 Out of scope: which version an export carries (client follow-up F1); actor-type correction and duplicate escalation entries (F4, SCRUM-40 and 41); supersession itself (F3).
 Agree the schema and migration order with the other W8 schema changes on day one.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000kn:,"W8 Route work, record decision",,2.0,,,,10044,SCRUM-16,Provenance & Audit History,To Do,22/Sep/26 12:21 AM
-"enable custom task with user-defined instructions, output-type and schema",SCRUM-97,10125,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Sep/26 4:31 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000kf:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
-Enable label list file upload,SCRUM-96,10124,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Sep/26 4:31 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000k7:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
-Add definition settings to labels field,SCRUM-95,10123,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Sep/26 4:31 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000jz:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
-Infrastructure: run on PostgreSQL while keeping SQLite working,SCRUM-94,10122,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,18/Sep/26 12:22 AM,20/Sep/26 7:03 PM,21/Sep/26 1:32 PM,20/Sep/26 7:03 PM,,0,"Related to user story C2
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000n3:,W11,,2.0,,,,10044,SCRUM-16,Provenance & Audit History,To Do,22/Sep/26 12:21 AM
+"enable custom task with user-defined instructions, output-type and schema",SCRUM-97,10125,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Sep/26 4:31 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000kf:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
+Enable label list file upload,SCRUM-96,10124,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Sep/26 4:31 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000k7:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
+Add definition settings to labels field,SCRUM-95,10123,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Sep/26 4:31 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000jz:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
+Infrastructure: run on PostgreSQL while keeping SQLite working,SCRUM-94,10122,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,18/Sep/26 12:22 AM,20/Sep/26 7:03 PM,23/Sep/26 7:07 PM,20/Sep/26 7:03 PM,,0,"Related to user story C2
 
 C2's job queue needs a second writer alongside the API, and SQLite serialises writers: a second
 connection that tries to write gets ""database is locked"" after about 5 seconds (measured on
@@ -169,8 +230,8 @@ onto the fixture — touches tests only and may land early in W8.
 
 *Not in scope*: moving production hosting, data migration of anyone's existing dev database
 (re-seed instead), PR templates, CODEOWNERS or branch protection, and Alembic itself unless
-item 5 chooses it.",,Jason Wang,Parth,712020:93390656-829d-45f1-9908-d965a5930c17,712020:31379b73-52b1-497c-adec-f657d3cf3124,,,,,,,,,,,0|i000jr:,W7 Lock down review data,,3.0,,,"19/Sep/26 10:16 PM;712020:31379b73-52b1-497c-adec-f657d3cf3124;Clarified with [~accountid:712020:93390656-829d-45f1-9908-d965a5930c17], to make postgreSQL default option for all deployment options and fallback as SQLite",10111,SCRUM-83,Trustworthy Foundations,Done,20/Sep/26 7:03 PM
-"Work queues: available-work list, progress and submission limit (WEB)",SCRUM-93,10121,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,16/Sep/26 1:27 AM,22/Sep/26 1:23 AM,22/Sep/26 1:52 AM,,,0,"{noformat}Related to user story D8
+item 5 chooses it.",,Jason Wang,Parth,712020:93390656-829d-45f1-9908-d965a5930c17,712020:31379b73-52b1-497c-adec-f657d3cf3124,,,,,,,,,{},,0|i000jr:,W7 Lock down review data,,3.0,,,"19/Sep/26 10:16 PM;712020:31379b73-52b1-497c-adec-f657d3cf3124;Clarified with [~accountid:712020:93390656-829d-45f1-9908-d965a5930c17], to make postgreSQL default option for all deployment options and fallback as SQLite",10111,SCRUM-83,Trustworthy Foundations,Done,20/Sep/26 7:03 PM
+"Work queues: available-work list, progress and submission limit (WEB)",SCRUM-93,10121,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,16/Sep/26 1:27 AM,22/Sep/26 1:23 AM,23/Sep/26 3:52 PM,,,0,"{noformat}Related to user story D8
 
 FRONTEND
 
@@ -194,8 +255,8 @@ With several annotators per item, picking the wrong draft could show another ann
 Built on SCRUM-48's queue API. Blocked by SCRUM-48.
 
 Every limit shown here is enforced in the API as well — a greyed-out button is the display of the rule, not the rule.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:wt,"W8 Route work, record decision",,2.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,16/Sep/26 1:27 AM
-Update the annotation editing page to ensure that the output results of MVP can be compatible with the existing interface of Hej.,SCRUM-92,10120,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,14/Sep/26 1:40 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000jj:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wt,"W8 Route work, record decision",,2.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,16/Sep/26 1:27 AM
+Update the annotation editing page to ensure that the output results of MVP can be compatible with the existing interface of Hej.,SCRUM-92,10120,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,14/Sep/26 1:40 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000jj:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
 Project lifecycle: Create a project scoped to an organisation,SCRUM-91,10119,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:52 PM,22/Sep/26 12:57 AM,22/Sep/26 12:57 AM,,,0,"{noformat}Related to user story B1
 
 Projects hold related work — the client's example is an ""Autonomous Driving""
@@ -208,8 +269,8 @@ A project belongs to exactly one organisation and is visible only to that organi
 
 I can open a project and see the tasks inside it.
 
-Scope note worth putting on the ticket: this is hardening, not net-new. The work is confirming POST /organizations/{org_id}/projects scopes to the caller's org, a test that a project in org A is invisible to org B, and making project-create-form.tsx surface real validation errors. Pairs with SCRUM-45, which does update/archive on the same object.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000jb:,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:52 PM
-"Organisation Management: Invite, remove and role-manage members",SCRUM-90,10118,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:37 PM,22/Sep/26 12:37 AM,22/Sep/26 12:36 AM,,,0,"{noformat}Related to user story J3
+Scope note worth putting on the ticket: this is hardening, not net-new. The work is confirming POST /organizations/{org_id}/projects scopes to the caller's org, a test that a project in org A is invisible to org B, and making project-create-form.tsx surface real validation errors. Pairs with SCRUM-45, which does update/archive on the same object.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000jb:,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:52 PM
+"Organisation Management: Invite, remove and role-manage members",SCRUM-90,10118,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:37 PM,22/Sep/26 12:37 AM,24/Sep/26 4:24 PM,,,0,"{noformat}Related to user story J3
 
 You cannot run governed review without the people who perform it. This is the
 administrator-facing capability on top of the invitation flow.
@@ -224,8 +285,8 @@ administrator-facing capability on top of the invitation flow.
 
 
 Issues 17, 18
-Blocked by SCRUM-8 until the invitation flow works.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:vx,W7 Lock down review data,,2.0,,,,10046,SCRUM-18,Organisation Management,In Progress,14/Sep/26 8:37 PM
-Project: Overview of status and progress,SCRUM-89,10117,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:36 PM,22/Sep/26 2:01 PM,22/Sep/26 2:01 PM,,,0,"{noformat}Related to user story J2
+Blocked by SCRUM-8 until the invitation flow works.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vx,W7 Lock down review data,,2.0,,,,10046,SCRUM-18,Organisation Management,In Progress,14/Sep/26 8:37 PM
+Project: Overview of status and progress,SCRUM-89,10117,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:36 PM,22/Sep/26 2:01 PM,22/Sep/26 5:20 PM,,,0,"{noformat}Related to user story J2
 
 A starting point, not an analytics product.
 
@@ -235,7 +296,7 @@ Figures agree with the task and export screens.
 
 Deliberately limited — the client asked that time not be spent making this comprehensive.
 
-The one that will actually take effort is criterion 2: the figures have to reconcile with SCRUM-43 (B6/H5, aligning task completion and export readiness). Don't start this before SCRUM-43 settles the counting rule, or you'll implement it twice.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000l7:,"W8 Route work, record decision",,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:36 PM
+The one that will actually take effort is criterion 2: the figures have to reconcile with SCRUM-43 (B6/H5, aligning task completion and export readiness). Don't start this before SCRUM-43 settles the counting rule, or you'll implement it twice.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000l7:,"W8 Route work, record decision",,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:36 PM
 Organisation Management: Stable organisation identifier and URL,SCRUM-88,10116,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:35 PM,22/Sep/26 12:57 AM,22/Sep/26 12:57 AM,,,0,"{noformat}Related to user story J1
 
 The client's one concrete requirement in this area is being able to refer to an
@@ -245,7 +306,7 @@ Each organisation has a unique identifier and URL that do not change.
 
 An organisation can hold multiple accounts and use cases.
 
-Keep it small — the backlog explicitly says so.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000in:,,,,,,,10046,SCRUM-18,Organisation Management,To Do,07/Sep/26 11:35 PM
+Keep it small — the backlog explicitly says so.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000in:,,,,,,,10046,SCRUM-18,Organisation Management,To Do,07/Sep/26 11:35 PM
 AI assist: Human-only and AI-first task modes,SCRUM-87,10115,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:34 PM,22/Sep/26 1:37 AM,22/Sep/26 1:37 AM,,,0,"{code:sql}Related to user story C4
 
 Seeing the machine's answer first changes the answer people give. The code has
@@ -257,7 +318,7 @@ In blind-then-reveal the reviewer cannot see the AI suggestion until their own a
 
 The mode in force is recorded against the item, so results from different modes can be compared later.
 
-Test that the suggestion is absent from the API response before the human commits, not merely hidden in the UI. SCRUM-73 (I4, ""measure what AI assistance does to human judgement"") cannot produce a result unless this records the mode — worth linking them.{code}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000if:,,,,,,,10041,SCRUM-13,Annotation & Human Judgement,To Do,07/Sep/26 11:34 PM
+Test that the suggestion is absent from the API response before the human commits, not merely hidden in the UI. SCRUM-73 (I4, ""measure what AI assistance does to human judgement"") cannot produce a result unless this records the mode — worth linking them.{code}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000if:,,,,,,,10041,SCRUM-13,Annotation & Human Judgement,To Do,07/Sep/26 11:34 PM
 Review: Prevent self-review of own annotations,SCRUM-86,10114,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:33 PM,22/Sep/26 12:31 AM,22/Sep/26 12:31 AM,,,0,"{noformat}Related to user story D1
 
 ONLY BACKEND
@@ -273,7 +334,7 @@ Issue 7 (Critical) is partly fixed: review actions (review_actions.py, submit_ta
 
 Merge this in the first two days of W8: SCRUM-99 (E3, Hanchen) rewrites decide_escalation on top of it.
 The D2 ticket (same file, review_actions.py) lands after this one or in the same PR.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:vy,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,20/Sep/26 6:33 PM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vy,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,20/Sep/26 6:33 PM
 Task lifecycle: Create annotation and judgement tasks with a result shape,SCRUM-85,10113,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:31 PM,22/Sep/26 12:58 AM,22/Sep/26 12:57 AM,,,0,"{noformat}Related to user story B3
 
 The client's two task categories need different work surfaces and different
@@ -286,15 +347,15 @@ The task records what a finished result should look like — labels for annotati
 
 Text tasks work end to end; image and video tasks can be created without breaking, but are not committed demo paths this phase.
 
-The real work here is label_schema_ref: today it's a string pointer nothing reads, and it has to resolve to an actual result shape. Borrow the MVP's SchemaMerger idea but map fields explicitly rather than asking a model to infer them. Blocks SCRUM-24 (B4, lifecycle transitions) from being meaningful.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000hz:,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:31 PM
+The real work here is label_schema_ref: today it's a string pointer nothing reads, and it has to resolve to an actual result shape. Borrow the MVP's SchemaMerger idea but map fields explicitly rather than asking a model to infer them. Blocks SCRUM-24 (B4, lifecycle transitions) from being meaningful.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000hz:,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:31 PM
 Schema: Replace hardcoded credentials,SCRUM-84,10112,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 4:27 PM,16/Sep/26 1:20 AM,,13/Sep/26 9:43 PM,,0,"A4
 
 # No live credential is readable in the source code.
 # Credentials are supplied per environment and can be rotated without a code change.
 # The exposed key is rotated at the provider, not merely removed from the code.
 
-*Issue 1* (live API key hardcoded in committed source) — this story's first criterion removes it, and the rotation criterion covers the part a code fix alone can't: the key is already public in every existing clone. Depends on *A3*, since configuration must actually load before a key can be supplied any other way.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i00026:r,W6 Governance & data-integrity,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,13/Sep/26 9:43 PM
-Trustworthy Foundations,SCRUM-83,10111,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 4:25 PM,07/Sep/26 4:25 PM,,,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,grey,0|i000hj:,,,,,,,,,,To Do,07/Sep/26 4:25 PM
+*Issue 1* (live API key hardcoded in committed source) — this story's first criterion removes it, and the rotation criterion covers the part a code fix alone can't: the key is already public in every existing clone. Depends on *A3*, since configuration must actually load before a key can be supplied any other way.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i00026:r,W6 Governance & data-integrity,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,13/Sep/26 9:43 PM
+Trustworthy Foundations,SCRUM-83,10111,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 4:25 PM,07/Sep/26 4:25 PM,,,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},grey,0|i000hj:,,,,,,,,,,To Do,07/Sep/26 4:25 PM
 Schema: Restore existing testcases,SCRUM-82,10110,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 1:16 PM,16/Sep/26 1:20 AM,,07/Sep/26 4:25 PM,,0,"A2
 
 # The web application's checks and test suite pass cleanly, so a broken change is caught before merge rather than after.
@@ -303,7 +364,7 @@ Schema: Restore existing testcases,SCRUM-82,10110,Task,Done,SCRUM,CS-57,software
 
 *Issues 12 & 13* (frontend fails typecheck; test suite failing) — this story's definition of done is a green frontend build and suite, so both are resolved by the work itself rather than tracked separately.
 *Issue 25* (a frontend test passes even when the behaviour it names is broken) — replacing the placeholder assertion with a real one is exactly what “tests genuinely pass” requires here.
-*Issue 26* (misleading mock setup in a backend test) — removed while making the suite trustworthy, so a future reader isn't misled about what the code does.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i00026:i,W6 Governance & data-integrity,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,07/Sep/26 4:25 PM
+*Issue 26* (misleading mock setup in a backend test) — removed while making the suite trustworthy, so a future reader isn't misled about what the code does.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i00026:i,W6 Governance & data-integrity,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,07/Sep/26 4:25 PM
 Schema: Fix db setup issues,SCRUM-81,10109,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 1:13 PM,16/Sep/26 1:20 AM,,13/Sep/26 9:43 PM,,0,"A3
 
 # Following the documented setup steps produces a running platform with the seeded Admin, Reviewer and Annotator accounts.
@@ -312,8 +373,8 @@ Schema: Fix db setup issues,SCRUM-81,10109,Task,Done,SCRUM,CS-57,software,Jason 
 # A setup failure reports what went wrong instead of failing silently or crashing while reporting.
 
 *Issue 24* (init_data.py --reset broken two ways) — the story requires reset to work repeatedly on a stock Windows terminal, which closes both the console-encoding crash and the foreign-key failure that currently leaves the database half-dropped.
-*Issue 23* (.env config silently ignored) — “configuration is actually picked up” is the acceptance criterion, so the wrong-prefix and never-read-the-file defects both have to go for this story to pass.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i00026:,W6 Governance & data-integrity,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,13/Sep/26 9:43 PM
-Evaluation Harness and Casebook,SCRUM-80,10108,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 3:07 AM,07/Sep/26 11:52 PM,,,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,dark_yellow,0|i000gv:,,,,,,,,,,To Do,07/Sep/26 3:07 AM
+*Issue 23* (.env config silently ignored) — “configuration is actually picked up” is the acceptance criterion, so the wrong-prefix and never-read-the-file defects both have to go for this story to pass.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i00026:,W6 Governance & data-integrity,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,13/Sep/26 9:43 PM
+Evaluation Harness and Casebook,SCRUM-80,10108,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 3:07 AM,07/Sep/26 11:52 PM,,,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},dark_yellow,0|i000gv:,,,,,,,,,,To Do,07/Sep/26 3:07 AM
 Evaluation8: Findings record including negative results,SCRUM-75,10103,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:06 AM,22/Sep/26 12:58 AM,22/Sep/26 12:58 AM,,,0,"{noformat}Negative findings tell the client more about the platform's real limits than a list of features that worked, and the brief states plainly that they carry equal weight. Depends on EV2, EV4.
 
 Subtasks
@@ -327,7 +388,7 @@ Report negative results rather than filtering them out.
 Feed the technical report and the what-did-not-work record from this.
 
 Story I5 — I can prove the platform's records hold up
-Issues none{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000hy:i,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:06 AM
+Issues none{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000hy:i,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:06 AM
 "Evaluation7: Integrity checks on provenance, roles and releases",SCRUM-74,10102,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:06 AM,18/Sep/26 7:47 PM,,,,0,"Integrity claimed is not integrity demonstrated. These are the checks that let someone outside the team verify a release rather than take it on trust. Depends on EV2, F1, H2.
 
 *Subtasks*
@@ -338,7 +399,7 @@ Issues none{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,
 # Fail the check loudly rather than warning, so an integrity gap cannot pass unnoticed.
 
 Story *I5* — I can prove the platform's records hold up
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000hy:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:06 AM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000hy:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:06 AM
 "Evaluation6: Measure AI influence on human judgement, with blind-then-reveal",SCRUM-73,10101,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:05 AM,22/Sep/26 1:37 AM,22/Sep/26 1:37 AM,,,0,"The client's actual question — not whether assistance feels faster, but what it does to the answers people give. Impossible while the suggestion and the decision are collapsed into one value. Depends on EV2, F3, C4.
 
 *Subtasks*
@@ -350,7 +411,7 @@ Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,
 # Impossible unless suggestion and decision stay separate — depends on F3.
 
 Story *I4* — I can see what AI assistance does to human judgement
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000hx:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:05 AM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000hx:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:05 AM
 Evaluation5: Reviewer agreement and AI suggestion quality,SCRUM-72,10100,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:04 AM,18/Sep/26 7:47 PM,,,,0,"Raw percentage match flatters any task where one answer dominates. Report a real coefficient, and report whether the assistant's stated confidence tracks whether it was actually right. Depends on EV2, D7.
 
 *Subtasks*
@@ -362,7 +423,7 @@ Evaluation5: Reviewer agreement and AI suggestion quality,SCRUM-72,10100,Task,To
 # Depends on D7's cross-validation routing.
 
 Story *I3* — I can tell whether reviewers actually agree
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000hv:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:04 AM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000hv:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:04 AM
 Evaluation4: Grow the casebook to 40–60 cases,SCRUM-71,10099,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:04 AM,18/Sep/26 7:47 PM,,,,0,"A standing commitment from the week it lands, not a block of work at the end. Assembling the casebook in the final fortnight is the failure the brief warns about by name. Depends on EV3.
 
 *Subtasks*
@@ -374,7 +435,7 @@ Evaluation4: Grow the casebook to 40–60 cases,SCRUM-71,10099,Task,To Do,SCRUM,
 # Review the count against the 40–60 target at the weekly meeting.
 
 Story *I2* — The platform is tested against cases designed to break it
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i000hr:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:04 AM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000hr:,,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:04 AM
 Evaluation3: Casebook structure and the adversarial categories,SCRUM-70,10098,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:03 AM,18/Sep/26 7:46 PM,,,,0,"The seven categories the brief names, written as real cases against the gold fixture datasets. A system demonstrated on easy items proves nothing about the ones that matter. Depends on EV1.
 
 *Subtasks*
@@ -387,7 +448,7 @@ Evaluation3: Casebook structure and the adversarial categories,SCRUM-70,10098,Ta
 # Define the case template — inputs, steps, expected outcome, category.
 
 Story *I2* — The platform is tested against cases designed to break it
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:wn,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:03 AM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wn,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:03 AM
 Evaluation2: Repeatable runs and regression reporting,SCRUM-69,10097,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:03 AM,18/Sep/26 7:46 PM,,,,0,"A run that cannot be repeated proves nothing, and a result nobody can compare hides regressions rather than revealing them. Depends on EV1, A3.
 
 *Subtasks*
@@ -399,8 +460,8 @@ Evaluation2: Repeatable runs and regression reporting,SCRUM-69,10097,Task,To Do,
 # Give each case a stable id and diff a run against the previous one.
 
 Story *I1* — I can re-run the whole workflow against known cases
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:wk,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:03 AM
-Evaluation1: Scenario harness that drives the workflow end to end,SCRUM-68,10096,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:02 AM,22/Sep/26 12:18 AM,21/Sep/26 1:19 PM,,,0,"Testing individual pieces says nothing about whether the workflow holds together. This is the runner and the step vocabulary it executes — project, policy, task, items, AI pass, annotate, review, dispute, adjudicate, release.
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wk,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:03 AM
+Evaluation1: Scenario harness that drives the workflow end to end,SCRUM-68,10096,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:02 AM,22/Sep/26 12:18 AM,23/Sep/26 7:08 PM,,,0,"Testing individual pieces says nothing about whether the workflow holds together. This is the runner and the step vocabulary it executes — project, policy, task, items, AI pass, annotate, review, dispute, adjudicate, release.
 
 *Subtasks*
 
@@ -412,16 +473,16 @@ Evaluation1: Scenario harness that drives the workflow end to end,SCRUM-68,10096
 # Prove the loop with one trivial scenario before any real cases are written.
 
 Story *I1* — I can re-run the whole workflow against known cases
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:wd,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,13/Sep/26 12:26 AM
-Port the MVP's four text tasks behind the interface,SCRUM-56,10084,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 11:30 PM,14/Sep/26 1:38 PM,,14/Sep/26 1:38 PM,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0009j:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,14/Sep/26 1:38 PM
-Replace the Gemini call with an OpenAI-compatible client,SCRUM-55,10083,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 11:30 PM,14/Sep/26 1:38 PM,,14/Sep/26 1:38 PM,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0009b:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,14/Sep/26 1:38 PM
-Define the AnnotationAssistant interface,SCRUM-54,10082,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 11:29 PM,14/Sep/26 1:38 PM,,14/Sep/26 1:38 PM,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i00093:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,14/Sep/26 1:38 PM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wd,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,13/Sep/26 12:26 AM
+Port the MVP's four text tasks behind the interface,SCRUM-56,10084,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 11:30 PM,14/Sep/26 1:38 PM,,14/Sep/26 1:38 PM,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0009j:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,14/Sep/26 1:38 PM
+Replace the Gemini call with an OpenAI-compatible client,SCRUM-55,10083,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 11:30 PM,14/Sep/26 1:38 PM,,14/Sep/26 1:38 PM,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0009b:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,14/Sep/26 1:38 PM
+Define the AnnotationAssistant interface,SCRUM-54,10082,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 11:29 PM,14/Sep/26 1:38 PM,,14/Sep/26 1:38 PM,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i00093:,W7 Lock down review data,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,14/Sep/26 1:38 PM
 "Provenance: Version guidelines, sources and review policies",SCRUM-53,10081,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:06 PM,22/Sep/26 1:38 AM,22/Sep/26 1:38 AM,,,0,"Related to user story F2
 
-Create immutable guideline versions and attach the effective guideline/source version to AI, annotation and review records",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c6:r,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 10:06 PM
-Dispute: Adjudicator queue and authorization,SCRUM-52,10080,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:05 PM,18/Sep/26 7:45 PM,,,,0,"Related to user story D8, E3, E6, G1
+Create immutable guideline versions and attach the effective guideline/source version to AI, annotation and review records",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c6:r,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 10:06 PM
+Dispute: Adjudicator queue and authorization,SCRUM-52,10080,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:05 PM,24/Sep/26 4:43 PM,23/Sep/26 6:42 PM,,,0,"Related to user story D8, E3, E6, G1
 
-Show the adjudication queue filtered by role, open real cases and allow an authorized decision",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:w,W9,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,06/Sep/26 10:05 PM
+Show the adjudication queue filtered by role, open real cases and allow an authorized decision",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:wb,Mid-semester Break,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,06/Sep/26 10:05 PM
 Review: Independent second reviewer,SCRUM-51,10079,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:03 PM,22/Sep/26 12:31 AM,22/Sep/26 12:31 AM,,,0,"{noformat}Related to user story D7 and E1
 
 ONLY BACKEND
@@ -438,8 +499,8 @@ W9 — second slice:
 # E1's automatic dispute (SCRUM-101) opens from the flag above.
 
 Verdicts come from ReviewDB.verdict (PR #17).
-{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:vxi,"W8 Route work, record decision",,1.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,20/Sep/26 6:33 PM
-Policy: Resolve project policy into executable task rules,SCRUM-50,10078,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:01 PM,21/Sep/26 7:57 PM,21/Sep/26 7:51 PM,,,0,"Related to user story B2 and G2
+{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vxi,"W8 Route work, record decision",,1.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,20/Sep/26 6:33 PM
+Policy: Resolve project policy into executable task rules,SCRUM-50,10078,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:01 PM,21/Sep/26 7:57 PM,24/Sep/26 4:17 PM,,,0,"Related to user story B2 and G2
 
 Rescoped 2026-09-20: this ticket is the policy source, not the four enforcements.
 The original description read as though it owned approval count, cross-review
@@ -479,11 +540,11 @@ its floor; whether required-annotators (SCRUM-48) and required-approvals are one
 concept or two; and unblocking SCRUM-27's client decision, which SCRUM-37 and the
 provenance line also wait on.
 
-The ResolvedPolicy contract must be agreed with Parth before SCRUM-51 lands in W8.",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:vx4,"W8 Route work, record decision",,1.5,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,21/Sep/26 7:57 PM
+The ResolvedPolicy contract must be agreed with Parth before SCRUM-51 lands in W8.",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vx4,"W8 Route work, record decision",,1.5,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,21/Sep/26 7:57 PM
 "Review: Execute accept, adjust, reject and dispute transitions",SCRUM-49,10077,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:58 PM,16/Sep/26 1:21 AM,,,,0,"Related to user story C5, D3, E1
 
-Connect the Review page and API; persist each action; move the item to the correct next state; return the next item to review",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c6:q,,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,06/Sep/26 9:58 PM
-"Work queues: role-checked queues, annotator count and submission limit (API)",SCRUM-48,10076,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:57 PM,22/Sep/26 1:22 AM,22/Sep/26 1:22 AM,,,0,"{noformat}Related to user story D8
+Connect the Review page and API; persist each action; move the item to the correct next state; return the next item to review",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c6:q,,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,06/Sep/26 9:58 PM
+"Work queues: role-checked queues, annotator count and submission limit (API)",SCRUM-48,10076,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:57 PM,23/Sep/26 2:49 PM,24/Sep/26 4:24 PM,,,0,"{noformat}Related to user story D8
 
 ONLY BACKEND
 
@@ -510,79 +571,88 @@ Independence is a condition in the queue query, not a property of an assignee, b
 is no assignee. D7 (SCRUM-51) samples into that same query in W9, so agree its shape with Parth.
 
 No open defects catalogued, because the concept is absent rather than broken: there is no queue
-of any kind, so an annotator has no way to find work except by scrolling the item list.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001a:i,W7 Lock down review data,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",In Progress,14/Sep/26 9:51 PM
-Annotation: Connect the existing text annotation page to live APIs,SCRUM-47,10075,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:56 PM,14/Sep/26 1:47 PM,,14/Sep/26 1:47 PM,,0,"Load source text and AI result, create/update draft, save progress and submit the item for review without mock data",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000ef:,,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,14/Sep/26 1:47 PM
-Task queue: Trigger an AI run and route completed items to review,SCRUM-46,10074,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:51 PM,22/Sep/26 1:20 AM,22/Sep/26 1:56 AM,,,0,"{noformat}Related to user story C2
+of any kind, so an annotator has no way to find work except by scrolling the item list.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001a:i,W7 Lock down review data,,3.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",In Progress,14/Sep/26 9:51 PM
+Annotation: Connect the existing text annotation page to live APIs,SCRUM-47,10075,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:56 PM,14/Sep/26 1:47 PM,,14/Sep/26 1:47 PM,,0,"Load source text and AI result, create/update draft, save progress and submit the item for review without mock data",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000ef:,,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,14/Sep/26 1:47 PM
+Task queue: Trigger an AI run and route completed items to review,SCRUM-46,10074,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:51 PM,23/Sep/26 3:32 AM,23/Sep/26 3:32 AM,,,0,"{noformat}Related to user story C2
 
 ONLY BACKEND
 
 Today AI annotation only runs as a side effect of dataset registration, and its output lands as an unclaimed pending draft that the first human save takes over (PR #22 keeps that behaviour). The client answered on 2026-09-17: AI output is treated as submitted, goes straight to review, and its author is the AI model.
 
 # A task owner can start an AI run for a task at any time, not only at intake; the call returns the batch id. Enqueue is idempotent: the unique (batch_job_id, task_item_id) constraint means a repeated trigger cannot double-charge.
-# A successful item becomes a submitted annotation authored by the AI, written through SCRUM-26's atomic submission path, and the item moves to review.
+# A successful item becomes an annotation submitted by the AI, written through SCRUM-26's atomic submission path, and the item moves to review. The annotation's created_by stays NULL, because it is a foreign key to users and inventing a user would falsify the provenance record; the model that produced it is recorded in annotation_data.metadata.ai (provider, model) and the operator who triggered the run in metadata.ai.triggered_by. Giving the AI an author identity of its own is SCRUM-38 (decided 2026-09-23). Until it exists, an AI annotation is identified by created_by IS NULL, and two models cannot both annotate one item.
 # The AI's annotation does not count toward the task's required annotators (client answer, 2026-09-21): that number counts human submissions only, so SCRUM-48's limit neither counts nor refuses it. One successful AI annotation per item is enough, unless the task explicitly defines a multi-model experiment.
-# ai_item_jobs gains result_annotation_id, pointing at that annotation. The table already exists on every database, so this needs a migration step — agree the order with the other W8 schema changes on day one.
+# ai_item_jobs gains result_annotation_id, pointing at that annotation. The table already exists on every database, so this needs a migration step - agree the order with the other W8 schema changes on day one.
 # Failed items stay visible as failed (SCRUM-3) and submit nothing.
-{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:wy,"W8 Route work, record decision",,1.5,,,,10040,SCRUM-12,AI Annotation Pipeline,In Progress,21/Sep/26 9:54 PM
+# A dead-lettered item can be picked up by a later run. Its failed draft is unclaimed machine output, not annotation work, so it must not make the item look already annotated - otherwise a batch that hit a provider outage can never be retried and only a human claiming the failed draft moves the item on. A test: dead-letter an item, trigger a run, the item is covered and ends succeeded.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:wy,"W8 Route work, record decision",,1.5,,,,10040,SCRUM-12,AI Annotation Pipeline,In Progress,21/Sep/26 9:54 PM
 Project lifecycle: Update and archive a project,SCRUM-45,10073,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 9:48 PM,16/Sep/26 1:21 AM,,,,0,"Related to user story J4
 
-Rename/update project, update its policy, archive completed projects, make archived projects read-only and record changes in history",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c6:p,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,06/Sep/26 9:48 PM
+Rename/update project, update its policy, archive completed projects, make archived projects read-only and record changes in history",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c6:p,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,06/Sep/26 9:48 PM
 Organisation Management: Users can only perform actions that are permitted by their roles.,SCRUM-44,10072,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,06/Sep/26 9:39 PM,16/Sep/26 1:20 AM,,12/Sep/26 11:59 PM,,0,"G1
 
 # Approving, disputing, adjudicating and releasing each require the appropriate role.
 # A user without the required role is refused with a clear message rather than silently allowed.
 # Adding a new role later doesn't require reworking the workflow.
 
-Issue 7",,Jingwei Lin,,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,,,,,,,,,,,,0|i0001g:i,W6 Governance & data-integrity,,,,,,10046,SCRUM-18,Organisation Management,Done,12/Sep/26 11:59 PM
-Release & Export: Align task completion and export readiness,SCRUM-43,10071,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 6:04 PM,20/Sep/26 7:09 PM,21/Sep/26 7:56 PM,20/Sep/26 7:09 PM,,0,"A task marked complete that reports zero finished items destroys confidence in every other number the platform shows. Deliberately one ticket across two stories. Task completion and export readiness must end up using the same rule, and splitting them is how two rules got written in the first place.
+Issue 7",,Jingwei Lin,,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,,,,,,,,,,{},,0|i0001g:i,W6 Governance & data-integrity,,,,,,10046,SCRUM-18,Organisation Management,Done,12/Sep/26 11:59 PM
+Release & Export: Align task completion and export readiness,SCRUM-43,10071,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 6:04 PM,20/Sep/26 7:09 PM,23/Sep/26 7:07 PM,20/Sep/26 7:09 PM,,0,"A task marked complete that reports zero finished items destroys confidence in every other number the platform shows. Deliberately one ticket across two stories. Task completion and export readiness must end up using the same rule, and splitting them is how two rules got written in the first place.
 
 Stories *B6* — “Done” means the same thing everywhere I look · *H5* — Export figures agree with the rest of the platform
-Issues *19*, *27*, *14*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i00018:i,W7 Lock down review data,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,Done,20/Sep/26 7:09 PM
+Issues *19*, *27*, *14*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i00018:i,W7 Lock down review data,,2.0,,,,10045,SCRUM-17,Dataset Release & Export,Done,20/Sep/26 7:09 PM
 Provenance: Remove duplicate escalation audit changes,SCRUM-41,10069,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:48 PM,16/Sep/26 1:21 AM,,,,0,"Escalation entries repeat their own summary as a change, which adds noise and makes real changes harder to spot. Small; pairs with SCRUM-40.
 
 Story *F4* — History tells me who really did what
-Issues *22*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c6:k,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:48 PM
+Issues *22*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c6:k,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:48 PM
 Provenance: Record correct audit actor types,SCRUM-40,10068,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:48 PM,16/Sep/26 1:21 AM,22/Sep/26 12:57 AM,,,0,"When a reviewer submits a corrected value, it's appended as truncated text to a notes field — the stored and exported annotation stays the original, unreviewed value.
 
 Story *F4* — History tells me who really did what
-Issues *21*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c6:d,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:48 PM
-"Provenance: Preserve AI, annotator, reviewer and adjudicator outputs separately",SCRUM-38,10066,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:48 PM,07/Sep/26 3:04 AM,22/Sep/26 12:57 AM,,,0,"Collapsing the AI suggestion, the human decision and the reviewer correction into one value destroys the only evidence of what human judgement actually contributed.
+Issues *21*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c6:d,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:48 PM
+"Provenance: Preserve AI, annotator, reviewer and adjudicator outputs separately",SCRUM-38,10066,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:48 PM,23/Sep/26 3:33 AM,23/Sep/26 2:33 PM,,,0,"Collapsing the AI suggestion, the human decision and the reviewer correction into one value destroys the only evidence of what human judgement actually contributed.
 
 Story *F3* — The AI's suggestion, the human's answer and the reviewer's correction stay separate
-Issues *4*, *5*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c6:,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:48 PM
+Issues *4*, *5*
+
+
+
+{noformat}Added 2026-09-23, from the review of PR #29 (SCRUM-46).
+
+The AI is an author in its own right (client answer, 2026-09-17), but annotations.created_by is a foreign key to users, so SCRUM-46 leaves an AI annotation unauthored and identifies it by created_by IS NULL. That works for one model and nothing else: every AI annotation on an item is indistinguishable from every other, annotation lookup is keyed by (task_item_id, created_by), and a second AI submission would update the first in place - no new version, no history, under a reviewer who may already have acted on it. SCRUM-46 refuses to write it. This ticket is where the AI gets an identity instead.
+
+# An annotation records what kind of author produced it and, for machine output, which model - without inventing a user account. Whatever shape is chosen, keep the model already recorded in metadata.ai as the source of truth for the run, so existing rows stay readable.
+# Two models can annotate the same item without overwriting each other, which is what the client's ""unless the task explicitly defines a multi-model experiment"" (R1-4) assumes. SCRUM-46's one-AI-annotation-per-item refusal is then a task-level rule rather than a limitation of the data model.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c6:,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:48 PM
 Provenance: Guarantee one canonical answer per task item,SCRUM-37,10065,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:47 PM,07/Sep/26 3:04 AM,22/Sep/26 12:58 AM,,,0,"An export containing two conflicting ""final"" answers for the same item is unusable for training and indefensible to an auditor. Export tracks one slot per annotator rather than one canonical value per item. Depends on the SCRUM-27 client decision.
 
 Story *H4* — Every released item has exactly one authoritative answer
-Issues *4*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i000c5:,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:47 PM
-"Dispute / Annotation: Implement ""Dispute & send back to annotator""",SCRUM-35,10063,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:35 PM,16/Sep/26 1:20 AM,21/Sep/26 1:34 PM,14/Sep/26 8:06 PM,,0,"Not every dispute should be settled by an expert overruling — sometimes the right outcome is the original annotator redoing it with guidance. Users currently hit a placeholder. Smallest ticket on the board. The backend endpoint and the typed API client both already exist; only the click handler is missing.
+Issues *4*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000c5:,,,,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:47 PM
+"Dispute / Annotation: Implement ""Dispute & send back to annotator""",SCRUM-35,10063,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:35 PM,16/Sep/26 1:20 AM,,14/Sep/26 8:06 PM,,0,"Not every dispute should be settled by an expert overruling — sometimes the right outcome is the original annotator redoing it with guidance. Users currently hit a placeholder. Smallest ticket on the board. The backend endpoint and the typed API client both already exist; only the click handler is missing.
 
 Story *E2* — I can send an item back to the annotator
-Issues *15*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i00024:,W6 Governance & data-integrity,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,14/Sep/26 8:06 PM
+Issues *15*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i00024:,W6 Governance & data-integrity,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,14/Sep/26 8:06 PM
 Task Lifecycle: Make dataset registration transactional,SCRUM-34,10062,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:07 PM,16/Sep/26 1:20 AM,,14/Sep/26 10:10 PM,,0,"A batch that half-loaded leaves a task nobody can trust and no way to tell which items are real.
 
 Story *B5* — Loading a dataset either works or leaves nothing behind
-Issues *16*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001i:o,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 10:10 PM
-Review: Persist reviewer corrections as structured data,SCRUM-32,10060,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:04 PM,21/Sep/26 8:36 PM,21/Sep/26 8:35 PM,,,0,"A reviewer can correct an item, watch it finalise, and find the correction nowhere in the result. It is appended as truncated text to a notes field while the item advances anyway. Depends on the same client decision as SCRUM-27 for who authors the corrected value.
+Issues *16*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001i:o,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 10:10 PM
+Review: Persist reviewer corrections as structured data,SCRUM-32,10060,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:04 PM,21/Sep/26 8:36 PM,24/Sep/26 4:45 PM,,,0,"A reviewer can correct an item, watch it finalise, and find the correction nowhere in the result. It is appended as truncated text to a notes field while the item advances anyway. Depends on the same client decision as SCRUM-27 for who authors the corrected value.
 
 Story *D3* — The correction I make is the answer that gets saved
-Issues *5*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:vz,W9,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,06/Sep/26 5:04 PM
-"Review: Record verdict, feedback & justification",SCRUM-31,10059,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:03 PM,16/Sep/26 1:20 AM,21/Sep/26 1:33 PM,14/Sep/26 8:06 PM,,0,"The client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers. Confirm with the client whether justification is required on accept, or only on reject, modify and dispute.
+Issues *5*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vz,W9,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,06/Sep/26 5:04 PM
+"Review: Record verdict, feedback & justification",SCRUM-31,10059,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:03 PM,16/Sep/26 1:20 AM,,14/Sep/26 8:06 PM,,0,"The client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers. Confirm with the client whether justification is required on accept, or only on reject, modify and dispute.
 
 Story *C5* — I can record why I decided, not just what I decided
-Issues none",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001v:,W6 Governance & data-integrity,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,14/Sep/26 8:06 PM
+Issues none",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001v:,W6 Governance & data-integrity,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,14/Sep/26 8:06 PM
 "AI-Provider: Store & Display AI suggestions, failures and unavailable states",SCRUM-30,10058,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:18 PM,16/Sep/26 1:20 AM,,13/Sep/26 8:55 PM,,0,"A reviewer must be able to tell ""the AI suggested this"" from ""there is no AI result"" at a glance. Today the two are indistinguishable. Pairs with SCRUM-7, which stops the fabrication at source.
 
 Story *C3* — I'm told when the AI failed instead of being shown a fake answer
-Issues none",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001f:i,W6 Governance & data-integrity,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,13/Sep/26 8:55 PM
+Issues none",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001f:i,W6 Governance & data-integrity,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,13/Sep/26 8:55 PM
 Review: Retire or restrict legacy review mutation endpoints,SCRUM-29,10057,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,16/Sep/26 1:20 AM,,12/Sep/26 10:40 PM,,0,"A second, older set of review endpoints lets any organisation member edit or delete an approved review without touching item status, so approval history and official state can silently diverge.
 
 Story *D2* — Approval history can't be rewritten behind my back
-Issues *8*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001i:v,W6 Governance & data-integrity,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,12/Sep/26 10:40 PM
-Annotation: Preventing finalized annotations from being overwritten,SCRUM-28,10056,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,20/Sep/26 5:41 PM,20/Sep/26 6:24 PM,20/Sep/26 5:41 PM,,0,"A ""locked"" answer that a later submission can quietly change means no exported label can be defended.
+Issues *8*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001i:v,W6 Governance & data-integrity,,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,12/Sep/26 10:40 PM
+Annotation: Preventing finalized annotations from being overwritten,SCRUM-28,10056,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,20/Sep/26 5:41 PM,23/Sep/26 7:32 PM,20/Sep/26 5:41 PM,,0,"A ""locked"" answer that a later submission can quietly change means no exported label can be defended.
 
 Story *D5* — Finalised means finalised
-Issues *2*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i00010:d,W7 Lock down review data,,1.0,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,20/Sep/26 5:41 PM
-Review / Annotation: Reviewer should be able to select the correct submitted annotation,SCRUM-27,10055,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,22/Sep/26 12:33 AM,22/Sep/26 12:33 AM,,,0,"{noformat}Related to user story D4
+Issues *2*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i00010:d,W7 Lock down review data,,1.0,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,20/Sep/26 5:41 PM
+Review / Annotation: Reviewer should be able to select the correct submitted annotation,SCRUM-27,10055,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,22/Sep/26 12:33 AM,23/Sep/26 5:29 PM,,,0,"{noformat}Related to user story D4
 
 ONLY BACKEND
 
@@ -598,16 +668,16 @@ No longer blocked on the review side: the client answered on 2026-09-17 that eac
 
 Still open: which version a release carries — client follow-up F1, asked at the 2026-09-23 meeting. That is H4's rule (SCRUM-37), not this ticket's.
 Closes issue 3. Provenance events (SCRUM-98, F1) reference the same link.
-{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:vx6,"W8 Route work, record decision",,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,21/Sep/26 7:57 PM
-Annotation: Make draft submission and annotation creation atomic,SCRUM-26,10054,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,20/Sep/26 5:41 PM,20/Sep/26 4:36 PM,20/Sep/26 5:41 PM,,0,"Draft status, the annotation and the item status are three separate commits today, and the draft's link back to its own annotation is never saved. The missing link is the same root cause as SCRUM-27, reached from the other direction.
+{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vx6,"W8 Route work, record decision",,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,21/Sep/26 7:57 PM
+Annotation: Make draft submission and annotation creation atomic,SCRUM-26,10054,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,20/Sep/26 5:41 PM,23/Sep/26 7:31 PM,20/Sep/26 5:41 PM,,0,"Draft status, the annotation and the item status are three separate commits today, and the draft's link back to its own annotation is never saved. The missing link is the same root cause as SCRUM-27, reached from the other direction.
 
 Story *D5* — Finalised means finalised
-Issues *11*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i00010:9,W7 Lock down review data,,1.5,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,20/Sep/26 5:41 PM
+Issues *11*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i00010:9,W7 Lock down review data,,1.5,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,20/Sep/26 5:41 PM
 Annotation: Enforce draft ownership,SCRUM-25,10053,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:08 PM,16/Sep/26 1:20 AM,,13/Sep/26 8:55 PM,,0,"Any active member of the organisation can currently edit, delete or submit another user's unfinished draft — including submitting it before they are ready.
 
 Story *D6* — My unfinished work is mine
-Issues *6*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001f:,W6 Governance & data-integrity,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,13/Sep/26 8:55 PM
-Task Lifecycle: Implement valid task lifecycle transitions,SCRUM-24,10052,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:03 PM,22/Sep/26 12:35 AM,22/Sep/26 12:35 AM,,,0,"{noformat}Related to user story B4
+Issues *6*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001f:,W6 Governance & data-integrity,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,13/Sep/26 8:55 PM
+Task Lifecycle: Implement valid task lifecycle transitions,SCRUM-24,10052,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:03 PM,22/Sep/26 6:53 PM,23/Sep/26 7:08 PM,,,0,"{noformat}Related to user story B4
 
 ONLY BACKEND
 
@@ -625,44 +695,44 @@ The client answered on 2026-09-17: ""anything reasonable, no hard requirement"" 
 Also issue 30: deleting a task or project that has items returns 500 on a foreign-key error. Decide the policy first — is a task holding review history deletable at all? — then implement it.
 
 Closes issue 28.
-{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:wz,"W8 Route work, record decision",,2.5,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,06/Sep/26 4:03 PM
+{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:wz,"W8 Route work, record decision",,2.5,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",In Progress,22/Sep/26 6:53 PM
 Task Lifecycle: Preserve lifecycle conflict responses as HTTP 409,SCRUM-23,10051,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:03 PM,16/Sep/26 1:20 AM,,14/Sep/26 8:05 PM,,0,"A deliberate ""intake is closed for this task"" is currently converted into a 500, so clients and alerting cannot tell an invalid workflow transition from an outage. Small; pairs naturally with SCRUM-34.
 
 Story *B5* — Loading a dataset either works or leaves nothing behind
-Issues *29*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001i:i,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 8:05 PM
+Issues *29*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001i:i,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 8:05 PM
 Task Lifecycle: Validate task-item status before database commit,SCRUM-22,10050,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:03 PM,16/Sep/26 1:20 AM,,14/Sep/26 8:06 PM,,0,"A nonsense status stored permanently makes counts, filters and progress figures lie from then on.
 
 Story *G4* — The platform refuses states that can't exist
-Issues *10*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001i:,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 8:06 PM
+Issues *10*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001i:,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 8:06 PM
 Task Lifecycle: Prevent cross-project task and task-item writes,SCRUM-21,10049,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:02 PM,16/Sep/26 1:19 AM,,14/Sep/26 8:05 PM,,0,"Access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.
 
 Story *G3* — My work stays inside my project
-Issues *9*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001h:,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 8:05 PM
-Project & Policy: Configure project review and annotation policies,SCRUM-20,10048,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:00 PM,21/Sep/26 3:47 PM,21/Sep/26 8:35 PM,21/Sep/26 3:47 PM,,0,"A low-risk labelling job and a safety-critical judgement task should not be governed identically. The manager sets approvals required, the cross-review share, and what happens when reviewers disagree. Scope is recording the choice faithfully. Enforcement is a separate story (G2) and is not currently on the board.
+Issues *9*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001h:,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 8:05 PM
+Project & Policy: Configure project review and annotation policies,SCRUM-20,10048,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 4:00 PM,21/Sep/26 3:47 PM,23/Sep/26 7:32 PM,21/Sep/26 3:47 PM,,0,"A low-risk labelling job and a safety-critical judgement task should not be governed identically. The manager sets approvals required, the cross-review share, and what happens when reviewers disagree. Scope is recording the choice faithfully. Enforcement is a separate story (G2) and is not currently on the board.
 
 Story *B2* — I can decide how carefully my project's work gets reviewed
-Issues none",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i00010:i,W7 Lock down review data,,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,21/Sep/26 3:47 PM
-Environment issue & testing,SCRUM-19,10047,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:24 PM,06/Sep/26 3:24 PM,,,,0,API key、environment issue & testing,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,yellow,0|i0003z:,,,,,,,,,,To Do,06/Sep/26 3:24 PM
-Organisation Management,SCRUM-18,10046,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:21 PM,06/Sep/26 3:21 PM,,,,0,"Invitation & member management, nice-to-have",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,dark_yellow,0|i0003r:,,,,,,,,,,To Do,06/Sep/26 3:21 PM
-Dataset Release & Export,SCRUM-17,10045,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:20 PM,06/Sep/26 3:20 PM,,,,0,Canonical answer、release、export,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,dark_blue,0|i0003j:,,,,,,,,,,To Do,06/Sep/26 3:20 PM
-Provenance & Audit History,SCRUM-16,10044,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:18 PM,06/Sep/26 3:18 PM,,,,0,AI/human/reviewer decision history,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,dark_green,0|i0003b:,,,,,,,,,,To Do,06/Sep/26 3:18 PM
-"Review, Dispute & Adjudication",SCRUM-14,10042,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:21 AM,06/Sep/26 3:16 PM,,,,0,_Highest-severity defects live here — two are named in the client's own brief._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,orange,0|i0002v:,,,,,,,,,,To Do,06/Sep/26 2:21 AM
-Annotation & Human Judgement,SCRUM-13,10041,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:21 AM,06/Sep/26 3:16 PM,,,,0,"_The client's stated #1 engineering gap: the connective layer between platform, queue and AI._",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,dark_green,0|i0002n:,,,,,,,,,,To Do,06/Sep/26 2:21 AM
-AI Annotation Pipeline,SCRUM-12,10040,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:19 AM,06/Sep/26 3:16 PM,,,,0,_Project → policy → task → items. The client's own critical path starts here._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,blue,0|i0002f:,,,,,,,,,,To Do,06/Sep/26 2:19 AM
-"Project, Policy & Task Lifecycle",SCRUM-11,10039,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:13 AM,06/Sep/26 3:16 PM,,,,0,_Do these first. Nothing else is safe or demonstrable until they hold._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,purple,0|i00027:,,,,,,,,,,To Do,06/Sep/26 2:13 AM
+Issues none",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i00010:i,W7 Lock down review data,,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,21/Sep/26 3:47 PM
+Environment issue & testing,SCRUM-19,10047,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:24 PM,06/Sep/26 3:24 PM,,,,0,API key、environment issue & testing,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},yellow,0|i0003z:,,,,,,,,,,To Do,06/Sep/26 3:24 PM
+Organisation Management,SCRUM-18,10046,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:21 PM,06/Sep/26 3:21 PM,,,,0,"Invitation & member management, nice-to-have",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},dark_yellow,0|i0003r:,,,,,,,,,,To Do,06/Sep/26 3:21 PM
+Dataset Release & Export,SCRUM-17,10045,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:20 PM,06/Sep/26 3:20 PM,,,,0,Canonical answer、release、export,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},dark_blue,0|i0003j:,,,,,,,,,,To Do,06/Sep/26 3:20 PM
+Provenance & Audit History,SCRUM-16,10044,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 3:18 PM,06/Sep/26 3:18 PM,,,,0,AI/human/reviewer decision history,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},dark_green,0|i0003b:,,,,,,,,,,To Do,06/Sep/26 3:18 PM
+"Review, Dispute & Adjudication",SCRUM-14,10042,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:21 AM,06/Sep/26 3:16 PM,,,,0,_Highest-severity defects live here — two are named in the client's own brief._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},orange,0|i0002v:,,,,,,,,,,To Do,06/Sep/26 2:21 AM
+Annotation & Human Judgement,SCRUM-13,10041,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:21 AM,06/Sep/26 3:16 PM,,,,0,"_The client's stated #1 engineering gap: the connective layer between platform, queue and AI._",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},dark_green,0|i0002n:,,,,,,,,,,To Do,06/Sep/26 2:21 AM
+AI Annotation Pipeline,SCRUM-12,10040,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:19 AM,06/Sep/26 3:16 PM,,,,0,_Project → policy → task → items. The client's own critical path starts here._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},blue,0|i0002f:,,,,,,,,,,To Do,06/Sep/26 2:19 AM
+"Project, Policy & Task Lifecycle",SCRUM-11,10039,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:13 AM,06/Sep/26 3:16 PM,,,,0,_Do these first. Nothing else is safe or demonstrable until they hold._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},purple,0|i00027:,,,,,,,,,,To Do,06/Sep/26 2:13 AM
 Organisation management:  Invitation & acceptance,SCRUM-8,10036,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,05/Sep/26 10:44 PM,16/Sep/26 6:32 PM,,16/Sep/26 6:32 PM,,0,"No invitation can be accepted at all today, so a second person cannot be onboarded through the normal route. This blocks any multi-user demo.
 
 Story *G5* — I can actually invite someone into my organisation
-Issues *17*, *18*",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:vv,W7 Lock down review data,,,,,,10046,SCRUM-18,Organisation Management,Done,16/Sep/26 6:32 PM
+Issues *17*, *18*",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vv,W7 Lock down review data,,,,,,10046,SCRUM-18,Organisation Management,Done,16/Sep/26 6:32 PM
 AI-Provider: Stop generating fake annotations when the AI provider fails,SCRUM-7,10035,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,05/Sep/26 10:44 PM,13/Sep/26 8:55 PM,,13/Sep/26 8:55 PM,,0,"When the AI step fails or is switched off, the platform currently invents plausible-looking bounding boxes and stores them as an ordinary draft. A fabricated suggestion mistaken for a real one is worse than no suggestion. Highest-value ticket on the AI side — it removes fabricated data from the record.
 
 Story *C3* — I'm told when the AI failed instead of being shown a fake answer
-Issues *20*",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001e:,W6 Governance & data-integrity,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,13/Sep/26 8:55 PM
-AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,SCRUM-6,10034,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,05/Sep/26 10:43 PM,21/Sep/26 4:57 PM,21/Sep/26 5:06 PM,21/Sep/26 4:56 PM,,0,"The client intends to move from a mock to open-source or self-hosted models later. The workflow must not be rebuilt when that happens. OVERSIZED — see the recommended split below. Also on the critical path: SCRUM-1, 2, 3 and 7 all need the interface this creates.
+Issues *20*",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001e:,W6 Governance & data-integrity,,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,13/Sep/26 8:55 PM
+AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,SCRUM-6,10034,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,05/Sep/26 10:43 PM,21/Sep/26 4:57 PM,24/Sep/26 4:15 PM,21/Sep/26 4:56 PM,,0,"The client intends to move from a mock to open-source or self-hosted models later. The workflow must not be rebuilt when that happens. OVERSIZED — see the recommended split below. Also on the critical path: SCRUM-1, 2, 3 and 7 all need the interface this creates.
 
 Story *C1* — The AI assistant can be swapped without disrupting my work
-Issues none",,Jingwei Lin,,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,,,,,,,,,,,,0|i00010:,W7 Lock down review data,,1.5,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,21/Sep/26 4:56 PM
-Task queue: Display batch progress and per-item job status,SCRUM-5,10033,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,05/Sep/26 10:39 PM,22/Sep/26 8:10 AM,22/Sep/26 1:52 AM,,,0,"{noformat}Related to user story C2
+Issues none",,Jingwei Lin,,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,,,,,,,,,,{},,0|i00010:,W7 Lock down review data,,1.5,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,21/Sep/26 4:56 PM
+Task queue: Display batch progress and per-item job status,SCRUM-5,10033,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,05/Sep/26 10:39 PM,24/Sep/26 4:39 PM,23/Sep/26 7:09 PM,,,0,"{noformat}Related to user story C2
 
 With a thousand items running, the project manager needs to see how much of the batch is done, in flight or stuck.
 
@@ -674,7 +744,7 @@ Moved from Michael to Tim on 2026-09-21. The job tables exist (PR #21) and the w
 # Progress is derived with GROUP BY on (batch_job_id, status), as the schema document intends — no counters to drift.
 
 Reads the fields SCRUM-3 changes — agree them with Michael on day one.
-{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,,,0|i0001b:w6,Mid-semester Break,,1.5,,,,10040,SCRUM-12,AI Annotation Pipeline,To Do,06/Sep/26 2:02 AM
+{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:w6,Mid-semester Break,,1.5,,,,10040,SCRUM-12,AI Annotation Pipeline,In Progress,24/Sep/26 4:39 PM
 Task queue: Retry failed items and preserve permanent failures,SCRUM-3,10002,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,,,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,02/Sep/26 7:07 PM,22/Sep/26 12:34 AM,22/Sep/26 12:34 AM,,,0,"
 
 {noformat}Related to user story C2
@@ -698,12 +768,12 @@ Follow-ups from PR #22's review (2026-09-21):
 
 Condition: until follow-ups 3 and 4 are done, do not switch on worker mode on PostgreSQL, and do not run more than one worker.
 SCRUM-5 (Tim) reads the job fields this ticket changes — agree them on day one.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0001b:wv,"W8 Route work, record decision",,1.5,,,,10040,SCRUM-12,AI Annotation Pipeline,In Progress,21/Sep/26 9:54 PM
-Task queue: Execute task annotation asynchronously through a worker,SCRUM-2,10001,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,,Done,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,02/Sep/26 7:07 PM,21/Sep/26 7:23 PM,,21/Sep/26 7:23 PM,,0,"Requesting AI annotation for a task must return immediately and let the project manager keep working, instead of blocking the request while every item is processed one at a time. Depends on SCRUM-1 for the job model and SCRUM-6 for something to call.
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wv,"W8 Route work, record decision",,1.5,,,,10040,SCRUM-12,AI Annotation Pipeline,In Progress,21/Sep/26 9:54 PM
+Task queue: Execute task annotation asynchronously through a worker,SCRUM-2,10001,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,,Done,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,02/Sep/26 7:07 PM,21/Sep/26 7:23 PM,23/Sep/26 7:24 PM,21/Sep/26 7:23 PM,,0,"Requesting AI annotation for a task must return immediately and let the project manager keep working, instead of blocking the request while every item is processed one at a time. Depends on SCRUM-1 for the job model and SCRUM-6 for something to call.
 
 Story *C2* — A large batch of items gets AI-annotated reliably
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0000z:,W7 Lock down review data,,1.0,,,,10040,SCRUM-12,AI Annotation Pipeline,Done,21/Sep/26 7:23 PM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0000z:,W7 Lock down review data,,1.0,,,,10040,SCRUM-12,AI Annotation Pipeline,Done,21/Sep/26 7:23 PM
 Task queue: Create AI batch job and per-item job status models,SCRUM-1,10000,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,,Done,Michael,712020:caa6edab-aef4-41b3-931a-595264910708,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,02/Sep/26 7:07 PM,20/Sep/26 5:41 PM,,20/Sep/26 5:41 PM,,0,"The queue needs somewhere to record work before anything can run in the background. This is the data model only — no worker yet. Land it first — SCRUM-2, 3 and 5 all read and write the job row.
 
 Story *C2* — A large batch of items gets AI-annotated reliably
-Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,,,0|i0000v:,W7 Lock down review data,,1.0,,,,10040,SCRUM-12,AI Annotation Pipeline,Done,20/Sep/26 5:41 PM
+Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0000v:,W7 Lock down review data,,1.0,,,,10040,SCRUM-12,AI Annotation Pipeline,Done,20/Sep/26 5:41 PM

@@ -72,7 +72,7 @@ B4,B,P0,BE,"My task moves through real states, not just “draft”","As a proje
 4. Close dataset intake once a task is active so items cannot be added mid-review.
 5. Decide whether a task holding annotation or review history may be deleted at all, then make deletion behave accordingly — it must never return a 500 (issue 30).
 6. Wire Activate / Pause / Complete into the task page, disabled with a reason when the transition is illegal.
-7. Check the state agrees across the project screen, the task screen and the export list.","28,30",,Dishank Aswal,SCRUM-24,shipped
+7. Check the state agrees across the project screen, the task screen and the export list.","28,30",working,Dishank Aswal,SCRUM-24,shipped
 B5,B,P0,BE,Loading a dataset either works or leaves nothing behind,"As a project manager, I want registering a batch of items to either fully succeed or fully fail, because a batch that half-loaded leaves me with a task I can't trust and no way to tell which items are real.","1. If item registration fails partway, no partial items, pointers or drafts remain.
 2. I can load a task with hundreds or thousands of items — the client's example is 1,000 video recordings under one task.
 3. If I try to load items at a point in the workflow that doesn't allow it, I'm told that clearly (“intake is closed for this task”), not shown a generic server error.","**Issue 16** (dataset registration isn't transactional) — “leaves nothing behind on failure” is precisely the missing all-or-nothing behaviour, so implementing this story removes the partial-state cleanup problem.
@@ -89,6 +89,25 @@ B6,B,P1,BE,“Done” means the same thing everywhere I look,"As a project manag
 2. Reconcile task_service.py:82 (accepts reviewed, approved and canonicalized) with project_exports_service.py:55 (counts only canonicalized) (issue 19).
 3. Remove ""approved"" from FINALIZED_EXPORTABLE_TASK_ITEM_STATUSES at task_service.py:83 — it is not a member of the status enum (issue 27).
 4. Add a test that a task marked complete never reports zero completed items in its export package.","19,27",done,Dishank Aswal,SCRUM-43,shipped
+B7,B,P1,BE,Each record in my dataset becomes its own item,"As a project manager, I want a JSONL dataset split into one item per source record, with the field to annotate chosen by the task, because the client's datasets arrive as JSONL and treating a whole file as one item makes them unusable without hand-preprocessing.","1. Importing a JSONL file creates one item per record, not one item per file.
+2. The task defines which part of a record is the annotation payload; the AI and the human annotator receive only that payload, never the whole record.
+3. Metadata such as external_item_ref, split and source_record_id stays attached to the item for provenance, with a source reference stable enough to identify the exact source and version.
+4. Evaluation-only fields such as gold_annotations are stored but never shown to annotators or sent to the AI.","No open defects catalogued — found by Yi on 2026-09-21: the text picker lists .jsonl, but intake treats each uploaded file as one task item, so FewNERD records had to be copied into .txt files by hand.
+**Client answers R1-1 and its follow-up (2026-09-21/24)** — “Direct import of the provided JSONL datasets should be in scope”; one source record = one item; “the annotation target should be determined by the task/schema, not by the AI”: source record → task/schema projection → annotation payload. No universal data-mapping engine — whether the owner defines the input schema or supported types provide adapters is ours to propose (an ADR).
+**R2-5** — the stable source reference is part of the minimum provenance of a released item.","1. Write the ADR: owner-defined input schema versus per-type adapters, and how a task names its annotation payload.
+2. Split a .jsonl upload into one item per record inside B5's all-or-nothing registration.
+3. Store the full source record for provenance and project only the task's payload into the draft and the AI prompt.
+4. Keep gold_annotations out of annotator views and AI calls; keep it available to I1's evaluation harness.
+5. Test with the FewNERD sample: one item per record, payload_preview.text shown, gold_annotations never sent.",,,Yi Geng,SCRUM-111,added
+B8,B,P2,BE/FE,"My task chooses how people annotate it, not a hard-coded subtype","As a project manager, I want to choose my task's annotation surface from the editors the platform supports, with subtypes kept only as starting templates, because a task defined by its data, instructions and output schema should not need a new hard-coded subtype to be annotated.","1. A task records an annotation_type, chosen at creation from the supported editors.
+2. Result mapping on the backend and the editor on the draft and review pages both follow the task's annotation_type.
+3. Subtypes remain available only as optional templates for instructions and output schema, which I can edit.
+4. Choosing an annotation_type whose editor cannot render my output schema is refused with a clear reason.","No open defects — a follow-on to **B3**. Drafts and annotations already carry an annotation_type field, but it is not a task-level setting; today task_class, task_type and task_subtype decide the result format and the editor.
+**Client answer R2-6 (2026-09-24)** — accepted our proposal: the subtype becomes “an optional starting template rather than part of the task ontology”; annotation_type is “the human annotation surface / result representation, not the task itself”. A genuinely new type needs explicit implementation only for a new interaction surface or different system behaviour.","1. Write the ADR recording the decision and the supported annotation types.
+2. Add annotation_type to the task model and TaskCreate, and select it on the task form.
+3. Drive backend result mapping and the frontend editor choice from the task's annotation_type instead of task_subtype.
+4. Keep subtype templates as editable starting points for instructions and output schema.
+5. Test that a task's drafts and review page use the editor its annotation_type names.",,,Yi Geng,SCRUM-112,added
 C1,C,P1,BE,The AI assistant can be swapped without disrupting my work,"As a project manager, I want the platform's AI assistant to be replaceable, because the client intends to move from a mock to open-source or self-hosted models later and I don't want the workflow rebuilt when that happens.","1. The mock AI assistant can be replaced with a different one without changing any review, dispute or export behaviour.
 2. Which assistant and version produced a suggestion is recorded against the item.
 3. Everything downstream treats an AI suggestion as a suggestion, never as a finished answer.","No open defects — this is net-new capability the brief calls for (“a replaceable, typed model interface, with mock and live modes interchangeable”).","1. Define an AnnotationAssistant protocol, with MockAssistant as the default and GeminiPreannotator moved behind it.
@@ -124,11 +143,12 @@ C4,C,P1,BE/FE,I can choose whether the AI annotates first,"As a project manager,
 4. Test that a human-only item never receives an AI suggestion, and that none appears in its API responses.",,,,SCRUM-87,shipped
 C5,C,P1,BE/FE,"I can record why I decided, not just what I decided","As a reviewer working on a judgement task, I want to record my reasoning alongside my verdict, because the client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers.","1. Judgement tasks capture a structured justification alongside the verdict, not an optional comment box.
 2. My reasoning is retrievable later, attached to the item and distinct from the verdict itself.
-3. Reasoning is carried into the export with the decision it explains.","No open defects — net-new. Client examples of what this must capture: why an AI answer is wrong, why one answer is preferred, how a person broke the problem down.","1. Add a structured rationale alongside verdict on judgement results — required, not an optional comment box.
+3. Reasoning is carried into the export with the decision it explains.","No open defects — net-new. Client examples of what this must capture: why an AI answer is wrong, why one answer is preferred, how a person broke the problem down.
+**Client answer R2-4 (2026-09-24), follow-up F3** — a justification is required for every substantive reviewer action: accept, reject, modify and escalate to dispute. “The reason is part of the judgement/provenance record, not merely UI commentary.” Not configurable.","1. Add a structured rationale alongside verdict on judgement results — required, not an optional comment box.
 2. Wire the field into the annotate workspace; task-item-workspace-sheet.tsx:997 already destructures the judgement fields.
 3. Keep the reasoning retrievable separately from the verdict it explains.
 4. Carry reasoning into the export alongside the decision.
-5. Settle with the client whether justification is required on accept, or only on reject, modify and dispute.",,done,Parth,"SCRUM-31, SCRUM-49",shipped
+5. Check that reject, modify and escalate refuse an empty justification on the backend, as accept does — required for all four (client, 2026-09-24).",,done,Parth,"SCRUM-31, SCRUM-49",shipped
 D1,D,P0,BE,I can't approve my own work,"As a reviewer, I should not be able to approve an item I annotated myself, because a review that one person can perform on their own work is not a review, and any dataset built on it is indefensible.","1. Attempting to review my own annotation is refused, with a clear explanation.
 2. Only users holding a reviewer or expert role can perform review actions at all.
 3. The same restriction applies to dispute decisions, not just first-line review.","**Issue 7** (annotators can approve their own work) — the review endpoint currently checks only that you belong to the organisation. This story's first two criteria are exactly the two missing checks, so the defect closes as the story lands.","1. Refuse a review when the reviewer created the annotation under review — review_actions.py:206 checks organisation access only (issue 7).
@@ -162,7 +182,8 @@ D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want c
 D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to stay finalised unless someone deliberately reopens it, because a “locked” answer that a later submission can quietly change means no exported label can be defended.","1. Submitting new work against a finalised item is refused, or explicitly reopens review — never silently applied.
 2. Reopening a finalised item is a visible, attributable action.
 3. A submission either completes fully or not at all — it never leaves an item half-updated.","**Issue 2** (a finalised annotation can be silently overwritten) — currently a new draft updates the same record in place with no check on whether the item is already finalised. Criterion 1 is the missing check.
-**Issue 11** (draft submission is not one transaction) — criterion 3 requires the three separate writes involved in submitting work to succeed or fail together.","1. Refuse a draft submission against a canonicalized item instead of updating the annotation row in place — draft_service.py:145 (issue 2).
+**Issue 11** (draft submission is not one transaction) — criterion 3 requires the three separate writes involved in submitting work to succeed or fail together.
+**Criterion 2 moved to D9 (2026-09-24).** The client's answer R2-3 settled who may reopen — the project owner — so reopening is built as its own story; D5 stands for the refusal and the single transaction.","1. Refuse a draft submission against a canonicalized item instead of updating the annotation row in place — draft_service.py:145 (issue 2).
 2. Make submit_draft one transaction; draft status, the annotation and the item status are three separate commits today (issue 11).
 3. Persist draft.annotation_id, which is declared on the model and never written (issue 11).
 4. Make reopening a finalised item an explicit, attributed action rather than a side effect.
@@ -175,7 +196,10 @@ D6,D,P0,BE,My unfinished work is mine,"As an annotator, I want my in-progress dr
 4. Test that a second organisation member cannot submit someone else's pending draft.",6,done,Hanchen Wang,SCRUM-25,shipped
 D7,D,P1,BE,A defined share of items gets independently double-checked,"As a project manager, I want the proportion of items I set in my policy to be routed to a second, independent reviewer, because sampling for cross-validation is how I find out whether my reviewers actually agree.","1. The cross-validation percentage set in B2 determines how many items are routed for a second independent review.
 2. The second reviewer cannot see the first reviewer's decision before recording their own.
-3. I can see, per task, how many items were double-reviewed and how often the two reviewers agreed.",No open defects — net-new. This is the mechanism the client described (30% independently reviewed) and it feeds the agreement metrics in **I3**.,"1. Sample the cross-review percentage set in B2 and place those items in a second-review queue that excludes the first reviewer.
+3. I can see, per task, how many items were double-reviewed and how often the two reviewers agreed.
+4. A sampled item does not finalise until its cross-review completes; unsampled items proceed normally.
+5. The cross-review counts toward the approvals the policy requires — it does not add a review on top of them.","No open defects — net-new. This is the mechanism the client described (30% independently reviewed) and it feeds the agreement metrics in **I3**.
+**Client answer R2-7 (2026-09-24)** — cross-review supplies the second approval rather than stacking on it, and sampled cross-review is a gate, not a post-hoc audit. The AI first pass is never an approval or a reviewer slot, and never becomes canonical without human review.","1. Sample the cross-review percentage set in B2 and place those items in a second-review queue that excludes the first reviewer.
 2. Hide the first reviewer's decision from the second until the second is recorded.
 3. Report per task how many items were double-reviewed and how often the two reviewers agreed.
 4. Depends on D8's queues — there is no queue to place an item in yet. It no longer depends on an assignee: by the decision of 2026-09-17 there is none.",,,Parth,SCRUM-51,shipped
@@ -195,12 +219,22 @@ This is a prerequisite the rest of the epic quietly assumes. **D7** samples a sh
 5. Build the available-work list in the web app, with the 2 of 3 progress and Annotate greyed out at the limit.
 6. Show how many people are working an item and how many have submitted.
 7. Record who took and who submitted each item in its history.",,working,"Kanishka Kathait, Parth","SCRUM-48, SCRUM-52, SCRUM-93",shipped
+D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a project owner, I want to reopen a finalised item when its answer needs to be redone, keeping the old answer in its history, because finalised should mean locked against accidents — not locked against a deliberate, recorded correction.","1. Only the project owner can reopen a finalised item; the action requires a reason and is attributed.
+2. A reopened item returns to the normal open workflow for new annotation and review, not to the previous review step.
+3. The previous finalised answer remains in the item's history as a superseded version; it is never overwritten or deleted.
+4. Anyone else attempting to reopen is refused on the backend, not only hidden in the UI.","No open defects — the other half of **D5**, whose criterion 2 (reopening is a visible, attributable action) was never built: D5 delivered the refusal only.
+**Client answer R2-3 (2026-09-24)** — “The project owner may reopen a finalised item directly.” Annotators, reviewers and experts may request reopening; by Hanchen's reply of 2026-09-24 that request workflow is **out of scope** for now, to be added only if every existing story finishes early.
+**R2-1** — an expert's Return sends an item back to the open workflow the same way, so E3 reuses this path.","1. Add a reopen action on a finalised item, gated on a project-owner capability and requiring a reason.
+2. Mark the finalised answer superseded rather than editing it, and record the reopen as a provenance event (F1).
+3. Return the item to the available-work list (D8) with its annotation and review requirements reset for the new round.
+4. Show the reopen button to the project owner only, with the superseded answer visible in the item's history.
+5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,,Hanchen Wang,SCRUM-110,added
 E1,E,P0,BE,Disagreement is noticed without anyone reporting it,"As a project manager, I want the platform to detect when two reviewers disagree and open a dispute automatically, because disagreement I have to find manually is disagreement I will miss.","1. When independent reviews on the same item conflict, a dispute is raised automatically.
 2. The dispute shows both conflicting decisions and who made them.
 3. Disputed items are visible in one place and are excluded from release until resolved.",No open defects — net-new. Our own design notes are explicit that dispute should default to auto-detected disagreement rather than being a complaint button.,"1. Detect conflicting independent reviews on the same item and open a dispute without anyone reporting it.
 2. Show both conflicting decisions and who made them on the dispute.
 3. List disputed items in one place, scoped to what the viewer may see.
-4. Exclude disputed items from release until they are resolved.",,,Parth,"SCRUM-49, SCRUM-51, SCRUM-101",shipped
+4. Exclude disputed items from release until they are resolved.",,,"Parth, Yi Geng","SCRUM-49, SCRUM-51, SCRUM-101",shipped
 E2,E,P0,FE,I can send an item back to the annotator,"As an expert, I want to send a disputed item back to its annotator with a note, because not every dispute should be settled by me overruling — sometimes the right outcome is the original annotator redoing it with guidance.","1. “Send back to annotator” works from the dispute screen and is not a placeholder.
 2. The item returns to the annotator's queue with my note attached.
 3. The send-back appears in the item's history with who sent it back and why.","**Issue 15** (dispute “send back to annotator” isn't implemented) — users currently hit a placeholder message. issues.md confirms the platform already fully supports this behind the screen and has a ready client function for it, so this is a frontend-only story: wiring the existing button to the existing capability closes the defect.","1. Replace the ""not wired yet"" guard at task-dispute-desk.tsx:93 with the call the page already has (issue 15).
@@ -210,19 +244,29 @@ E2,E,P0,FE,I can send an item back to the annotator,"As an expert, I want to sen
 5. Test the round trip: the item reaches expert_send_back and shows as ""Returned"" in the annotate queue.",15,done,Parth,SCRUM-35,shipped
 E3,E,P1,BE,An expert's decision is recorded as its own decision,"As an expert, I want my adjudication recorded as a distinct decision that references the dispute it settles, because “who routed this to me” and “who decided it” are different facts and collapsing them destroys the audit trail.","1. An adjudication is a separate record from the routing that requested it.
 2. It references the item, the dispute, and the conflicting decisions it resolves.
-3. The annotator's original label, the reviewers' decisions and my adjudication all remain individually visible afterwards.","No open defects — net-new. This is the brief's requirement that annotator label, reviewer decision and adjudicated judgment are “preserved rather than collapsed into one final answer field.”","1. Record an adjudication as its own record, separate from the escalation routing that requested it.
+3. It records one of three outcomes, with a required reason: Accept (one existing judgement becomes the resolved answer), Return (the item goes back to the open workflow for new annotation and review) or Reject (the dispute is closed without a winner and nothing follows automatically).
+4. The adjudication is final for that dispute — the item does not go back to a reviewer for another decision.
+5. The annotator's original label, the reviewers' decisions and my adjudication all remain individually visible afterwards.
+6. I cannot adjudicate a dispute about work I annotated or reviewed.","No open defects — net-new. This is the brief's requirement that annotator label, reviewer decision and adjudicated judgment are “preserved rather than collapsed into one final answer field.”
+**Client answer R2-1 (2026-09-24), correcting the answer of 2026-09-17** — an adjudication no longer goes back to the reviewer: the expert Accepts, Returns or Rejects, and that is final for the dispute. “Resolved” need not mean one answer won — an item may be resolved as genuinely ambiguous. **R2-8** — an arbitrator may not arbitrate work they annotated or reviewed.","1. Record an adjudication as its own record, separate from the escalation routing that requested it.
 2. Reference the item, the dispute, and the conflicting decisions it resolves.
 3. Keep the annotator's label, the reviewers' decisions and the adjudication individually visible afterwards.
-4. Blocked until the client says where an item goes once a dispute is settled.",,,"Parth, Hanchen Wang","SCRUM-52, SCRUM-99",shipped
+4. Record the outcome — Accept, Return or Reject — with a required reason; Accept canonicalises the chosen judgement through the adjudication.
+5. Return reuses D9's reopen path; Reject leaves the item unresolved for the project owner to handle.
+6. Refuse an adjudication by anyone who annotated or reviewed the disputed work.",,,"Parth, Hanchen Wang","SCRUM-52, SCRUM-99",shipped
 E4,E,P1,BE,Resolving a dispute doesn't erase the disagreement,"As a client, I want a resolved item to still show that people disagreed and how it was settled, because disagreement is evidence about the item's difficulty, and deleting it hides exactly what I most need to know.","1. Resolving a dispute adds a resolution; it never deletes or overwrites the conflicting decisions.
 2. A resolved item's history still shows the original disagreement.
-3. Reports can distinguish items that were contested from items that were unanimous.","No open defects — net-new, and a stated non-negotiable in our governance documents (“disagreement is first-class… must be preserved, not collapsed”).","1. Add a resolution rather than overwriting or deleting the conflicting decisions.
+3. Reports can distinguish items that were contested from items that were unanimous.
+4. A dispute may be resolved as ambiguous or unresolved; that outcome is recorded as such, not forced into a winning answer.","No open defects — net-new, and a stated non-negotiable in our governance documents (“disagreement is first-class… must be preserved, not collapsed”).
+**Client, 2026-09-24** — the principle stated before Round 2: “Disagreement is not merely an exception that the workflow should eliminate. It is first-class, high-value data.” A canonical answer is a production outcome; the disagreement lineage is a research and evaluation asset.","1. Add a resolution rather than overwriting or deleting the conflicting decisions.
 2. Keep the original disagreement visible in the item's history after resolution.
 3. Let reports tell a contested item from a unanimous one.
-4. Test that resolving a dispute deletes nothing.",,,Hanchen Wang,SCRUM-100,shipped
+4. Test that resolving a dispute deletes nothing.
+5. Record an ambiguous/unresolved resolution as its own outcome, so a release can exclude or carry it (H3, H4).",,,Hanchen Wang,SCRUM-100,shipped
 E5,E,P1,BE,Escalation matches the assurance my project needs,"As a project manager, I want to configure whether disputes must reach an expert, may reach one, or never do, because a routine labelling task and an arbitration-ready project need different escalation rules.","1. I can set the escalation posture when configuring the project or task.
 2. Where an expert gate is required, an item cannot complete without an expert decision.
-3. The posture in force is visible on the project.",No open defects — net-new. The escalation gate values exist internally but are not selectable or enforced; see **G2** for the wider posture enforcement this depends on.,"1. Make the escalation posture selectable when configuring a project or task.
+3. The posture in force is visible on the project.","No open defects — net-new. The escalation gate values exist internally but are not selectable or enforced; see **G2** for the wider posture enforcement this depends on.
+**Client answer R2-8 (2026-09-24)** — Arbitration-ready is a guarantee, not a likelihood: “if a dispute occurs, it must reach independent adjudication”, stored as an explicit rule. This story makes that rule selectable and visible; G2 enforces it.","1. Make the escalation posture selectable when configuring a project or task.
 2. Where an expert gate is required, block completion until an expert has decided.
 3. Show the posture in force on the project.
 4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,,,SCRUM-107,shipped
@@ -233,7 +277,8 @@ E6,E,P0,FE,The dispute and arbitration screens show my real cases,"As an expert,
 This is the second of the four agreed objectives (“every screen backed by real, correctly-scoped data rather than partially-wired endpoints”) and without it Epic E is backend work nobody can see.","1. Verify rather than rebuild: the task dispute and finalized desks already read live data.
 2. Build or delete the three routes that return notFound() — /disputes/[id], /arbitration/[id] and /exports/[id] — and record which and why.
 3. Scope every dispute list to what the viewer is allowed to see.
-4. Confirm an action taken on these screens changes real state and survives a refresh.",,,Parth,"SCRUM-52, SCRUM-103",shipped
+4. Confirm an action taken on these screens changes real state and survives a refresh.
+5. Offer the expert Accept, Return and Reject, each with a required reason, on the arbitration view (E3, R2-1).",,,Parth,"SCRUM-52, SCRUM-103",shipped
 F1,F,P0,BE,I can ask how any label came to exist,"As a client, I want to open any item in a delivered dataset and see the full sequence that produced its label, because a dataset that can't answer that can only be shipped, not defended.","1. Each item shows an ordered record of: what it came from, what the AI suggested, what the human did with that suggestion (accepted, modified, rejected or replaced), every review decision, and any dispute or adjudication.
 2. Each entry names who did it and when.
 3. The record is captured as the work happens, not reconstructed afterwards.","No open defects — net-new. Only a generic activity log exists today, holding opaque before/after values rather than a structured account of the workflow.","1. Add a provenance event record distinct from AuditLogDB (db_models.py:127), which holds opaque before/after blobs.
@@ -278,11 +323,18 @@ G1,G,P0,BE,My role determines what I can do,"As an organisation administrator, I
 G2,G,P1,BE,My project's governance posture actually governs,"As a project manager, I want choosing dual sign-off, expert gate or arbitration-ready to genuinely change what the workflow requires, because otherwise I've selected a label that reassures me and enforces nothing.","1. Dual sign-off requires the configured number of approvals from different reviewers before an item can finalise.
 2. Expert gate prevents completion until an expert has approved.
 3. Arbitration-ready guarantees unresolved disagreement reaches arbitration rather than quietly defaulting.
-4. The posture in force is visible on the project and in the export record.","No open defects — net-new enforcement. Our own terminology documents describe these three postures as “signals, not separate workflow engines,” which is an accurate description of the gap: they are recorded and never applied.","1. Enforce dual sign-off: the configured number of approvals from different reviewers before an item can finalise.
+4. The posture in force is visible on the project and in the export record.
+5. The policy stores expert gate and adjudication-mandatory-on-dispute as explicit fields, not as preset names.
+6. No expert confirms or adjudicates an item they annotated or reviewed.
+7. The AI first pass never counts as an approval, and no item finalises on AI output alone.","No open defects — net-new enforcement. Our own terminology documents describe these three postures as “signals, not separate workflow engines,” which is an accurate description of the gap: they are recorded and never applied.
+**Client answer R2-8 (2026-09-24)** — define the postures “by what authority is required before an item may be resolved/canonicalised, rather than as UI presets”. Standard: one reviewer approval. Dual sign-off: two independent approvals, cross-review may supply the second, disagreement enters dispute. Expert gate: every item needs expert confirmation (annotation → review → expert gate → canonical); with one reviewer plus the gate, cross-review defaults to 0%. Arbitration-ready: “if a dispute occurs, it must reach independent adjudication” — an explicit rule/field. **R2-7** — the AI first pass is not an approval or reviewer slot.","1. Enforce dual sign-off: the configured number of approvals from different reviewers before an item can finalise.
 2. Enforce the expert gate: no completion until an expert has approved.
 3. Enforce arbitration-ready: unresolved disagreement reaches arbitration rather than quietly defaulting.
 4. Show the posture in force on the project and in the export record.
-5. The three postures are recorded and never applied — docs/terminology calls them ""signals, not separate workflow engines"".",,,Jingwei Lin,SCRUM-50,shipped
+5. The three postures are recorded and never applied — docs/terminology calls them ""signals, not separate workflow engines"".
+6. Add the expert-gate and adjudication-mandatory fields to the policy and B2's ResolvedPolicy; default cross-review to 0% under expert gate.
+7. Extend D1's self-approval guard to expert confirmation and adjudication.
+8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,,Jingwei Lin,SCRUM-50,shipped
 G3,G,P0,BE,My work stays inside my project,"As an organisation administrator, I want a person with access to one project to be unable to change anything in another, because access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.","1. Changing or deleting a task fails unless it genuinely belongs to the project it was requested under.
 2. The same applies to changing an item within a task.
 3. Attempts across a boundary are refused, not silently applied.","**Issue 9** (cross-project/cross-org write bypass) — a duplicated route means the check that would catch this is never reached. The story's criteria can only pass once the live path performs the ownership check, which also removes the shadowed duplicate.","1. Delete the shadowing duplicate PUT and DELETE /projects/{id}/tasks/{id} at projects.py:176 and :213 (issue 9).
@@ -320,9 +372,10 @@ H3,H,P0,BE,A release that shouldn't exist is refused,"As a client, I want the pl
 2. Refuse on unreviewed items, incomplete provenance, or superseded versions.
 3. Name the items that caused the refusal and why.
 4. Check against the recorded decisions, never against an operator asserting that review happened.",,,,SCRUM-105,shipped
-H4,H,P0,BE,Every released item has exactly one authoritative answer,"As a client, I want each item in a release to carry one answer marked as the authoritative one, because an export containing two conflicting “final” answers for the same item is unusable for training and indefensible to an auditor.","1. Each released item carries exactly one authoritative value.
+H4,H,P0,BE,Every released item has exactly one authoritative answer,"As a client, I want each item in a release to carry one answer marked as the authoritative one, because an export containing two conflicting “final” answers for the same item is unusable for training and indefensible to an auditor.","1. Each released item carries at most one authoritative value; an item resolved as ambiguous carries none and is marked as such.
 2. Where other submissions existed, they appear as superseded history — never as competing answers.
-3. The authoritative value matches what the review and adjudication record says it should be.",**Issue 4** (a finalised item can export more than one conflicting answer) — the export currently tracks one slot per annotator rather than one canonical value per item. Criterion 1 makes that impossible; it depends on the canonical-answer decision taken in **D4** and the supersession model in **F3**.,"1. Carry exactly one authoritative value per released item (issue 4).
+3. The authoritative value matches what the review and adjudication record says it should be.","**Issue 4** (a finalised item can export more than one conflicting answer) — the export currently tracks one slot per annotator rather than one canonical value per item. Criterion 1 makes that impossible; it depends on the canonical-answer decision taken in **D4** and the supersession model in **F3**.
+**Client answer R2-2 (2026-09-24), follow-up F1** — “release output = authoritative resolution, release provenance = complete judgement history”. Keep every version with its provenance, distinguished from the released result; “do not flatten the history into only the final answer”.","1. Carry exactly one authoritative value per released item (issue 4).
 2. Show other submissions as superseded history, never as competing answers.
 3. Match the authoritative value to what the review and adjudication record says it should be.
 4. The export tracks one slot per creator rather than one canonical value per item, which is how two answers reach one item.

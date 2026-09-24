@@ -1,0 +1,32 @@
+Ciro — Yesterday at 14:14
+Issue fixed, Please land PR#30 first.
+Michael — Yesterday at 17:18
+Cool, waiting for Jason (Hanchen) to review my changes.
+Michael — Yesterday at 17:18
+Thanks!
+Michael — Yesterday at 18:47
+🚢 PR #32: https://github.com/USYD-CS-Capstone/hej/pull/32
+
+feat(SCRUM-5): show AI batch progress and per-item job status
+
+SCRUM-5 is done - PR #32. That completes story C2 across three PRs: #29 (trigger + routing to review), #30 (retry), #32 (progress). All CI-green on SQLite and PostgreSQL.
+
+#32 adds:
+GET /tasks/{id}/ai-runs - every run with per-status item counts
+GET /tasks/{id}/ai-runs/{run_id}/items?status=dead_letter - which item is stuck, and why
+A progress panel on the task screen, polling while the run is live
+
+completed_with_failures is never shown as plain "completed", and skipped isn't shown as a failure. 
+@Ciro PR31 approved - waiting for 30 to merge first then merging 31.
+Michael — Yesterday at 19:00
+@Jason @Ciro
+
+The worker runs one item at a time. At ~60s per call, 1,000 items is roughly 17 hours. SCRUM-2 moved the model call off the request; it didn't make the batch faster, and nothing in W8 changes that. C2's subtask 6 says "prove it on a 1,000-item batch", so:
+
+Stub provider, full size - cheap and immediate, proves the queue but not the provider.
+
+Pull the bounded-parallel-calls ticket in - real throughput. A config-capped worker pool, default 1 so it's inert until switched on. Safe for N claimants already, but PostgreSQL-only: on SQLite the single-writer ceiling makes a second worker pointless.
+
+Either way SCRUM-3's backoff already supports it, so neither answer means rework.
+
+I'm happy to build it if you think its worth adding / needed for demo. Let me know 🙂 
