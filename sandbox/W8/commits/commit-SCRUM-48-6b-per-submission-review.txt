@@ -1,0 +1,44 @@
+feat(api): review queue offers each submission awaiting the reviewer (SCRUM-48)
+
+The review queue decided per item. A reviewer who had reviewed anything
+on an item was never offered it again. On a task requiring three
+annotators with one reviewer, two of the three submissions were never
+reviewed. A reviewer who returned work was also locked out of reviewing
+the resubmission. And only items in "annotated" were considered, but
+returning one annotator's submission sets the whole item to "returned"
+while the others still wait.
+
+Hanchen decided on 2026-09-25 that each submission is reviewed on its
+own, and that one reviewer may review every submission on an item. The
+queue now decides per submission. A submission awaits a reviewer when:
+- it still needs a decision: not rejected, returned or escalated since
+  it was last submitted, and short of the approvals the task's review
+  policy requires;
+- and the reviewer is independent of it: not its author, has not
+  approved it, and has not reviewed it since it was last submitted.
+
+A resubmission rewrites its annotation in place, so annotations.
+updated_at marks the last submission. Approvals are counted over the
+whole history, as the review action counts them and as
+assert_can_add_approval refuses a repeat. Under dual sign-off, the
+second approval therefore still never goes back to the first approver.
+
+An item is offered when at least one of its submissions awaits the
+caller, and awaiting_review_annotation_ids names them. A reviewer is
+still never offered an item they annotated. Only canonicalized and
+disputed items are left out by status.
+
+The rule lives in submission_rules (SubmissionReviewState,
+submission_review_states_by_item, awaits_review_by), loaded in two
+grouped queries.
+
+Tests: one reviewer reviews all three submissions in turn; dual
+sign-off sends the second approval to another reviewer; a returned
+submission comes back to its reviewer once resubmitted; returning one
+submission leaves the others reviewable; a rejected submission is not
+offered again. The first four fail on the previous commit.
+test_different_reviewer_is_offered_second_review now sets a dual
+sign-off policy, because on a single-pass task one approval completes
+the submission and there is no second review to offer.
+
+Story D8, SCRUM-48.

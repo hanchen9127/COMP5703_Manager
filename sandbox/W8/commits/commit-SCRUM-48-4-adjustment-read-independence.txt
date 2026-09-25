@@ -1,0 +1,28 @@
+fix(api): apply annotator independence to the review adjustment read (SCRUM-48)
+
+GET .../adjustment returns one submission's answer, its author, and the
+latest review of it. It checked project access only. So an annotator who
+had not submitted could read a peer's answer and the reviewer's feedback
+on it, either by naming the peer's annotation (SCRUM-27 added the name)
+or by leaving the name out, when the default pick fell on the peer's.
+This was the last read outside the rule; review point 3 on #33.
+
+The read now uses AnnotationService's rule, as the draft and annotation
+reads do:
+- naming another person's submission before submitting one's own is
+  refused with 403, as GET /annotations/{id} refuses it;
+- with no name, the pick is made among what the caller may see (their
+  own and the AI's), so the read still opens for the annotator's rework
+  notice, which the web app requests with no name until they have
+  submitted. Neither another person's answer nor its review is returned.
+
+Reviewers and annotators who have submitted see what they saw before.
+The unnamed pick uses the same ordering as the default pick.
+api_surfaces.md drops "not yet applied" and lists this read.
+
+Tests: naming a peer's answer is refused; unnamed shows neither a peer's
+answer nor its review; unnamed still shows the AI's first pass; after
+submitting, and as a reviewer, peers' answers are readable. The first
+two fail on the previous commit; the other three are guards.
+
+Story D8, SCRUM-48.

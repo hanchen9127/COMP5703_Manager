@@ -1,0 +1,24 @@
+refactor(api): count human submissions in one place (SCRUM-48)
+
+Whether an annotation is a person's submission or the AI's output was
+decided as "created_by is not None" in five places: the submission limit
+in DraftService, both work queues, and the two annotator-independence
+reads. The rule is the client's (2026-09-21: the AI's first pass is not
+one of the required annotators), and its test is temporary: created_by
+IS NULL identifies machine output only until the AI gets an author of its
+own (SCRUM-38). Five copies would each have to change then, and the work
+queue fixes that follow would have added four more.
+
+Add app/services/submission_rules.py as the one owner of that rule:
+is_machine_annotation(), human_submitter_ids() and a grouped
+human_submitter_ids_by_item() for the queues, plus the SQL forms of the
+same test. The five call sites now use it. Behaviour is unchanged: the
+count still reads every annotation row on the item, as both previous
+copies did, and a person counts once.
+
+Two mocked tests in test_draft_service_lifecycle.py passed only because
+their mocked repository reported an existing annotation for the
+submitter, which skipped the limit check. setUp now gives the mocked task
+a real required_annotators; no assertion changed.
+
+Story D8, SCRUM-48.

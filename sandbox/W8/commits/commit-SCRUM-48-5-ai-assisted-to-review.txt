@@ -1,0 +1,31 @@
+fix(api): send AI-assisted items straight to review (SCRUM-48)
+
+On an AI-assisted task the client's rule (2026-09-17) is that the AI's
+output goes straight to review and no human annotator is involved. The
+queues treated such an item like a human-first one: the annotate queue
+offered it until required_annotators people had submitted, and the
+review queue skipped it because no person had submitted on it. So AI work
+never reached a reviewer through the queue, and people were asked to
+redo it. That followed Hanchen's message of 23/09, which was wrong on
+this point.
+
+submission_rules now says when an item's first pass is complete:
+- human-first: its human submitters reach required_annotators;
+- AI-assisted: the AI has annotated it, or, where the AI run failed and
+  left no annotation, its human submitters reach required_annotators.
+
+- The annotate queue skips items whose first pass is complete.
+- The review queue takes an item with the AI's annotation even when no
+  person has submitted on it.
+- submit_draft refuses a person's submission on an AI-assisted item the
+  AI has already annotated (409), so the API holds the rule the queue
+  shows. A contributor resubmitting their own annotation, and every item
+  whose AI run failed, are unaffected.
+
+Tests: the AI-annotated item is in the review queue and not the annotate
+queue, and a human submission on it is refused; a failed-AI item is
+offered to people, fills up like a human-first item, and accepts a
+submission; first_pass_complete across both modes. The first two fail on
+the previous commit; the failed-AI cases are guards and pass on both.
+
+Story D8, SCRUM-48.

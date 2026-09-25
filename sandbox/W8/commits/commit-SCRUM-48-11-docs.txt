@@ -1,0 +1,24 @@
+docs: work queues, required annotators and annotator independence (SCRUM-48)
+
+Docs Sync for SCRUM-48's API. Two statements in api_surfaces.md were no
+longer true: that reading a draft needs nothing beyond capability and
+tenancy, and that draft authorship is how a second annotator sees an item
+is being worked.
+
+- api_surfaces.md: the submit conditions (human limit under a row lock,
+  the AI-assisted refusal, the order of refusals); taking an item through
+  record_item_taken; which reads hide peers' answers from an annotator
+  who has not submitted, and that the adjustment read does not yet; and
+  the three work-queue routes with their WorkQueueItemRead rows.
+- domain_model.md, db_schema_blueprint.md: tasks.required_annotators,
+  its bound and default, and how dev databases get the column.
+- workflow_states.md: the count is of people; AI-assisted items go
+  straight to review; annotators work independently; each submission is
+  reviewed on its own; rework goes back to its annotator; item status is
+  coarse while an item holds several submissions.
+
+The rule that an accept completes an item only once every submission is
+in, and the adjustment read's independence check, are documented with
+the commits that build them.
+
+Story D8, SCRUM-48.

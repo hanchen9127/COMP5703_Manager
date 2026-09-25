@@ -1,0 +1,27 @@
+fix(api): migrate, seed and bound required_annotators (SCRUM-48)
+
+tasks.required_annotators was added to the model but not to
+migrate_db_schema(). create_all does not add a column to an existing
+table, so every SQLite dev database created before this branch failed on
+its first task query. The seed data was also inconsistent with the new
+rule: step 4 gives each of its items one annotation from Alice and one
+from Bob, on tasks that require one annotator. And the count had no
+upper bound.
+
+- migrate_db_schema() adds the column as INTEGER NOT NULL DEFAULT 1, so
+  existing tasks keep the single-annotator behaviour they were created
+  with.
+- init_data step 4 raises required_annotators on the tasks it seeds to
+  the number of distinct annotators it gives each item (2), so the seed
+  starts legal. Other tasks keep 1.
+- TaskCreate and the domain Task accept 1..10, the same ceiling the
+  review policy puts on required approvals.
+
+Tests: the migration on a pre-SCRUM-48 tasks table, seed steps 1-4 never
+exceeding a task's count, and a count of 11 refused. Each fails with its
+fix reverted.
+
+PostgreSQL dev databases have no additive migration and need
+`init_data.py --reset`.
+
+Story D8, SCRUM-48.

@@ -20,6 +20,9 @@ Also this week, as project manager:
 
 | File | What it is |
 | --- | --- |
+| `tests/manual-test-SCRUM-48.md` | 2026-09-26: walkthrough for PR #35 in the running app — independence, the limit, per-submission review, return and reject rework; needs a dev-database reset. Dry-run results and observations for SCRUM-93 inside |
+| `scripts/sandbox-SCRUM-48.py` | Helper for that walkthrough: creates an N-annotator item and shows queues, peer visibility and item status through the API, since the web app has no queue screen yet |
+| `plans/plan-SCRUM-48-fixes.md` | 2026-09-25: Hanchen fixes Kanishka's PR #33 (SCRUM-48) on a branch stacked on `CS57-KANISHKA`, for Jingwei's re-review — decisions A–E, 11 commits, and messages to Kanishka and the PR. Review: `../../reviews/W8/review-cs57-kanishka-scrum-48-work-queues.md` |
 | `jira-W8-descriptions.md` | 2026-09-22: full, paste-ready descriptions for every W8 ticket — SCRUM-93 (with S10), 86 (only the escalation paths remain), 51 (W8 and W9 slices), the new D2 ticket, 27 (no longer blocked), 3, 46 (AI as author), 5, 24 (lifecycle decided); one-line fixes to carry-over SCRUM-48 (`is_task_item_export_eligible`) and SCRUM-90 (invitee screen). Checked against `main` `23e62a9` |
 | `jira-scrum-99-r2-1.md` | 2026-09-24: full replacement description for SCRUM-99 (E3) after the client's R2-1 — Accept / Return / Reject, final for the dispute, reason required, no self-adjudication. Checked against `main` `fd273b9` |
 | `jira-new-D9-B7-B8.md` | 2026-09-24: paste-ready new tickets for the three stories added from the client's Round 2 — D9 (project owner reopens a finalised item, W9), B7 (JSONL import, one item per record, W11), B8 (task-level `annotation_type`, W11). Checked against `main` `fd273b9` |

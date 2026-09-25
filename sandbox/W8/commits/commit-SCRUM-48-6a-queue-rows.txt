@@ -1,0 +1,34 @@
+feat(api): queue rows carry submission progress, in grouped queries (SCRUM-48)
+
+The three work-queue routes returned plain TaskItemRead, so the screen
+SCRUM-93 builds could not show "2 of 3" or how many people are working
+an item. It has to know without reading anyone's answer, which the
+independence rule forbids an annotator. The routes were also broken:
+they serialised the database row with task_item_to_read, which reads a
+location_ref that TaskItemDB does not have, so any queue holding an item
+failed with a 500. The tests called the service directly, or checked
+only role refusals, so none reached it.
+
+The queues also ran several queries per item. For 1,000 items, the
+review queue made about 2,000 of them.
+
+- WorkQueueItemRead extends TaskItemRead with required_annotators,
+  submitted_count (people only), working_count (people holding an
+  unsubmitted draft), has_ai_annotation, and
+  awaiting_review_annotation_ids for the review queue: the item's
+  current annotations for now, narrowed per reviewer in the next commit.
+- The queue service builds these rows itself. It loads the items once,
+  then each fact about them in one grouped query: human submitters,
+  AI-annotated items, people working, data-pointer locations, and for
+  the review queue the caller's past reviews and the current
+  annotations. The rules deciding what is offered are unchanged.
+- submission_rules gains the grouped machine_annotated_item_ids() and
+  working_user_ids_by_item().
+
+Tests: the counts on a row; the AI first pass named on a review row;
+the same number of statements for 5 items as for 50, on both queues; and
+all three routes returning a real item with its location_ref, with real
+members and roles. All five fail on the previous commit, the route test
+with the AttributeError above.
+
+Story D8, SCRUM-48.

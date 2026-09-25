@@ -1,0 +1,30 @@
+feat(api): offer returned work back to its annotator (SCRUM-48)
+
+When a reviewer returned a submission for rework (adjust or revise),
+nothing offered the item back to the annotator. The annotate queue skips
+an item its caller has already submitted on. So a returned item reached
+its annotator only if they went looking for it in the item list.
+
+The annotate queue now offers an item to an annotator whose own
+submission was returned since they last submitted it. The item being
+full is no bar, because a resubmission keeps its author's place under
+the submission limit. Once they resubmit, the return is behind the new
+submission and the item leaves their queue. The review side already
+works since the previous commit: the reviewer who returned it is offered
+the resubmission.
+
+SubmissionReviewState gains returned_since_submission. review_status
+records both a return and an escalation as needs_revision, so the
+verdict tells them apart. Escalated and rejected work is not handed back
+as rework.
+
+expert_send_back is left alone. The client's R2-1 replaces it with
+"Return to the open workflow" in SCRUM-58, which will say who gets the
+item back.
+
+Tests: returned work comes back to its annotator and to no one else; on a
+one-reviewer task an item goes reviewer -> annotator -> the same reviewer;
+escalated and rejected work is not offered as rework. The first two fail
+on the previous commit.
+
+Story D8, SCRUM-48.

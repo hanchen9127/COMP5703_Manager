@@ -1,0 +1,55 @@
+fix(api): an accept completes an item only once every submission is in (SCRUM-48)
+
+The first accept on an item canonicalised it. On a task requiring three
+annotators, one approval stopped collection at one of three, and the
+finalised-item guard then refused the other two submissions (review
+point 4 on #33). Hanchen decided on 2026-09-25 that each submission is
+reviewed on its own, so an accept completes the submission it names,
+not the item. SCRUM-27 (#34) made that name available to the review
+action.
+
+The item now becomes canonicalized only when both hold:
+- its first pass is complete: required_annotators people have submitted,
+  or, on an AI-assisted task, the AI has;
+- every current submission has the approvals its review policy requires.
+A returned or rejected submission counts as outstanding. Both mean
+"redo this": the API accepts the resubmission, and the web app tells
+its author to revise and resubmit (Hanchen, 2026-09-26, keeping reject's
+existing meaning).
+
+Until then the item stays open and the remaining annotators can still
+submit. Its status is returned or rejected if any submission is back
+with its annotator, otherwise annotated. The response's next_ui_status
+is awaiting_other_submissions. The web panel shows that the submission
+was approved and leaves the item's status alone, as it already does for
+pending_second_review, instead of marking the item approved.
+
+- submission_rules: item_complete(), and SubmissionReviewState gains
+  rejected_since_submission.
+- review_policy_enforcement: item_status_after_accept() decides the
+  item's status for every accept, single or dual sign-off.
+  dual_signoff_accept_outcome_after_review becomes
+  submission_accept_outcome: it returned "canonicalized" when one
+  submission had its approvals, which no longer means the item is done,
+  so it now answers for the submission only.
+- One approval rule: what counts as an approval (approvers_of,
+  APPROVED_REVIEW_STATUS) lives in submission_rules.
+  distinct_approved_reviewers keeps its name and delegates to it, so the
+  dual sign-off count and the queue and completion states cannot drift
+  apart.
+- Docs: api_surfaces.md ("When an accept completes the item") and
+  workflow_states.md.
+
+Which of several approved submissions is authoritative is the release
+rule (R2-2, SCRUM-37), not this one.
+
+Tests: seven route tests with real roles (three-annotator item; open for
+further submissions; returned and rejected submissions hold the item;
+single-annotator and AI first pass complete at once; dual sign-off needs
+every submission approved twice), and one web test. The five holding
+cases and the web test fail on the previous commit; the two that
+complete at once are guards. A unit test pins the approval rule. The
+mocked route test patches item_status_after_accept and the renamed
+submission_accept_outcome; its assertions are unchanged.
+
+Story D8, SCRUM-48.

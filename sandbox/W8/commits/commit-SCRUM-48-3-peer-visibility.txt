@@ -1,0 +1,39 @@
+fix(api): hide peers' answers, not every draft, until an annotator submits (SCRUM-48)
+
+The client's rule (2026-09-21) is that an annotator must not see other
+annotators' submissions on an item before submitting their own. The draft
+list implemented it as "every caller sees only their own drafts". That
+also hid the AI's output and failures, which are ownerless, and every
+annotator's work from reviewers. The web app reads both from this list,
+so the review panel lost its "AI failed" badge and a reviewer was sent
+an empty list. Meanwhile GET /drafts/{id} returned a peer's draft to
+anyone who knew its id.
+
+The rule is now one predicate, in AnnotationService:
+- is_peer_work(): a draft or annotation is another person's judgement.
+  Machine output is not, and nor is the unclaimed placeholder draft
+  register_dataset creates for every item.
+- visible_to_caller() and assert_visible_to_caller() apply it only while
+  should_hide_other_annotators() holds for the caller.
+
+The draft list, GET /drafts/{id} and the three annotation reads all use
+it. The route-local helper in annotations.py and the service's
+list_user_drafts_by_task_item go.
+
+The annotation list's total_count is the number of annotations on the
+item again, so an annotator who has not submitted reads "2", not "0".
+The client allows the count, not the answers.
+
+user_has_governed_action repeated the role query from
+verify_user_can_perform_governed_action without its membership check. It
+now calls that function and turns a refusal into False, so the two
+cannot drift apart.
+
+Tests: the annotator list keeps their own, the AI's and the placeholder
+drafts and drops a peer's; it shows peers after submitting; a reviewer
+gets every draft; GET /drafts/{id} refuses a peer's draft before
+submission. test_annotator_list_only_returns_their_own_drafts is
+replaced, and the privacy test's count changes from 0 to 2. Five of
+these fail on the previous commit.
+
+Story D8, SCRUM-48.

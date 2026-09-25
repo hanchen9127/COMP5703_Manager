@@ -1,0 +1,30 @@
+feat(api): record taking an item through record_item_taken (SCRUM-48)
+
+D8 asks that taking an item is recorded against the person, since
+nobody hands it to them. Taking means holding a draft (SCRUM-25): either
+creating one's own, or claiming the unowned placeholder on a first save.
+Only the claim was recorded, inline in the update_draft route.
+create_draft recorded nothing, and that is how a second or third
+annotator takes an item.
+
+The team agreed on 2026-09-19 that both paths go through one helper,
+record_item_taken(db, task_item, user_id), so that F1 has one place to
+move onto its event record. The board's SCRUM-98 says it will do so.
+
+- task_history_recorder gains record_item_taken(). It writes one
+  draft_started row into the caller's transaction, and only when the
+  person now holds exactly one draft on the item. A later draft, such as
+  rework after a return, is not a new take.
+- create_draft (route) creates the draft with commit=False, records the
+  take, and commits both together, rolling back on failure.
+  DraftService.create_draft takes commit, as the other draft writes do
+  since PR #11.
+- update_draft calls the helper on a claim instead of its inline block.
+  Later saves still record nothing.
+
+Tests: a first draft records the take with the item, task and project; a
+second draft by the same person does not; each annotator's take is
+recorded; a failed history write leaves no draft. All four fail on the
+previous commit. The existing claim-path tests pass unchanged.
+
+Story D8, SCRUM-48.

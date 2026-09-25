@@ -1,0 +1,28 @@
+fix(api): hand rejected work back to its annotator too (SCRUM-48)
+
+Commit 7 put returned work (adjust, revise) back in its annotator's
+annotate queue, but left rejected work out, and pinned that with a
+test. That contradicts the rest of the platform. A rejected item accepts
+its author's resubmission. The web app lists "rejected" among the
+statuses that may be annotated and resubmitted, and it tells the author
+"It was rejected in review. Open Annotate to revise and resubmit." Since
+the previous commit, a rejected submission also holds the item open
+until it is resubmitted and approved. Neither the client's answers nor
+the design docs make a reviewer's reject final (the client's final
+Reject, R2-1, is the expert's, on a dispute).
+
+Hanchen decided on 2026-09-26 to keep reject's existing meaning: redo
+this, like a return. SubmissionReviewState gains back_with_author
+(returned or rejected since the last submission), and the annotate
+queue hands the item back to its author on either. Resubmitting takes
+it out of their queue, as before.
+
+test_rejected_work_is_not_handed_back_as_rework becomes
+test_rejected_work_comes_back_to_its_annotator_like_returned_work. It
+checks that only the author gets the item back, and that it leaves their
+queue once resubmitted. It fails on the previous commit.
+
+api_surfaces.md and workflow_states.md say "returned or rejected" where
+they said "returned".
+
+Story D8, SCRUM-48.

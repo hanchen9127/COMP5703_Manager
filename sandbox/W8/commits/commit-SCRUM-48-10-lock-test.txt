@@ -1,0 +1,23 @@
+test(api): prove the submission lock on PostgreSQL (SCRUM-48)
+
+submit_draft locks the task item row with SELECT ... FOR UPDATE before
+counting human submitters, so two people cannot both take an item's last
+place. Nothing tested it. The limit tests run on their own SQLite engine,
+where FOR UPDATE is a no-op, so the lock could be deleted without any
+test failing.
+
+The new test uses two real PostgreSQL connections on an item with one
+place left. The first submission holds its transaction open. The second
+runs in a thread and must still be waiting after 1.5 s. Once the first
+commits, the second must be refused with 409, and only the first person's
+annotation may exist. lock_timeout and a join timeout make a broken lock
+fail the test rather than hang it. The test is skipped on SQLite and runs
+in CI's PostgreSQL job.
+
+Waiting alone does not prove the lock. Without it, the second submission
+still waits, on the item status UPDATE the first one made. But by then it
+has already counted the submitters, and it takes the place anyway. So the
+refusal is the assertion that matters. Checked by deleting
+.with_for_update() locally: the test fails with 'submitted' == 409.
+
+Story D8, SCRUM-48.
