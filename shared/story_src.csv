@@ -98,7 +98,7 @@ B7,B,P1,BE,Each record in my dataset becomes its own item,"As a project manager,
 2. Split a .jsonl upload into one item per record inside B5's all-or-nothing registration.
 3. Store the full source record for provenance and project only the task's payload into the draft and the AI prompt.
 4. Keep gold_annotations out of annotator views and AI calls; keep it available to I1's evaluation harness.
-5. Test with the FewNERD sample: one item per record, payload_preview.text shown, gold_annotations never sent.",,,Yi Geng,SCRUM-111,added
+5. Test with the FewNERD sample: one item per record, payload_preview.text shown, gold_annotations never sent.",,working,Yi Geng,SCRUM-111,added
 B8,B,P2,BE/FE,"My task chooses how people annotate it, not a hard-coded subtype","As a project manager, I want to choose my task's annotation surface from the editors the platform supports, with subtypes kept only as starting templates, because a task defined by its data, instructions and output schema should not need a new hard-coded subtype to be annotated.","1. A task records an annotation_type, chosen at creation from the supported editors.
 2. Result mapping on the backend and the editor on the draft and review pages both follow the task's annotation_type.
 3. Subtypes remain available only as optional templates for instructions and output schema, which I can edit.
@@ -107,7 +107,7 @@ B8,B,P2,BE/FE,"My task chooses how people annotate it, not a hard-coded subtype"
 2. Add annotation_type to the task model and TaskCreate, and select it on the task form.
 3. Drive backend result mapping and the frontend editor choice from the task's annotation_type instead of task_subtype.
 4. Keep subtype templates as editable starting points for instructions and output schema.
-5. Test that a task's drafts and review page use the editor its annotation_type names.",,,Yi Geng,SCRUM-112,added
+5. Test that a task's drafts and review page use the editor its annotation_type names.",,working,Yi Geng,SCRUM-112,added
 C1,C,P1,BE,The AI assistant can be swapped without disrupting my work,"As a project manager, I want the platform's AI assistant to be replaceable, because the client intends to move from a mock to open-source or self-hosted models later and I don't want the workflow rebuilt when that happens.","1. The mock AI assistant can be replaced with a different one without changing any review, dispute or export behaviour.
 2. Which assistant and version produced a suggestion is recorded against the item.
 3. Everything downstream treats an AI suggestion as a suggestion, never as a finished answer.","No open defects — this is net-new capability the brief calls for (“a replaceable, typed model interface, with mock and live modes interchangeable”).","1. Define an AnnotationAssistant protocol, with MockAssistant as the default and GeminiPreannotator moved behind it.
@@ -123,7 +123,7 @@ C2,C,P0,BE,A large batch of items gets AI-annotated reliably,"As a project manag
 3. Move the assist call out of task_service.py:445, where it runs synchronously inside dataset registration.
 4. Retry transient failures with backoff; send permanent failures to a dead-letter state that stays visible rather than dropped.
 5. Expose batch progress per task: done, in flight, failed.
-6. Prove it on a 1,000-item batch — one failed item must not sink the run. Do not copy the MVP's TaskRunner, which prints the error and drops the item.",,working,"Michael Max, Parth","SCRUM-1, SCRUM-2, SCRUM-3, SCRUM-5, SCRUM-46, SCRUM-94",shipped
+6. Prove it on a 1,000-item batch — one failed item must not sink the run. Do not copy the MVP's TaskRunner, which prints the error and drops the item.",,done,"Michael Max, Parth","SCRUM-1, SCRUM-2, SCRUM-3, SCRUM-5, SCRUM-46, SCRUM-94",shipped
 C3,C,P0,BE,I'm told when the AI failed instead of being shown a fake answer,"As a reviewer, I want to know when the AI step failed or was switched off, because a fabricated suggestion I mistake for a real one is worse than no suggestion at all.","1. If the AI step fails or is disabled, the item is clearly marked as having no AI suggestion — the platform never invents one.
 2. Where an AI result was incomplete, what was actually returned is shown as-is rather than padded out.
 3. The distinction between “AI said this” and “no AI result available” is visible on the review screen.","**Issue 20** (AI failures produce fake annotations disguised as real ones) — the platform currently fabricates fixed bounding boxes on failure and pads short results with more of them, stored as an ordinary draft. This story's first two criteria make that behaviour impossible to keep.","1. Delete the fabricated bounding boxes from _empty_result at gemini_preannotator.py:233 (issue 20).
@@ -178,7 +178,7 @@ D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want c
 2. Replace the effectively random ""latest annotation"" pick with the defined choice (issue 3).
 3. Make both submissions individually addressable on a double-annotated item.
 4. Record the decision against the submission the reviewer actually opened — impossible while draft.annotation_id is never written, the same root cause as issue 11.
-5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",,Jingwei Lin,SCRUM-27,shipped
+5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",,"Jingwei Lin, Hanchen Wang","SCRUM-27, SCRUM-113",shipped
 D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to stay finalised unless someone deliberately reopens it, because a “locked” answer that a later submission can quietly change means no exported label can be defended.","1. Submitting new work against a finalised item is refused, or explicitly reopens review — never silently applied.
 2. Reopening a finalised item is a visible, attributable action.
 3. A submission either completes fully or not at all — it never leaves an item half-updated.","**Issue 2** (a finalised annotation can be silently overwritten) — currently a new draft updates the same record in place with no check on whether the item is already finalised. Criterion 1 is the missing check.
@@ -222,7 +222,7 @@ This is a prerequisite the rest of the epic quietly assumes. **D7** samples a sh
 6. Show how many people are working an item and how many have submitted.
 7. Record who took and who submitted each item in its history.
 8. Decide the review queue per submission, and finalise an item only once every required submission is in and approved.
-9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth","SCRUM-48, SCRUM-52, SCRUM-93",shipped
+9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114",shipped
 D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a project owner, I want to reopen a finalised item when its answer needs to be redone, keeping the old answer in its history, because finalised should mean locked against accidents — not locked against a deliberate, recorded correction.","1. Only the project owner can reopen a finalised item; the action requires a reason and is attributed.
 2. A reopened item returns to the normal open workflow for new annotation and review, not to the previous review step.
 3. The previous finalised answer remains in the item's history as a superseded version; it is never overwritten or deleted.
@@ -273,7 +273,7 @@ E5,E,P1,BE,Escalation matches the assurance my project needs,"As a project manag
 **Client answer R2-8 (2026-09-24)** — Arbitration-ready is a guarantee, not a likelihood: “if a dispute occurs, it must reach independent adjudication”, stored as an explicit rule. This story makes that rule selectable and visible; G2 enforces it.","1. Make the escalation posture selectable when configuring a project or task.
 2. Where an expert gate is required, block completion until an expert has decided.
 3. Show the posture in force on the project.
-4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,,,SCRUM-107,shipped
+4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,,Jingwei Lin,SCRUM-107,shipped
 E6,E,P0,FE,The dispute and arbitration screens show my real cases,"As an expert, I want the dispute and arbitration screens to show the actual disputed items from my projects, because they currently display sample data — so everything Epic E builds underneath is invisible to the person who has to act on it.","1. The project dispute list, the individual dispute view and the arbitration view all show real cases from the backend, scoped to what I'm allowed to see.
 2. The task-level dispute and finalised views show that task's real items.
 3. Actions taken on these screens change real state, and the change is visible on refresh.
@@ -282,7 +282,7 @@ This is the second of the four agreed objectives (“every screen backed by real
 2. Build or delete the three routes that return notFound() — /disputes/[id], /arbitration/[id] and /exports/[id] — and record which and why.
 3. Scope every dispute list to what the viewer is allowed to see.
 4. Confirm an action taken on these screens changes real state and survives a refresh.
-5. Offer the expert Accept, Return and Reject, each with a required reason, on the arbitration view (E3, R2-1).",,,Parth,"SCRUM-52, SCRUM-103",shipped
+5. Offer the expert Accept, Return and Reject, each with a required reason, on the arbitration view (E3, R2-1).",,,"Parth, Jingwei Lin","SCRUM-52, SCRUM-103",shipped
 F1,F,P0,BE,I can ask how any label came to exist,"As a client, I want to open any item in a delivered dataset and see the full sequence that produced its label, because a dataset that can't answer that can only be shipped, not defended.","1. Each item shows an ordered record of: what it came from, what the AI suggested, what the human did with that suggestion (accepted, modified, rejected or replaced), every review decision, and any dispute or adjudication.
 2. Each entry names who did it and when.
 3. The record is captured as the work happens, not reconstructed afterwards.","No open defects — net-new. Only a generic activity log exists today, holding opaque before/after values rather than a structured account of the workflow.","1. Add a provenance event record distinct from AuditLogDB (db_models.py:127), which holds opaque before/after blobs.
@@ -338,7 +338,7 @@ G2,G,P1,BE,My project's governance posture actually governs,"As a project manage
 5. The three postures are recorded and never applied — docs/terminology calls them ""signals, not separate workflow engines"".
 6. Add the expert-gate and adjudication-mandatory fields to the policy and B2's ResolvedPolicy; default cross-review to 0% under expert gate.
 7. Extend D1's self-approval guard to expert confirmation and adjudication.
-8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,,Jingwei Lin,SCRUM-50,shipped
+8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,working,Jingwei Lin,SCRUM-50,shipped
 G3,G,P0,BE,My work stays inside my project,"As an organisation administrator, I want a person with access to one project to be unable to change anything in another, because access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.","1. Changing or deleting a task fails unless it genuinely belongs to the project it was requested under.
 2. The same applies to changing an item within a task.
 3. Attempts across a boundary are refused, not silently applied.","**Issue 9** (cross-project/cross-org write bypass) — a duplicated route means the check that would catch this is never reached. The story's criteria can only pass once the live path performs the ownership check, which also removes the shadowed duplicate.","1. Delete the shadowing duplicate PUT and DELETE /projects/{id}/tasks/{id} at projects.py:176 and :213 (issue 9).
@@ -407,7 +407,7 @@ I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality le
 2. Cover annotation, review, cross-validation, dispute and final judgement in a single run.
 3. State the expected outcome per scenario and report pass or fail.
 4. Keep results comparable across runs so a regression is visible.
-5. Reset to a clean seeded database between runs — depends on A3.",,,,"SCRUM-68, SCRUM-69",shipped
+5. Reset to a clean seeded database between runs — depends on A3.",,,Jingwei Lin,"SCRUM-68, SCRUM-69",shipped
 I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","1. The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.
 2. Each case has a stated expected outcome and runs through I1.
 3. The casebook grows toward the 40–60 cases the brief specifies.",No open defects — net-new. These adversarial categories are taken directly from the brief.,"1. Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.
@@ -456,12 +456,12 @@ J3,J,P2,BE/FE,I can invite and manage my team,"As an organisation administrator,
 3. Role changes take effect on what that person can do (see G1).",**Issues 17 & 18** (invitations broken; pending list unreachable) — **G5** fixes the underlying flow; this story is the administrator-facing capability built on top of it and cannot be demonstrated until those are closed.,"1. Invite a person, list pending invitations, and remove a member.
 2. Assign and change a member's role.
 3. Make a role change take effect on what that person can actually do (see G1).
-4. Cannot be demonstrated until G5 fixes the invitation flow (issue 17) and the pending-invitation listing (issue 18).","17,18",working,Tim Chung,SCRUM-90,shipped
+4. Cannot be demonstrated until G5 fixes the invitation flow (issue 17) and the pending-invitation listing (issue 18).","17,18",working,Tim Chung,"SCRUM-90, SCRUM-115",shipped
 J4,J,P2,BE/FE,I can maintain a project after creating it,"As a project manager, I want to rename a project, update its policy or team, and archive it when finished, because a project I can only create and never adjust doesn't survive contact with real work.","1. I can rename a project and update its description, policy, team and storage settings.
 2. I can archive a completed project; archived projects are read-only but still viewable.
 3. Changes are recorded in the project's history.","No open defects — net-new. Client's own list: rename, update, update policy, update team settings, update storage location, archive.","1. Rename a project and update its description, policy, team and storage settings.
 2. Archive a completed project; archived projects stay viewable but read-only.
-3. Record every change in the project's history.",,,,SCRUM-45,shipped
+3. Record every change in the project's history.",,,Jingwei Lin,SCRUM-45,shipped
 K1,K,P1,Lead,A reader can understand the system without us in the room,"As a client, I want a technical report covering the architecture, the evaluation results, the limitations and the known failure cases, because I have to maintain this platform after the team disperses.","1. Covers architecture, the evaluation results from Epic I, limitations, and failure cases we know about and did not fix.
 2. States what was consciously deferred and why — including which defects were left unfixed, with justification.
 3. Written progressively across the project, not assembled in the final week.","No open defects — but the deferred-defect record is what closes out issues.md honestly; any of the 29 not fixed by a story above needs an explicit, argued decision rather than silence.","1. Draft the architecture section as the workflow lands, not in the final week.

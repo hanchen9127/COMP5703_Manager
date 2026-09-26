@@ -1,0 +1,37 @@
+feat(api): annotate queue can list unavailable items and mark rework (SCRUM-48)
+
+SCRUM-93 builds the available-work list on the annotate queue, and three
+of its requirements need more than the queue gave:
+
+- Annotate is greyed out on an item that is full. The queue returned
+  only the items the caller could take, so a full item never reached the
+  list to be greyed out. Fetching the task's items and counting per item
+  in the web app would cost a request per row and restate the counting
+  rule that submission_rules owns.
+- A greyed-out row says why. Full and AI-annotated follow from the row's
+  counts and has_ai_annotation, but "you have already submitted" did not:
+  submitted_count is a number, not a list of names.
+- Rework is marked in the list. A returned or rejected submission came
+  back to its author as a row like any other; telling it apart meant
+  fetching drafts or reviews per row, although the queue had already
+  worked it out.
+
+GET /tasks/{task_id}/work-queue/annotate takes include_unavailable
+(default false). With it, the task's other unfinished items come back
+too, with can_annotate false; finalized items are still left out. Each
+annotate row now carries can_annotate, rework and submitted_by_you, from
+the same review states and submitters the queue already loaded, so the
+number of queries still does not grow with the number of items. Without
+the parameter the queue returns exactly what it did, and every row has
+can_annotate true. The three fields are false on the review and
+adjudication queues.
+
+Tests: the default queue is unchanged; include_unavailable adds full,
+AI-annotated and already-submitted items greyed out, and never finished
+ones; returned and rejected work is marked rework until resubmitted,
+while a co-annotator whose submission was not returned sees the item
+greyed out; the route passes the parameter through; the query-count
+test covers include_unavailable. Seven fail on the previous commit.
+api_surfaces.md describes the fields and the parameter.
+
+Story D8, SCRUM-48, for SCRUM-93.

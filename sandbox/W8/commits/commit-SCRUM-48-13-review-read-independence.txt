@@ -1,0 +1,23 @@
+fix(api): hide a peer's reviews from an annotator who has not submitted (SCRUM-48)
+
+Yi's review of PR #35 (point 2) found two reads outside the
+annotator-independence rule: GET /annotations/{id}/reviews and
+GET /reviews/{id}. They checked only organisation-level access. A review
+of someone else's submission carries its verdict, justification,
+feedback and, in review_notes, any final payload. So an annotator who
+had not yet submitted on the item, and who had the annotation or review
+id, could read what a colleague answered and what the reviewer said
+about it. The answer itself was already refused with 403.
+
+Both reads now apply AnnotationService.assert_visible_to_caller to the
+submission the reviews are about, as the annotation, draft and
+adjustment reads do. The rule covers every read that returns another
+person's work or a review of it; a search of the routes for review
+fields finds no other. api_surfaces.md lists both reads in the
+independence table.
+
+Tests: before submitting, an annotator gets 403 from both reads; after
+submitting, and as a reviewer, both return the review. The first fails
+on the previous commit; the other two are guards.
+
+Story D8, SCRUM-48.

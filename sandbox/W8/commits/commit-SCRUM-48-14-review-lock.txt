@@ -1,0 +1,24 @@
+fix(api): lock the task item during a review action (SCRUM-48)
+
+Yi's review of PR #35 (point 3) found a race between two accepts. Whether
+an accept completes the item depends on every other submission's
+reviews. Two reviewers accepting the last two submissions of an item at
+the same moment each read the item before the other's review was
+committed. Each found the other submission still unapproved, both
+answered awaiting_other_submissions, and the item stayed "annotated"
+with nothing left in anyone's review queue.
+
+The review action now loads the task item with SELECT ... FOR UPDATE,
+before it reads the submissions and reviews, as submit_draft already
+does. A second review action on the same item waits for the first to
+commit, then sees its review. The other four readers of the item
+(adjustment read, escalation routing and decision, finalized) are
+unchanged. api_surfaces.md says so under "When an accept completes the
+item".
+
+Test (PostgreSQL only, skipped on SQLite, which ignores FOR UPDATE):
+Erin's accept is paused after deciding the item's status, before
+committing; Frank's accept on the other submission must wait, then
+completes the item. Without the lock it fails: Frank does not wait.
+
+Story D8, SCRUM-48.

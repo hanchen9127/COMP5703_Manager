@@ -71,7 +71,7 @@ units suggest is usually under-estimated** — that disagreement is the signal w
 **Capacity.** Each person carries **1.5u–3.5u** a week (decided 2026-09-14). There is no cap on the
 team's total, so with eight people a week holds 12u–28u. Close-out of the previous week's review queue
 is not counted. From W8 a group carries 2–3u; a 3u group needs a second person for part of the week.
-Planned loads: W7 20.5u, W8 20.5u, the break 6.5u (evaluation, plus one minimal feature), W9 14.5u, W10 13u, W11 13.5u and W12 3u — W12 is kept almost free for
+Planned loads: W7 20.5u, W8 21u, the break 7.5u (evaluation, plus one minimal feature), W9 14.5u, W10 13u, W11 13.5u and W12 3u — W12 is kept almost free for
 carry-over — only four days since sprints end on Wednesday, so carry-over must be small.
 
 **Tickets.** A ticket shared by several stories — SCRUM-49, 50, 51 and 52 — is scheduled by story part,
@@ -276,7 +276,7 @@ finished, and the queue API must never offer them.
 - An annotator, a reviewer and an adjudicator each see only the work their role allows, and an item stops being offered once it has as many human submissions as its task requires — the AI's first pass is not counted (R1-4).
 - An administrator invites a colleague from the members page; the colleague accepts on screen and gains access.
 
-## W8 — Work reaches the right person; history becomes real; disputes get their own record (24–30 Sep) · 21.5u
+## W8 — Work reaches the right person; history becomes real; disputes get their own record (24–30 Sep) · 22u
 
 *Allocated 2026-09-21. Points are story points on the board and equal units (1u = two to three subtasks),
 re-estimated from each ticket's current scope. Carry-over from W7 is listed but not counted (see Week
@@ -284,12 +284,12 @@ boundaries).*
 
 | Group | Ticket | Story | Load | Owner | Work |
 | --- | --- | --- | --- | --- | --- |
-| **1** | SCRUM-93 | D8 | 2.5u | Kanishka | The available-work list, filtered to what the viewer's role allows; open an item directly; show how many are working it and how many have submitted, as 2 of 3, with Annotate greyed out at the limit — on W7's queue API. The web app's "X is annotating this item" block goes: several annotators per item is the rule now. **Also fixes S10** (found in SCRUM-26's walkthrough): on a returned item, Save draft reverts the editor to the previous submission, because `selectDraftForViewer` prefers the viewer's submitted draft over their pending one and the editor's effect is keyed on the whole item. 2u → 2.5u for S10. **Inputs from PR #35 (2026-09-26):** queue rows are `WorkQueueItemRead` — `submitted_count`, `required_annotators`, `working_count`, `has_ai_annotation`, and `awaiting_review_annotation_ids` on the review queue (message to Kanishka drafted). The review panel shows one submission per item and cannot switch to another, so the screen should let the reviewer choose among the awaiting ids. `working_count` also counts the pending draft a refused submission leaves behind. The panel already handles `awaiting_other_submissions` |
+| **1** | SCRUM-93, SCRUM-114 | D8 | 3u | Kanishka (SCRUM-93, 1.5u); Hanchen (SCRUM-114, the panel, 1.5u) | The available-work list, filtered to what the viewer's role allows; open an item directly; show how many are working it and how many have submitted, as 2 of 3, with Annotate greyed out at the limit — on W7's queue API. The web app's "X is annotating this item" block goes: several annotators per item is the rule now. **Also fixes S10** (found in SCRUM-26's walkthrough): on a returned item, Save draft reverts the editor to the previous submission, because `selectDraftForViewer` prefers the viewer's submitted draft over their pending one and the editor's effect is keyed on the whole item. 2u → 2.5u for S10. **Inputs from PR #35 (2026-09-26):** queue rows are `WorkQueueItemRead` — `submitted_count`, `required_annotators`, `working_count`, `has_ai_annotation`, and `awaiting_review_annotation_ids` on the review queue (message to Kanishka drafted). The review panel shows one submission per item and cannot switch to another, so the screen should let the reviewer choose among the awaiting ids. `working_count` also counts the pending draft a refused submission leaves behind. The panel already handles `awaiting_other_submissions`. **Re-estimated 2026-09-26: 2.5u → 3u** for the PR #35 inputs (queue-row numbers, AI-annotated items, the API's refusals, rework, `working_count`). Choosing which submission to review was split into its own 1u ticket in W9 (group 7). **Split 2026-09-26 by code, so the branches do not collide** (`sandbox/W8/jira/jira-split-scrum-93.md`): SCRUM-93, now the available-work list, goes to Kanishka — new files on the queue API: the list, progress, AI-annotated and rework marking, `working_count`. SCRUM-114 goes to Hanchen — `task-item-workspace-sheet.tsx`, `task-workspace-data.ts` and `task-items.ts`: the "X is annotating" block, S10, no peers' answers in the panel, and the API's refusals on submit |
 | **2** | SCRUM-86, SCRUM-51 (D7 part), D2 remainder (new ticket) | D1, D7, D2 | 3.5u | Parth | SCRUM-86 (1u), moved from W7: D1 criterion 3, the self-decision guard on escalation and dispute decisions, closing Critical issue 7, in `review_actions.py`. **Merge it in the first two days** — group 8 rewrites `decide_escalation` on top of it. SCRUM-51's first slice (1.5u), needing neither D8's queues nor B2's percentage: a second reviewer cannot see the first decision until their own is submitted, and two distinct reviewers' verdicts are compared to flag disagreement; W9's sampling builds on it. D2's subtasks 2 and 4 (1u, new ticket — SCRUM-29 is Done on the board but these have no code): the review-action path always moves item status, and a test proves state and history cannot diverge. Same file as SCRUM-86. **For the D2 test (SCRUM-109), since PR #35:** an accept can leave the item open (`awaiting_other_submissions`, status `annotated`, `returned` or `rejected`), so "status matches the latest decision" must allow an approved submission on an item that is not yet final |
 | **3** | SCRUM-27 | D4 | 2u | Jingwei | ✅ **PR #34 merged 2026-09-25** (`7c84ce9`, verified on `origin/main`): a review names the annotation it acts on, the review read names whose submission it shows and returns that submission's own review, the web panel sends the submission it shows, and `approve_draft` no longer falls back to another author's annotation (S7); closes issue 3. Reviewed by Hanchen. The reviewer selects the correct submitted annotation, using SCRUM-26's `draft.annotation_id`; closes issue 3. Review can be built on per-author versions now; only the released-version rule waits on follow-up F1. Jingwei pulled it into the W7 sprint on the board; it is planned W8 work, so it counts here |
 | **4** | SCRUM-101, SCRUM-111 | E1, B7 | 3u | Yi | **Changed on the board 2026-09-24** — F1 (SCRUM-98) left W8 for W11, unassigned; Yi takes these two instead. SCRUM-101 (1u, moved forward from W9): the disagreement flag opens a dispute automatically, on the same dispute record group 8 defines. SCRUM-111 (2u, moved forward from W11): JSONL import, one item per source record, the payload projected by the task (client answer R1-1) — **ADR first** |
 | **5** | SCRUM-3, SCRUM-46 | C2 | 3u | Michael | SCRUM-3 (0.5u → 1.5u): retry with backoff and dead-letter policy, plus the five follow-ups from PR #22's review — test the lease fence's owner check, take `worker_id` from the claim, move the worker tests onto the shared fixture, re-check expiry in the sweep's UPDATEs, dead-letter analyzer failures at once with the real error. **Until the fixture and sweep items land, no worker mode on PostgreSQL and no second worker.** SCRUM-46 (1u → 1.5u): trigger a run, and AI output as an annotation submitted by the AI through SCRUM-26's atomic path, with `result_annotation_id` on `ai_item_jobs`. **Amended 2026-09-23 at review of PR #29:** the annotation's `created_by` stays NULL — it is an FK to `users`, and the model is recorded in `annotation_data.metadata.ai` instead; an AI author identity of its own moves to SCRUM-38 (F3). A dead-lettered item must also be re-runnable, which #29 does not do yet |
-| **6** | SCRUM-89 | J2 | 2u | Tim | **Reassigned 2026-09-22** — Michael asked for SCRUM-5 back (he had already planned it as one piece with SCRUM-1–3, and its fields are still moving under his two open PRs) and counts it as his mid-semester-break allocation, delivered early; Tim agreed. SCRUM-89's own blocker cleared: SCRUM-43 (the counting rule the board description names) merged as PR #26 on 2026-09-20. Read-only project overview — status, item counts by state, basic workflow figures, reconciled with the task and export screens — deliberately limited, not an analytics product. Coordinate the state names with Dishank's SCRUM-24 (B4, same week); scope this week to what SCRUM-24 has landed by the time Tim builds it, finish the rest in W9 if it lands late |
+| **6** | SCRUM-115 | J3 | 2u | Tim | **Changed on the board 2026-09-26** — SCRUM-89 (J2) left W8 for the break (break group 8); Tim takes SCRUM-115 instead. Split from SCRUM-90 at the review of PR #28 (`../reviews/W8/review-cs57-tim-scrum-90-member-management.md`): SCRUM-90's criterion 4 and the client's answer to Q5, which never reached SCRUM-90's description. The administrator chooses the roles when inviting — no preselected role, and the API refuses an invitation without one; accepting grants exactly those roles. The invitee sees their pending invitations and accepts one from the list, by invitation id for the signed-in invitee (the list carries no token today). After PR #28 merges — same files |
 | **7** | SCRUM-24 | B4 | 2.5u | Dishank | The task lifecycle is ours to define (client: "anything reasonable"): `draft → active → completed`, with `paused` from `active`, the project manager triggering each step, completion only once every item is finished, and no new items once active. Activate, pause, complete; intake closes; closes issue 28. Builds on Dishank's own B6 rule, and adds the task-state check to W7's queue API. **Issue 30** — deleting a task that has items — belongs here too, policy first. 2u → 2.5u for issue 30 |
 | **8** | SCRUM-58, SCRUM-59 | E3, E4 | 2.5u | Hanchen | **Moved forward from W10 on 2026-09-21** — split out of the SCRUM-36 container. SCRUM-58 (1.5u): an adjudication is its own record, referencing the item, the dispute and the conflicting decisions it resolves; **rescoped 2026-09-24 by the client's answer R2-1, which corrects Q4:** the adjudication is final for the dispute and does **not** return to a reviewer. It records one of three outcomes with a required reason — **Accept** (one existing judgement becomes the resolved answer, canonicalised through the adjudication), **Return** (the item goes back to the open workflow; until D9's reopen lands in the break, it is set back to open work) or **Reject** (the dispute closes without a winner; the item stays unresolved). SCRUM-59 (1u): resolving adds a resolution and never overwrites or deletes the conflicting decisions; history shows the item was contested, and an *ambiguous/unresolved* resolution is recorded as its own outcome. Disputes opened by hand through escalation exist today, so this does not wait for E1; E1 (W9) then opens the same record automatically. Load unchanged |
 
@@ -299,7 +299,7 @@ ticket but are not part of the load above.
 | Ticket | Story | Owner | Remaining |
 | --- | --- | --- | --- |
 | SCRUM-48 | D8 | Kanishka | The queue API; SCRUM-93 builds on it, so it merges first |
-| SCRUM-90 | J3 | Tim | Member screens and the invitee's acceptance screen |
+| SCRUM-90 | J3 | Tim | Member screens, criteria 1–3 (PR #28). Review of 2026-09-26: request changes on the reissue race only (Parth's issue 1, not closed by `0572ca2`); issues 2–4 fixed. The invitee's acceptance screen moved to SCRUM-115 |
 | SCRUM-50 (B2 part) | B2 | Jingwei | Phases 1, 2 and 5 of his plan: project policy as a resolver input, the new `ResolvedPolicy` fields, the published contract. Phases 3 and 4 go with G2 in W11. Board estimate 1 → 1.5 |
 | SCRUM-39 (W7 start) | F1 | Yi | Superseded 2026-09-24: SCRUM-39 was replaced by SCRUM-98, which the board moved to W11 unassigned. Whatever of the W7 start is on a branch stays there until F1 resumes |
 
@@ -309,12 +309,12 @@ ticket but are not part of the load above.
 | --- | --- | --- |
 | Parth | SCRUM-86, SCRUM-51 (D7), D2 remainder | 3.5 |
 | Michael | SCRUM-3, SCRUM-46 | 3 |
-| Hanchen | SCRUM-58, SCRUM-59 | 2.5 |
-| Kanishka | SCRUM-93 | 2.5 |
+| Hanchen | SCRUM-58, SCRUM-59, SCRUM-114 | 4 — above the 3.5 cap by 0.5 (2026-09-26, Hanchen's choice) |
+| Kanishka | SCRUM-93 (the list) | 1.5 |
 | Dishank | SCRUM-24 | 2.5 |
 | Jingwei | SCRUM-27 | 2 |
 | Yi | SCRUM-101, SCRUM-111 | 3 |
-| Tim | SCRUM-89 | 2 |
+| Tim | SCRUM-115 (SCRUM-89 moved to the break, 2026-09-26) | 2 |
 
 Tim was kept below 1.5u on counted work by decision (2026-09-21): SCRUM-90's carry-over filled the rest of
 his week, and nothing was added before it landed. **Superseded 2026-09-22** by the SCRUM-5 ↔ SCRUM-89 swap
@@ -355,8 +355,8 @@ which the board gives to evaluation.
 | 8 ↔ W9's SCRUM-57 | E1 opens the dispute record E3 defines — agree its shape before W8 ends |
 | 7 ↔ W7's SCRUM-48 API | Work is only offered in the task states B4 defines; group 7 adds that check |
 | 3 ↔ 4 | D4 fixes which annotation a review points at; provenance events reference the same link |
-| 6 ↔ 7 | SCRUM-89's status figures read the states SCRUM-24 (B4) defines — agree the names on day one; scope group 6 to what has landed if group 7 runs late |
-| 1 ↔ W7's SCRUM-48 | SCRUM-93 is SCRUM-48's screen; S10's draft-selection fix is part of it |
+| 6 ↔ W7's SCRUM-90 | SCRUM-115 edits the invite dialog, the invitation routes and `admin_service.py` that PR #28 changes — it starts once PR #28 merges |
+| 1 ↔ W7's SCRUM-48 | SCRUM-93 and SCRUM-114 are SCRUM-48's screens; S10's draft-selection fix is in SCRUM-114 (since the split of 2026-09-26) |
 | 3, 4, 5, 7, 8 | Five groups change the schema — review link, event table, job retry fields and `result_annotation_id`, task states, adjudication record. One migration path, agreed on day one |
 
 **Exit check:**
@@ -366,14 +366,15 @@ which the board gives to evaluation.
 - A 1,000-item AI batch completes with failures shown, and its progress is visible.
 - A task can be activated and completed, and the queues respect its state.
 - An expert's adjudication is its own record with an Accept, Return or Reject outcome and a reason, is final for the dispute, and leaves the conflicting decisions visible.
+- An invitee accepts a pending invitation from their list, and gets the role chosen when they were invited.
 
-## Break — Scenario testing, bug fixes and the evaluation harness (1–7 Oct) · 12u, minimal new feature
+## Break — Scenario testing, bug fixes and the evaluation harness (1–7 Oct) · 15u, minimal new feature
 
 The mid-semester break has its own sprint on the board, and its goal is the plan: **minimal new feature
 this week** (changed 2026-09-22; it was "no new feature"). Everyone scenario-tests the stories already
 built and fixes what they find. A bug in your own story gets a new ticket in this sprint. The evaluation
-harness and casebook are the one planned piece of build work, and groups 3–6 below are the recorded
-exceptions to "minimal", with groups 4–6 added on 2026-09-24. Testing and bug fixing are not counted in units. Whoever is not in groups 1–6
+harness and casebook are the one planned piece of build work, and groups 3–8 below are the recorded
+exceptions to "minimal", with groups 4–6 added on 2026-09-24 and groups 7 and 8 on 2026-09-26. Testing and bug fixing are not counted in units. Whoever is not in groups 1–8
 spends the week on them.
 
 | Group | Ticket | Story | Load | Work |
@@ -384,6 +385,8 @@ spends the week on them.
 | **4** | SCRUM-110 | D9 | 1.5u | **Added 2026-09-24**, Hanchen (client answer R2-3). The project owner reopens a finalised item with a reason; the item returns to the open workflow and the finalised answer stays as a superseded version. Requests from other roles are out of scope. W8's Return (E3) switches to this path |
 | **5** | SCRUM-112 | B8 | 2u | **Added 2026-09-24**, Yi (client answer R2-6). A task-level `annotation_type` picks the editor; subtypes become templates. ADR first |
 | **6** | SCRUM-52 | D8, E3 | 2u | **Moved from W9 and W10 on the board, 2026-09-24**, Parth. The adjudicator queue and authorisation: only an arbitrator adjudicates, never on work they annotated or reviewed (R2-8); the second-review queue excludes the first reviewer. Builds on W8's dispute record |
+| **7** | SCRUM-113 | D8, D4 | 1u | **Added 2026-09-26**, split from SCRUM-93 and placed in the break by Hanchen's choice; owner picked at the weekly meeting. The review screen lets a reviewer choose which of an item's submissions to review: list `awaiting_review_annotation_ids` from the review queue, open one with `GET .../adjustment?annotation_id=`, and send that id with the decision. Today the panel shows one submission per item and cannot move to another. After SCRUM-93 and SCRUM-114, whose file (`task-item-workspace-sheet.tsx`) it edits next |
+| **8** | SCRUM-89 | J2 | 2u | **Moved from W8 on the board, 2026-09-26**, Tim; SCRUM-115 took its W8 slot. Read-only project overview — status, item counts by state, basic workflow figures, reconciled with the task and export screens — deliberately limited, not an analytics product. Its blocker, SCRUM-43's counting rule, merged as PR #26 on 2026-09-20; the task states come from SCRUM-24 (B4, W8) |
 
 **Why this order.** Evaluation is a primary deliverable and was at zero. Giving it a week with no feature
 work alongside means I1 now finishes with W9 still between it and the W10 measurements that depend on
@@ -398,6 +401,9 @@ its repeatable runs (SCRUM-72 and 73) — a week of slack it did not have before
 | 1 ↔ W8's group 5 | C2's batch runs become harness scenarios. Failed and dead-letter items are casebook cases |
 | 4 ↔ W8's group 8 | E3's Return adopts D9's reopen path |
 | 6 ↔ W8's group 8 | The adjudicator check reads the dispute record E3 defines |
+| 7 ↔ W8's group 1 | SCRUM-113 extends the panel SCRUM-114 rewrites and uses SCRUM-93's review list; it starts after both |
+| 7 ↔ W9's group 1 | D7's sampling places items in the per-submission review queue; SCRUM-113 is the screen a second reviewer picks the submission on |
+| 8 ↔ W8's group 7 | SCRUM-89's status figures read the task states SCRUM-24 (B4) defines; scope it to what SCRUM-24 has landed |
 
 **Exit check:**
 - Every story complete by W8 has been scenario-tested, and every bug found has a ticket in the break sprint.
@@ -405,19 +411,21 @@ its repeatable runs (SCRUM-72 and 73) — a week of slack it did not have before
 - The casebook structure exists with its adversarial categories and its first cases.
 - The project owner reopens a finalised item; the old answer stays in its history, and anyone else's reopen is refused.
 - The adjudicator queue respects roles and independence.
+- A reviewer chooses which of an item's submissions to review, and the decision lands on that submission.
+- A project manager sees the project's status and item counts by state, and they agree with the task and export screens.
 
 ## W9 — Cross-validation, supersession, release artefact (8–14 Oct) · 12.5u
 
 | Group | Ticket | Story | Load | Work |
 | --- | --- | --- | --- | --- |
-| **1** | SCRUM-51 (D7 and E1 parts), SCRUM-57, 49 (E1 part) | D7, E1 | 2u | Board: Parth on SCRUM-51. D7 first: sample items by B2's cross-review percentage (W7) and place them in the second-review queue group 7 builds first this week, which excludes the first reviewer. **E1's automatic dispute (SCRUM-101) moved to W8 on 2026-09-24**; what stays here is E1's release exclusion. Then E1: the disagreement flag from W7 opens a dispute automatically; disputed items are excluded from release. A 3u group — two people for part of the week |
+| **1** | SCRUM-51 (D7 and E1 parts), SCRUM-57, 49 (E1 part) | D7, E1 | 2u | Board: Parth on SCRUM-51. D7 first: sample items by B2's cross-review percentage (W7) and place them in the second-review queue the break's group 6 (SCRUM-52) builds, which excludes the first reviewer. **E1's automatic dispute (SCRUM-101) moved to W8 on 2026-09-24**; what stays here is E1's release exclusion. Then E1: the disagreement flag from W7 opens a dispute automatically; disputed items are excluded from release. A 3u group — two people for part of the week |
 | **2** | SCRUM-32, 49 (D3 part) | D3 | 2u | **Unblocked 2026-09-15** — different authors keep different versions, so a reviewer's correction is a version authored by the reviewer, kept alongside the annotator's rather than superseding it. Closes issue 5. No fallback needed |
 | **3** | SCRUM-38 | F3 | 2u | **Unblocked 2026-09-24** (follow-up F1 answered, R2-2): AI, annotator, reviewer and adjudicator outputs kept separate; at most one is marked the authoritative resolution, and every other version stays linked as provenance — "do not flatten the history into only the final answer". The AI model becomes a recorded field, not a note (R2-5). No fallback needed |
 | **4** | SCRUM-87, 7, 30 | C4, C3 | 2.5u | Two production modes, human-only and AI-first; mode recorded per item. Blind-then-reveal is an evaluation protocol and moved to I4 (client answer R1-2, 2026-09-21). On the same review screen, C3's close-out tests: a failed assist leaves no draft, and "no AI suggestion" is visible |
 | **5** | SCRUM-53 | F2 | 2u | Versioned guidelines, sources and review policies; guideline and source version recorded on every annotation, policy version on every item (R1-7). H2 and H3 need it by W10 |
 | **6** | SCRUM-64 | H1 | 2u | Immutable release artefact with a stable id, unaffected by later edits |
 
-**Why this order.** D7 needs both B2's percentage and D8's queues. W7 delivers the percentage, and group 7 builds the reviewer queue first; E1 follows in the same group because W7 already flags disagreement. D3, F3, C4
+**Why this order.** D7 needs both B2's percentage and D8's queues. W7 delivers the percentage, and the break's group 6 (SCRUM-52) builds the reviewer queue; E1 follows in the same group because W7 already flags disagreement. D3, F3, C4
 and F2 all change what is stored per annotation, so they share one week and one migration order. F3 and C4
 are the two inputs I4 measures in W10, on the harness the break week built. H1 starts the release chain so H2, H3 and H4 have an artefact to work on.
 

@@ -4,9 +4,11 @@ Fixes for #33 (SCRUM-48, story D8), stacked on `CS57-KANISHKA`. When this merges
 
 **Complete as of 26/09.** The last two planned commits waited for #34 (a review names the annotation it acts on). #34 merged on 25/09, `main` is merged in, and both commits are here.
 
+**Updated 26/09 after @DIQI26's review** (Changes requested, on `38e7f4f`): three commits fix its three points, and one more adds what SCRUM-93's list needs from the annotate queue. See the second table below.
+
 Four product decisions shape this PR, all made by me because the review turned on them:
 
-- **A. AI-assisted items skip human annotation.** On an `ai_assisted` task, a successful AI annotation is the item's whole first pass (client, 17/09). The item goes straight to review, and a person's submission on it is refused. An item whose AI run failed is annotated by people, as on a human-first task. My message of 23/09 told Kanishka the opposite, and that was wrong.
+- **A. AI-assisted items skip human annotation.** On an `ai_assisted` task, a successful AI annotation is the item's whole first pass (client, 17/09). The item goes straight to review, and a person's submission on it is refused. An item whose AI run failed is annotated by people, as on a human-first task. This holds in both AI execution modes: the worker already submitted its result, and the default `inline` mode now does too (`df1893c`). My message of 23/09 told Kanishka the opposite, and that was wrong.
 - **B/C. Each submission is reviewed on its own.** One reviewer may review every submission on an item they did not annotate, and an item is reviewable from its first submission.
 - **D. An accept completes the submission it names, not the item.** The item is canonical only when its first pass is complete and every current submission has the approvals its policy requires. Before this, the first accept canonicalised the item, and the finalised-item guard then refused the remaining annotators.
 - **E. A reviewer's reject means "redo this", like a return** (26/09). It keeps its existing meaning: the API accepts the resubmission, and the web app tells the author to revise and resubmit. Neither the client's answers nor the design docs make it final. The client's final Reject (R2-1) belongs to the expert, on a dispute.
@@ -28,6 +30,15 @@ Four product decisions shape this PR, all made by me because the review turned o
 | Follow-up: N+1 | `05365c5` |
 | Nits: `user_has_governed_action`, `_to_draft_read` docstring, upper bound | `3dceb42`, `295d895` |
 
+@DIQI26's review of this PR (26/09):
+
+| Review point | Commit |
+| --- | --- |
+| 1. A successful inline AI result is left as a pending draft, so decision A fails in the default mode | `df1893c` |
+| 2. `GET /annotations/{id}/reviews` and `GET /reviews/{id}` skip the independence check | `478f773` |
+| 3. Two accepts at once can leave a fully approved item `annotated` | `fbf5bdf` |
+| Not from the review: annotate queue fields for SCRUM-93's list | `3d4d06d` |
+
 **Also found and fixed:** on `1e4eb4a`, all three work-queue routes returned **500 whenever the queue held an item**. They serialised the database row with `task_item_to_read`, which reads a `location_ref` that `TaskItemDB` does not have. The service tests called the service directly, and the route tests only checked role refusals, so nothing reached it (`05365c5`, with a route test using real roles).
 
 ## Changes by layer
@@ -41,15 +52,18 @@ Four product decisions shape this PR, all made by me because the review turned o
 
 **Services**
 - `DraftService.submit_draft`: the human limit runs under the row lock, followed by the AI-assisted refusal. `create_draft` takes `commit`.
+- `TaskService.register_dataset`: in `inline` mode, a successful AI result is submitted through `submit_draft` in the registration's transaction, as the worker does. A failed one stays a pending, unclaimed draft.
 - `AnnotationService`: one visibility predicate (`is_peer_work`, `visible_to_caller`, `assert_visible_to_caller`).
-- `TaskWorkQueueService`: rebuilt on grouped queries, so the number of statements does not grow with items. Rows are now `WorkQueueItemRead`. The review queue decides per submission, and the annotate queue hands returned or rejected work back to its annotator.
+- `TaskWorkQueueService`: rebuilt on grouped queries, so the number of statements does not grow with items. Rows are now `WorkQueueItemRead`. The review queue decides per submission, and the annotate queue hands returned or rejected work back to its annotator. Annotate rows carry `can_annotate`, `rework` and `submitted_by_you`, and `include_unavailable` also returns the items the caller cannot take, for SCRUM-93 to grey out.
 - `review_policy_enforcement`:
   - `item_status_after_accept` decides the item's status for every accept, single or dual sign-off;
   - `dual_signoff_accept_outcome_after_review` becomes `submission_accept_outcome`, and answers for one submission only.
 - `task_history_recorder.record_item_taken`: the helper SCRUM-98 (F1) will move onto its event record.
 
 **Routes and schema**
-- The draft list, `GET /drafts/{id}` and the review adjustment read apply the visibility rule.
+- The draft list, `GET /drafts/{id}`, the review adjustment read, `GET /annotations/{id}/reviews` and `GET /reviews/{id}` apply the visibility rule.
+- The review action locks the task item row (`SELECT ... FOR UPDATE`) before deciding the item's status, as a submission does.
+- `GET .../work-queue/annotate` takes `include_unavailable` (default false).
 - The annotation reads use the service predicate, and `total_count` counts everyone's submissions again.
 - The queue routes return `WorkQueueItemRead`.
 - An accept that leaves the item open returns `next_ui_status = "awaiting_other_submissions"`.
@@ -72,20 +86,23 @@ Four product decisions shape this PR, all made by me because the review turned o
 - **Visibility treats machine output and the unclaimed placeholder draft as nobody's judgement**, so both stay visible to everyone.
 - **The adjustment read never refuses an unnamed request.** An annotator who hasn't submitted gets the pick made among their own and the AI's submissions. The web app asks with no name until they have one, so a 403 there would hide their rework notice. Naming a peer's submission is refused with 403.
 - **An annotation list's `total_count` counts every submission**, even when the list itself is filtered. The client allows the count but not the answers.
+- **The annotate queue's default response is unchanged.** Items the caller cannot take come back only with `include_unavailable=true`, so existing callers see no new rows. Finalized items are left out either way.
 
 ## Testing
 
-- Backend suite, SQLite: **587 passed, 5 skipped**. Before these commits it was 512 passed, 4 skipped.
-- Backend suite, PostgreSQL: **592 passed**, locally (Docker) and in CI. CI is green on both backends for every commit.
+- Backend suite, SQLite: **599 passed, 6 skipped**. Before these commits it was 512 passed, 4 skipped.
+- Backend suite, PostgreSQL: **605 passed**, locally (Docker) and in CI. CI is green on both backends for every commit.
 - Web: **230 tests pass**, `tsc --noEmit` is clean, and eslint reports 0 errors. The 3 warnings in `task-item-workspace-sheet.tsx` are pre-existing. CI runs the backend only, so these were run locally.
 - Each fix commit's new tests were run against the previous commit and fail there. The commit messages list which ones, and which tests are guards that pass both ways.
 - The lock test was also checked by deleting `.with_for_update()`: it fails with `'submitted' == 409`.
+- The review lock test (`test_review_lock_postgres.py`, PostgreSQL only) was checked the same way: without the lock, the second accept does not wait for the first.
 - Existing tests changed, and why:
   - `test_annotator_list_only_returns_their_own_drafts` is replaced, because the rule it pinned was issue 1.
   - The privacy test's `total_count` changes from 0 to 2 (review point 5).
   - `test_different_reviewer_is_offered_second_review` now sets dual sign-off, because a single-pass task has no second review.
   - One mocked `setUp` gets a real `required_annotators`.
   - The mocked final-approval route test patches the two collaborators it now calls; its assertions are unchanged.
+  - The inline claim test in `test_ai_draft_ownership.py` now uses a failed AI result, because a successful one is no longer left to be claimed.
 - **Not done yet:** a manual walkthrough in the running app.
 
 ## Notes for reviewers

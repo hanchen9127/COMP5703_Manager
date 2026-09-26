@@ -20,6 +20,10 @@ Also this week, as project manager:
 
 | File | What it is |
 | --- | --- |
+| `jira/jira-new-J3-invitee-screen.md` | 2026-09-26: SCRUM-115 (2 points, Tim, W8), split from SCRUM-90 at the review of PR #28 — the invitee's pending-invitation screen (SCRUM-90 criterion 4) and a role chosen at invitation (client Q5). Board fields, paste-ready description, and the edit to SCRUM-90. Review: `../../reviews/W8/review-cs57-tim-scrum-90-member-management.md` |
+| `jira/jira-scrum-93-queue-inputs.md` | 2026-09-26: full replacement description for SCRUM-93 after PR #35 (3 points after the split; the edit to make on the board is at the top) — queue rows, AI-assisted items, choosing a submission to review, API refusals, rework, `working_count` caveat; S10 kept. Checked against `38e7f4f` |
+| `jira/jira-split-scrum-93.md` | 2026-09-26: SCRUM-93 split by code between Kanishka (A, the available-work list, 1.5) and Hanchen (B, the item workspace panel incl. S10, 1.5, new ticket); SCRUM-113 to W9. Board steps and both paste-ready descriptions |
+| `jira/jira-new-review-choose-submission.md` | 2026-09-26: new 1-point W9 ticket split from SCRUM-93 when it was re-estimated to 3 — the reviewer chooses which of an item's submissions to review. Board fields and paste-ready description |
 | `tests/manual-test-SCRUM-48.md` | 2026-09-26: walkthrough for PR #35 in the running app — independence, the limit, per-submission review, return and reject rework; needs a dev-database reset. Dry-run results and observations for SCRUM-93 inside |
 | `scripts/sandbox-SCRUM-48.py` | Helper for that walkthrough: creates an N-annotator item and shows queues, peer visibility and item status through the API, since the web app has no queue screen yet |
 | `plans/plan-SCRUM-48-fixes.md` | 2026-09-25: Hanchen fixes Kanishka's PR #33 (SCRUM-48) on a branch stacked on `CS57-KANISHKA`, for Jingwei's re-review — decisions A–E, 11 commits, and messages to Kanishka and the PR. Review: `../../reviews/W8/review-cs57-kanishka-scrum-48-work-queues.md` |

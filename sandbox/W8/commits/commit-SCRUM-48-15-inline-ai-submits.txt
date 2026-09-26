@@ -1,0 +1,33 @@
+fix(api): submit a successful inline AI result at registration (SCRUM-48)
+
+Yi's review of PR #35 (point 1) found that decision A, that an item the
+AI has annotated goes straight to review, held only in worker mode. The
+default HEJ_AI_EXECUTION_MODE is inline, and there registration wrote
+the AI's result as a pending, unclaimed draft. No annotation existed, so
+has_machine_annotation was false: the item sat in the annotate queue,
+the first annotator claimed the AI's draft and submitted it as their
+own work, and the item filled up with people like a human-first one.
+This was not a regression of #35; inline always behaved this way. It is
+fixed here because #35 is where decision A was made.
+
+Inline registration now does what the worker's record_result does. The
+draft is written with no author, and a successful result is submitted
+through DraftService.submit_draft with commit=False. The annotation, the
+draft's annotation_id and the item's move to "annotated" land in the
+registration's own transaction, so a failure anywhere still rolls the
+whole registration back. A failed result (metadata.ai.status "failed")
+stays a pending, unclaimed draft, as before: people annotate the item,
+and a later AI run picks it up.
+
+api_surfaces.md: the note that the unclaimed-draft rule "still governs
+the inline path" now limits it to failed results, and the AI-run
+trigger's note says inline items carry a submitted annotation.
+
+Tests (test_ai_draft_ownership.py): a successful inline result is
+submitted, with no author, and the item is "annotated"; an annotator's
+own submission on that item is refused with 409. Both fail on the
+previous commit. The claim tests now use a failed result: it stays
+pending and unclaimed, the first annotator claims it, a second is
+refused.
+
+Story D8, SCRUM-48.

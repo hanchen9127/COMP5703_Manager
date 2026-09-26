@@ -92,6 +92,10 @@ Pushed to `origin/CS57-Hanchen-scrum-48-fixes`; CI (SQLite + PostgreSQL) green o
 | 4 | `0b9b6ca` | 579 |
 | 8 | `4d79cd6` | 587 — includes the de-duplication: `submission_accept_outcome`, `approvers_of`; web panel handles `awaiting_other_submissions` |
 | 7b | `38e7f4f` | 587 — reject means redo (Hanchen, 26/09): rejected work goes back to its annotator too |
+| 13 | `478f773` | 590 SQLite / 595 PG (3 new) — **Yi's review point 2** (Changes requested, 26/09 03:33, on `38e7f4f`): `GET /annotations/{id}/reviews` and `GET /reviews/{id}` apply the independence rule — the only two reads still returning a peer's review (verdict, justification, feedback, `review_notes`) |
+| 14 | `fbf5bdf` | 596 PG (1 new, skipped on SQLite); fails without the lock — **Yi's point 3:** the review action locks the item row (`SELECT ... FOR UPDATE`) before deciding its status, so two reviewers accepting the last two submissions at once cannot both see the item as incomplete. PostgreSQL concurrency test like Commit 10's |
+| 15 | `df1893c` | 593 SQLite / 599 PG (3 new tests, 1 reworked) — **Yi's point 1** (Hanchen: fix in #35): a successful inline AI result is submitted like the worker's — `submit_draft`, no author, in the registration transaction — so decision A holds in the default `inline` mode. A failed result stays a pending draft. Not a regression of #35: inline always left the AI draft for an annotator to claim |
+| 12 | `3d4d06d` | 599 SQLite / 605 PG (6 new) — 2026-09-26, for SCRUM-93 (Hanchen's choices: keep "Annotate greyed out when full" in the list; mark rework from the row). `GET .../work-queue/annotate?include_unavailable=true` also returns the task's other unfinished items with `can_annotate=false`; annotate rows gain `can_annotate`, `rework`, `submitted_by_you`. Default behaviour unchanged |
 | 10 | `73d1bcc` | SQLite 554 + 5 skipped; **PostgreSQL 559** (local and CI) |
 | 11 | `5647c03` | docs only |
 
