@@ -51,3 +51,32 @@ Criterion 4 (invitee sees and accepts pending invitations) moved on 2026-09-26 t
 
 Done: `tracking-sync` added SCRUM-115 to J3 in `shared/story_src.csv` on 2026-09-26. J3 keeps status
 `working` until SCRUM-90 and SCRUM-115 are Done.
+
+---
+
+## Correction, 2026-09-27 — SCRUM-90's description was overwritten
+
+The board export of 2026-09-27 18:18 shows SCRUM-90's description replaced by SCRUM-115's text, followed by
+this file's instruction line ("Change to SCRUM-90 — not yet made on the board…"). SCRUM-90's own criteria
+1–3 were lost. **Replace SCRUM-90's whole description** with this (inside the noformat block):
+
+```
+Related to user story J3
+
+You cannot run governed review without the people who perform it. This is the
+administrator-facing capability on top of the invitation flow.
+
+# I can invite a person, see pending invitations, and remove a member.
+
+# I can assign and change a member's role.
+
+# A role change takes effect on what that person can actually do.
+
+Criterion 4 (invitee sees and accepts pending invitations) moved on 2026-09-26 to SCRUM-115, together with choosing a role at invitation (client answer Q5). PR #28 delivers criteria 1–3.
+
+Issues 17, 18
+Blocked by SCRUM-8 until the invitation flow works.
+```
+
+This is the original description (board export of 2026-09-26) with criterion 4 removed and the move note
+added. `tracking-sync` is unaffected either way: the first line maps it to J3.

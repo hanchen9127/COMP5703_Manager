@@ -1,4 +1,30 @@
 ﻿Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Project type,Project lead,Project lead id,Project description,Priority,Resolution,Assignee,Assignee Id,Reporter,Reporter Id,Creator,Creator Id,Created,Updated,Last Viewed,Resolved,Due date,Votes,Description,Environment,Watchers,Watchers,Watchers Id,Watchers Id,Original estimate,Remaining Estimate,Time Spent,Work Ratio,Σ Original Estimate,Σ Remaining Estimate,Σ Time Spent,Security Level,Custom field (Development),Custom field (Issue color),Custom field (Rank),Sprint,Custom field (Start date),Custom field (Story point estimate),Custom field (Team),Custom field (Vulnerability),Comment,Parent,Parent key,Parent summary,Status category,Status category changed
+Review: an annotator resubmits only work that is theirs to redo,SCRUM-117,10177,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,27/Sep/26 6:15 PM,27/Sep/26 6:16 PM,27/Sep/26 6:15 PM,,,0,"{noformat}Related to user story D8
+
+BACKEND AND FRONTEND
+
+Found in the D8 browser walkthrough on CS57-KANISHKA (2026-09-27). On an item that was ""rejected"" because of one annotator's work, another annotator resubmitted an answer a reviewer had already accepted. The panel offers the editor on the item's status to every annotator, and the API lets anyone who has submitted resubmit at any time. Approvals now count only since the last submission (PR #35), so the old approval stopped counting and the item waited for a new one: nothing was lost, but an accepted answer changed after it was accepted.
+
+Proposed rule, to confirm at the weekly meeting before building: an annotator may resubmit their own answer while it awaits its first review, or once a reviewer has returned or rejected it. Once it is approved, it is not changed by its author.
+
+# The draft service refuses a resubmission that the rule does not allow, with 409 and a message that says why.
+# The workspace panel offers the editor on an item only where the viewer may submit: a first submission, or their own work that is back with them — not because of the item's status, which may be returned or rejected for someone else's work.
+# Tests: the API refuses a resubmission of an approved answer and allows one of a returned or rejected answer; a web test shows no editor to an annotator whose approved answer sits on a rejected item.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000og:,Mid-semester Break,,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,27/Sep/26 6:15 PM
+Review: refuse a decision on a submission that is not awaiting the reviewer,SCRUM-116,10176,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,27/Sep/26 6:14 PM,27/Sep/26 6:16 PM,27/Sep/26 6:16 PM,,,0,"{noformat}Related to user story D1, D5, D8
+
+ONLY BACKEND
+
+Found in the D8 browser walkthrough on CS57-KANISHKA (2026-09-27) and in Yi's review of PR #33. The review queue offers a reviewer only the submissions that await them (awaits_review_by: not their own, not already decided since it was last submitted, short of the policy's approvals, and not already reviewed by them since then). The review action does not apply that rule, so it accepts decisions the queue would never offer:
+- the same reviewer accepts the same submission again under single sign-off (six approvals of one answer in the walkthrough);
+- a reviewer decides on a submission that already has its approvals;
+- a person returns, rejects or escalates their own submission (only accept checks self-review; Yi, related to SCRUM-86);
+- a reject on a canonicalized item's approved submission reopens the item (Yi, related to SCRUM-110).
+
+# submit_task_item_review_action refuses, with 409 and a message that says why, a decision on a submission that does not await the caller, using the same rule as the queue (awaits_review_by), after the item lock.
+# Self-review is refused for every action, not only accept (403, as today for accept).
+# A finalised item's submissions are refused this way; reopening stays SCRUM-110's owner-only path.
+# A reviewer who returned a submission may still review its resubmission, and an earlier approver may approve a resubmission (approvals count since the last submission, PR #35).
+# Tests: a repeat accept under single sign-off, a decision on a fully approved submission, a self-return, and a reject after canonicalisation are each refused; each fails on the old behaviour.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ob:,Mid-semester Break,,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,27/Sep/26 6:14 PM
 Organisation Management: Invitee accepts a pending invitation; role chosen at invitation,SCRUM-115,10175,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,26/Sep/26 10:56 PM,26/Sep/26 10:57 PM,26/Sep/26 10:59 PM,,,0,"{noformat}Related to user story J3
 
 BACKEND AND FRONTEND
@@ -12,7 +38,7 @@ Split from SCRUM-90 on 2026-09-26 at the review of PR #28: SCRUM-90 criterion 4,
 # After accepting, the organisation and its projects appear for me without signing out.
 # Tests: invite without a role is refused; accept grants the invited roles; accepting someone else's invitation is refused; a web test accepts from the list.
 {noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000nq:,"W8 Route work, record decision",,2.0,,,,10046,SCRUM-18,Organisation Management,To Do,26/Sep/26 10:56 PM
-"Work queues: item workspace panel — independence, refusals and S10 (WEB)",SCRUM-114,10174,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,26/Sep/26 3:44 AM,26/Sep/26 3:37 PM,26/Sep/26 3:45 AM,,,0,"{noformat}Related to user story D8
+"Work queues: item workspace panel — independence, refusals and S10 (WEB)",SCRUM-114,10174,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,26/Sep/26 3:44 AM,26/Sep/26 3:37 PM,27/Sep/26 3:58 PM,,,0,"{noformat}Related to user story D8
 
 FRONTEND
 
@@ -105,7 +131,7 @@ Collaboration:
 - SCRUM-99 (E3, W8): the expert's Return outcome sends an item back to the open workflow the same way (client answer R2-1). W8 sets the item back to open work directly; once this ticket lands, Return calls this path. Agree the function with Hanchen.
 - SCRUM-38 (F3, W9): ""superseded"" must be the same supersession model F3 records.
 {noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:w3,Mid-semester Break,,1.5,,,,10041,SCRUM-13,Annotation & Human Judgement,To Do,24/Sep/26 4:37 PM
-"Review: Review actions always move item status, and state cannot diverge from history",SCRUM-109,10137,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:32 AM,22/Sep/26 12:32 AM,22/Sep/26 5:08 PM,,,0,"{noformat}Related to user story D2
+"Review: Review actions always move item status, and state cannot diverge from history",SCRUM-109,10137,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:32 AM,27/Sep/26 6:16 PM,27/Sep/26 6:16 PM,,,0,"{noformat}Related to user story D2
 
 ONLY BACKEND
 
@@ -115,8 +141,15 @@ SCRUM-29 closed D2's first part: the legacy review writes return 410 (PR #6). D2
 # A test proves item status and review history cannot diverge: after any sequence of review actions, the item's status matches what its latest decision implies.
 
 Same file as SCRUM-86 (review_actions.py): land after SCRUM-86, or in the same PR.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wq,"W8 Route work, record decision",,1.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:32 AM
-"Release: Show real releases, policy and history on the project screens",SCRUM-108,10136,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:15 AM,22/Sep/26 12:16 AM,22/Sep/26 12:16 AM,,,0,"{noformat}Related to user story H6
+
+------------------------------------------------------------------
+Added 2026-09-27 from the D8 browser walkthrough on CS57-KANISHKA: a submission also moves item status, and it currently ignores the item's other submissions.
+
+# A submission sets the item's status from all of its submissions, the same way an accept does: ""returned"" or ""rejected"" while any submission is back with its author, otherwise ""annotated"". Today _advance_task_item_to_annotated_on_submit sets ""annotated"" regardless, so an item whose one submission is returned reads ""annotated"" as soon as another annotator submits. The accept path already computes it (item_status_after_accept): share that computation with the human and AI submission paths.
+# The divergence test covers sequences of submissions as well as review actions: return one submission, then another annotator submits — the item stays ""returned"".
+
+The queues are not affected (they read review states), but the item's status, the panel's notices and SCRUM-89's figures read it.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wq,"W8 Route work, record decision",,1.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:32 AM
+"Release: Show real releases, policy and history on the project screens",SCRUM-108,10136,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:15 AM,22/Sep/26 12:16 AM,,,,0,"{noformat}Related to user story H6
 
 Replaces SCRUM-67 (deleted 2026-09-22 with its parent SCRUM-42). Planned for W11.
 
@@ -137,7 +170,7 @@ Replaces SCRUM-60 (deleted 2026-09-22 with its parent SCRUM-36). Planned for W11
 
 The gate values already exist on OrganizationPolicyDB and are never enforced. Read them through SCRUM-50's resolved-policy contract (resolve_for_task), not from the policy tables directly; the enforcement itself is G2.
 {noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000mn:,W11,,2.0,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",To Do,22/Sep/26 12:15 AM
-Provenance: Show an item's whole timeline on one screen,SCRUM-106,10134,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:14 AM,22/Sep/26 12:15 AM,22/Sep/26 12:15 AM,,,0,"{noformat}Related to user story F5
+Provenance: Show an item's whole timeline on one screen,SCRUM-106,10134,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:14 AM,22/Sep/26 12:15 AM,,,,0,"{noformat}Related to user story F5
 
 Replaces SCRUM-63 (deleted 2026-09-22 with its parent SCRUM-39). Planned for W11.
 
@@ -292,7 +325,7 @@ onto the fixture — touches tests only and may land early in W8.
 *Not in scope*: moving production hosting, data migration of anyone's existing dev database
 (re-seed instead), PR templates, CODEOWNERS or branch protection, and Alembic itself unless
 item 5 chooses it.",,Jason Wang,Parth,712020:93390656-829d-45f1-9908-d965a5930c17,712020:31379b73-52b1-497c-adec-f657d3cf3124,,,,,,,,,{},,0|i000jr:,W7 Lock down review data,,3.0,,,"19/Sep/26 10:16 PM;712020:31379b73-52b1-497c-adec-f657d3cf3124;Clarified with [~accountid:712020:93390656-829d-45f1-9908-d965a5930c17], to make postgreSQL default option for all deployment options and fallback as SQLite",10111,SCRUM-83,Trustworthy Foundations,Done,20/Sep/26 7:03 PM
-"Work queues: available-work list, progress and submission limit (WEB)",SCRUM-93,10121,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,16/Sep/26 1:27 AM,26/Sep/26 5:30 PM,26/Sep/26 5:30 PM,,,0,"{noformat}elated to user story D8
+"Work queues: available-work list, progress and submission limit (WEB)",SCRUM-93,10121,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,16/Sep/26 1:27 AM,27/Sep/26 12:08 AM,27/Sep/26 3:58 PM,,,0,"{noformat}Related to user story D8
 
 FRONTEND
 
@@ -328,22 +361,25 @@ A project belongs to exactly one organisation and is visible only to that organi
 I can open a project and see the tasks inside it.
 
 Scope note worth putting on the ticket: this is hardening, not net-new. The work is confirming POST /organizations/{org_id}/projects scopes to the caller's org, a test that a project in org A is invisible to org B, and making project-create-form.tsx surface real validation errors. Pairs with SCRUM-45, which does update/archive on the same object.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000jb:,,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:52 PM
-"Organisation Management: Invite, remove and role-manage members",SCRUM-90,10118,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:37 PM,22/Sep/26 12:37 AM,24/Sep/26 4:24 PM,,,0,"{noformat}Related to user story J3
+"Organisation Management: Invite, remove and role-manage members",SCRUM-90,10118,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:37 PM,27/Sep/26 12:07 AM,27/Sep/26 12:06 AM,,,0,"{noformat}Related to user story J3
 
-You cannot run governed review without the people who perform it. This is the
-administrator-facing capability on top of the invitation flow.
+BACKEND AND FRONTEND
 
-# I can invite a person, see pending invitations, and remove a member.
+Split from SCRUM-90 on 2026-09-26 at the review of PR #28: SCRUM-90 criterion 4, plus the client's answer to Q5 (2026-09-14), which never reached SCRUM-90's description.
 
-# I can assign and change a member's role.
-
-# A role change takes effect on what that person can actually do.
-
-# As an invitee, I can see my pending invitations and accept one — G5's missing screen, added to this ticket's scope on 2026-09-14.
-
+# An administrator chooses one or more roles when inviting. The invite form has no preselected role and cannot be sent without one; the invite API refuses a request without roles (422) and any role the administrator may not assign.
+# The chosen roles are stored with the invitation, and accepting grants exactly those roles. A reissued invitation keeps them unless the administrator changes them.
+# As an invitee, I see my pending invitations (GET /invitations: organisation, who invited me, when, expiry and the roles offered). Expired ones are not listed.
+# I accept one from that list. Accepting is by invitation id for the signed-in invitee, who must be the invited user; the token route stays for links. Expired, removed or someone else's invitation is refused with the API's own message.
+# After accepting, the organisation and its projects appear for me without signing out.
+# Tests: invite without a role is refused; accept grants the invited roles; accepting someone else's invitation is refused; a web test accepts from the list.
 
 Issues 17, 18
-Blocked by SCRUM-8 until the invitation flow works.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vx,W7 Lock down review data,,2.0,,,,10046,SCRUM-18,Organisation Management,In Progress,14/Sep/26 8:37 PM
+Blocked by SCRUM-8 until the invitation flow works.
+
+**Change to SCRUM-90 — not yet made on the board (checked 22:59)** — delete its criterion 4 and append:
+
+Criterion 4 (invitee sees and accepts pending invitations) moved on 2026-09-26 to SCRUM-115, together with choosing a role at invitation (client answer Q5). PR #28 delivers criteria 1–3.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vx,W7 Lock down review data,,2.0,,,,10046,SCRUM-18,Organisation Management,In Progress,14/Sep/26 8:37 PM
 Project: Overview of status and progress,SCRUM-89,10117,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:36 PM,26/Sep/26 10:55 PM,26/Sep/26 1:22 AM,,,0,"{noformat}Related to user story J2
 
 A starting point, not an analytics product.
@@ -519,7 +555,7 @@ Evaluation2: Repeatable runs and regression reporting,SCRUM-69,10097,Task,To Do,
 
 Story *I1* — I can re-run the whole workflow against known cases
 Issues none",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wk,Mid-semester Break,,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,To Do,07/Sep/26 12:03 AM
-Evaluation1: Scenario harness that drives the workflow end to end,SCRUM-68,10096,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:02 AM,26/Sep/26 2:12 PM,23/Sep/26 7:08 PM,,,0,"Testing individual pieces says nothing about whether the workflow holds together. This is the runner and the step vocabulary it executes — project, policy, task, items, AI pass, annotate, review, dispute, adjudicate, release.
+Evaluation1: Scenario harness that drives the workflow end to end,SCRUM-68,10096,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:02 AM,26/Sep/26 2:12 PM,27/Sep/26 4:18 PM,,,0,"Testing individual pieces says nothing about whether the workflow holds together. This is the runner and the step vocabulary it executes — project, policy, task, items, AI pass, annotate, review, dispute, adjudicate, release.
 
 *Subtasks*
 

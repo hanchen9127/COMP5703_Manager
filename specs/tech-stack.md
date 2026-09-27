@@ -288,7 +288,15 @@ board and the tracker.
     one is byte-for-byte identical afterwards. With `--git`, it appends a row for each PR merged into
     `origin/main` that no row logs, filling only what git proves — date merged, member (the PR head
     commit's author, left blank when not on the roster), PR number and link — for the member to
-    complete. The ticket dropdown covers `Lists!$Z$2:$Z$200`;
+    complete. The ticket dropdown covers `Lists!$Z$2:$Z$200`. **Hand change, 2026-09-27** (approved by
+    Hanchen, not by `apply`): every blank *What changed* was filled in (rows 7, 18, 28–30, 32, 34–37), and
+    *Story complete?* was set so that `Yes` sits only on the merged PR that completed its story — earlier
+    rows of that story and rows of unmerged PRs say `No`. D2 (SCRUM-109 open) and C5 (completed by PR #37,
+    unmerged) went from `Yes` to `No`; G1 stays `Yes`. Rows 6 and 10 had placeholder *What changed*
+    text ("With SCRUM-7; ...") — rewritten, with the extra ticket moved to *Notes*. Row 28 (PR #28) named
+    SCRUM-20 and no story — corrected to SCRUM-90 and J3. `story_src.csv`'s C5 and D2 went `done` →
+    `working` by hand the same day, and D5 on 2026-09-27 (SCRUM-116: a reject could reopen a finalised
+    item). No other cell changed;
   - the workbook's *Jira Statistics* filter range, and recalculation on open.
 
   *Start Here*, *Dashboard* and *Client Report* are never written. Text goes in as inline strings, so the

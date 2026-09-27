@@ -1,0 +1,25 @@
+feat(api): record when an annotation was last submitted (SCRUM-48)
+
+Jingwei's review of PR #35 (question 2) found that every "since it was
+last submitted" rule reads annotations.updated_at. That column has
+onupdate, so any later write to the row moves it: a confirmation, or
+SCRUM-32 saving a reviewer's correction, would put a returned or
+rejected submission silently back in review. Today a resubmission is the
+only write, so nothing is wrong yet.
+
+- annotations gains submitted_at (UtcDateTime, not null). It defaults on
+  creation, so the human, AI and approve_draft paths all set it, and a
+  resubmission in _create_annotation_from_draft sets it again. Nothing
+  else writes it.
+- submission_review_states_by_item compares a review with submitted_at.
+- SQLite dev databases gain the column, backfilled from updated_at (a
+  resubmission was the only write). PostgreSQL dev databases are reset,
+  which this branch already requires.
+- api_surfaces.md says which column the rule reads, and why.
+
+Tests: a later write to a submission leaves its return in force; the
+SQLite migration backfills submitted_at; a resubmission through the draft
+service starts its review over. The first two fail on the previous
+commit; the third fails if the resubmission does not set submitted_at.
+
+Story D8, SCRUM-48.

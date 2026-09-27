@@ -148,20 +148,20 @@ C5,C,P1,BE/FE,"I can record why I decided, not just what I decided","As a review
 2. Wire the field into the annotate workspace; task-item-workspace-sheet.tsx:997 already destructures the judgement fields.
 3. Keep the reasoning retrievable separately from the verdict it explains.
 4. Carry reasoning into the export alongside the decision.
-5. Check that reject, modify and escalate refuse an empty justification on the backend, as accept does — required for all four (client, 2026-09-24).",,done,Parth,"SCRUM-31, SCRUM-49",shipped
+5. Check that reject, modify and escalate refuse an empty justification on the backend, as accept does — required for all four (client, 2026-09-24).",,working,Parth,"SCRUM-31, SCRUM-49",shipped
 D1,D,P0,BE,I can't approve my own work,"As a reviewer, I should not be able to approve an item I annotated myself, because a review that one person can perform on their own work is not a review, and any dataset built on it is indefensible.","1. Attempting to review my own annotation is refused, with a clear explanation.
 2. Only users holding a reviewer or expert role can perform review actions at all.
 3. The same restriction applies to dispute decisions, not just first-line review.","**Issue 7** (annotators can approve their own work) — the review endpoint currently checks only that you belong to the organisation. This story's first two criteria are exactly the two missing checks, so the defect closes as the story lands.","1. Refuse a review when the reviewer created the annotation under review — review_actions.py:206 checks organisation access only (issue 7).
 2. Require a reviewer or expert capability to call the review endpoint at all.
 3. Apply the same restriction to dispute decisions, not only first-line review.
 4. Return a refusal that explains why, rather than a bare 403.
-5. Test that an annotator cannot approve their own item and that a reviewer can.",7,,Parth,SCRUM-86,shipped
+5. Test that an annotator cannot approve their own item and that a reviewer can.",7,,"Parth, Hanchen Wang","SCRUM-86, SCRUM-116",shipped
 D2,D,P0,BE,Approval history can't be rewritten behind my back,"As a project manager, I want an approval decision to be permanent and consistent with the item's actual state, because if an approval can be flipped or deleted afterwards, the record of who signed off on what is worthless.","1. There is one way to record a review decision, and it always moves the item's state with it.
 2. An existing approval cannot be edited or deleted into a different outcome by an ordinary member.
 3. Item state and review history always agree with each other.","**Issue 8** (a second, legacy review API can rewrite approval history) — an older set of endpoints lets any organisation member change or delete a review without touching item status. The “one way to record a decision” criterion requires retiring or locking down that path, which is the fix.","1. Retire or lock the legacy review-mutation endpoints at annotations.py:319, :364 and :426 (issue 8).
 2. Make the review-action path the only way to record a decision, and have it always move item status with it.
 3. Refuse edits and deletions of an existing review by an ordinary member.
-4. Test that item state and review history cannot diverge.",8,done,Jingwei Lin,"SCRUM-29, SCRUM-109",shipped
+4. Test that item state and review history cannot diverge.",8,working,"Jingwei Lin, Parth","SCRUM-29, SCRUM-109",shipped
 D3,D,P0,BE,The correction I make is the answer that gets saved,"As a reviewer, when I correct an annotation I want my corrected value to become the stored answer, because at the moment I can correct an item, watch it finalise, and my correction is nowhere in the result.","1. A corrected value submitted with a review replaces the stored answer for that item.
 2. Re-opening the item afterwards shows my correction, not the original.
 3. The exported dataset carries the corrected value.
@@ -178,7 +178,7 @@ D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want c
 2. Replace the effectively random ""latest annotation"" pick with the defined choice (issue 3).
 3. Make both submissions individually addressable on a double-annotated item.
 4. Record the decision against the submission the reviewer actually opened — impossible while draft.annotation_id is never written, the same root cause as issue 11.
-5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",,"Jingwei Lin, Hanchen Wang","SCRUM-27, SCRUM-113",shipped
+5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",working,"Jingwei Lin, Hanchen Wang","SCRUM-27, SCRUM-113",shipped
 D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to stay finalised unless someone deliberately reopens it, because a “locked” answer that a later submission can quietly change means no exported label can be defended.","1. Submitting new work against a finalised item is refused, or explicitly reopens review — never silently applied.
 2. Reopening a finalised item is a visible, attributable action.
 3. A submission either completes fully or not at all — it never leaves an item half-updated.","**Issue 2** (a finalised annotation can be silently overwritten) — currently a new draft updates the same record in place with no check on whether the item is already finalised. Criterion 1 is the missing check.
@@ -187,7 +187,7 @@ D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to 
 2. Make submit_draft one transaction; draft status, the annotation and the item status are three separate commits today (issue 11).
 3. Persist draft.annotation_id, which is declared on the model and never written (issue 11).
 4. Make reopening a finalised item an explicit, attributed action rather than a side effect.
-5. Test that a finalised item cannot be changed by a later submission.","2,11",done,Hanchen Wang,"SCRUM-26, SCRUM-28",shipped
+5. Test that a finalised item cannot be changed by a later submission.","2,11",working,Hanchen Wang,"SCRUM-26, SCRUM-28, SCRUM-116",shipped
 D6,D,P0,BE,My unfinished work is mine,"As an annotator, I want my in-progress draft to be editable only by me, because right now anyone in the organisation can change, submit or delete my unfinished work — including submitting it before I'm ready.","1. Only I can edit, delete or submit my own draft.
 2. Someone else attempting it is refused, with a clear message.
 3. An administrator or reviewer override, if we allow one, is explicit and recorded in the item's history.","**Issue 6** (drafts have no ownership enforcement) — draft access is currently checked against organisation and project membership only, never against who owns the draft. This story's first criterion is that missing check.","1. Check draft ownership on update, delete and submit — drafts.py:158, :192 and :212 check org and project membership only (issue 6).
@@ -222,7 +222,7 @@ This is a prerequisite the rest of the epic quietly assumes. **D7** samples a sh
 6. Show how many people are working an item and how many have submitted.
 7. Record who took and who submitted each item in its history.
 8. Decide the review queue per submission, and finalise an item only once every required submission is in and approved.
-9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114",shipped
+9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
 D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a project owner, I want to reopen a finalised item when its answer needs to be redone, keeping the old answer in its history, because finalised should mean locked against accidents — not locked against a deliberate, recorded correction.","1. Only the project owner can reopen a finalised item; the action requires a reason and is attributed.
 2. A reopened item returns to the normal open workflow for new annotation and review, not to the previous review step.
 3. The previous finalised answer remains in the item's history as a superseded version; it is never overwritten or deleted.

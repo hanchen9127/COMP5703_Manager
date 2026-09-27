@@ -157,3 +157,29 @@ Scope note: the invitee's acceptance screen (SCRUM-90 criterion 4) and choosing 
 
 With issue 1 fixed this is ready to approve from my side; Parth has the final say on his review.
 ````
+
+## Round 2 — `6bc4a77`, approved (2026-09-27)
+
+**Posted:** the round-1 comment above was posted on 2026-09-26. Tim pushed `6bc4a77` ("make invitation
+reinvite updates race-safe") on 2026-09-27 without a comment; Hanchen corrected the PR description's
+"Scrum 20" by hand. Hanchen then posted an **Approve** review at `6bc4a77`. Parth's CHANGES_REQUESTED
+(2026-09-21) still stands, so the PR's review decision stays CHANGES_REQUESTED until he re-reviews.
+
+**What changed:** the suggested fix, as proposed. `OrgUserRepository.reinvite_members` is one
+conditional UPDATE (`WHERE id AND status = the status read`) setting status, `invited_at`, `invited_by`,
+expiry and clearing `accepted_at`/`removed_*`; the token and expiry are computed first; no row matched →
+409 `HTTPException`. The unconditional `update(ou)` is gone. New test
+`test_reinvite_cannot_undo_concurrent_acceptance` pauses at `reinvite_members` — the round-1 variant.
+
+**Verified** on `main` (`7c84ce9`) + `6bc4a77`:
+- SQLite 491 passed, 4 skipped. PostgreSQL not run locally (Docker Desktop was down); CI's
+  `pull_request` run on the merge ref passed sqlite and postgresql.
+- Parth's evidence: B1 passes (reissue 409, final `active`, one acceptance audit row); B2's
+  admin-created reinvite passes; B2's "persists new inviter and time" fails on the comparison only —
+  the stored `invited_at` is right, but the reissue response now reads it back from the database and
+  serialises it without an offset (`…05:26:26.184865`, where a first invite gives `…Z`).
+- Web unchanged since round 1.
+
+**Non-blocking, raised in the approval:** the reissue response's missing UTC offset (same class as
+Parth's expiry-offset follow-up); `renew_pending_invitation` is now dead code and `reinvite_members`
+has an empty docstring.

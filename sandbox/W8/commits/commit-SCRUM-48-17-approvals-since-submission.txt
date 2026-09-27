@@ -1,0 +1,27 @@
+fix(api): count a submission's approvals since it was last submitted (SCRUM-48)
+
+Jingwei's review of PR #35 (point 3) found that approvals were counted
+over a submission's whole history. Under dual sign-off: Erin approves
+Alice's answer, Frank returns it, Alice resubmits, Frank approves. The
+item canonicalised at 2/2, though only Frank had approved the answer
+that became canonical, and Erin was never offered the new one. Returns
+and rejections already counted only since the last submission.
+
+- approvers_of counts only approvals at or after the annotation's
+  submitted_at. The review action's dual sign-off and its "already
+  approved" refusal read it, so an earlier approver may approve the
+  rework.
+- submission_review_states_by_item collects approved_by the same way,
+  so the review queue offers the rework to the earlier approver and
+  item completion waits for two approvals of the current answer.
+- api_surfaces.md: review_required_approvals counts per submission (D8
+  criterion 7, agreed with Jingwei for #37) and since the last
+  submission.
+
+Tests: Jingwei's sequence waits for a second approval, offers the
+rework to Erin, and canonicalises on her approval; approvers_of ignores
+an approval older than the submission. Both fail on the previous
+commit. The tests' resubmit helpers move earlier reviews a second back
+instead of dating the resubmission a second ahead.
+
+Story D8, SCRUM-48.

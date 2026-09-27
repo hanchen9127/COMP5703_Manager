@@ -1,0 +1,27 @@
+fix(api): an open escalation keeps an item disputed (SCRUM-48)
+
+Jingwei's review of PR #35 (point 2) found that ordinary review could
+clear a dispute. The item status after a review came from the review
+alone: an accept of another submission set a disputed item to
+annotated, the review queue offered it again, and a second accept
+could canonicalise it while its escalation was still open. A return or
+reject of another submission dropped "disputed" the same way.
+
+- submission_rules gains open_escalation_item_ids, one grouped query.
+- The review action checks it once, after the item's status is decided
+  for any action: while an escalation is open the item stays disputed,
+  and an accept reports awaiting_other_submissions, not approved.
+- The review queue skips items with an open escalation, whatever their
+  status, instead of relying on status alone. Query count stays flat.
+- api_surfaces.md: the rule. Whether the review action should refuse
+  outright on a disputed item stays with SCRUM-107 / SCRUM-109.
+
+Tests: routed without an escalate action, two accepts leave the item
+disputed with its escalation open; after the web's escalate-then-route,
+an accept of the other submission keeps it disputed; a return does too;
+the review queue skips an escalated item whose status was reset. All
+four fail on the previous commit. The queue-route test used one item
+with an open escalation for all three queues; adjudication now has its
+own disputed item.
+
+Story D8, SCRUM-48.
