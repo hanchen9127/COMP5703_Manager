@@ -8,8 +8,11 @@ that the break week's scenario tests can run review → escalation → adjudicat
 
 | Ticket | Story | Plan |
 | --- | --- | --- |
-| SCRUM-58 — An expert adjudication is its own decision | E3 | to be written |
-| SCRUM-59 — Resolving a dispute keeps the disagreement | E4 | to be written |
+| SCRUM-114 — Item workspace panel: independence, refusals and S10 (1.5) | D8 | `plans/plan-SCRUM-113-114.md` |
+| SCRUM-113 — Review: choose which submission to review (1) | D8, D4 | `plans/plan-SCRUM-113-114.md` |
+
+**Board of 2026-09-28:** SCRUM-99 and SCRUM-100 (E3/E4, formerly SCRUM-58/59) are no longer assigned to
+Hanchen; SCRUM-113 moved from the break into W8. Break tickets: SCRUM-116, SCRUM-117, SCRUM-38 (F3).
 
 Also this week, as project manager:
 - Ask client follow-ups F1, F2 and F5 at the 2026-09-23 meeting. F2 shapes SCRUM-58.
@@ -20,6 +23,7 @@ Also this week, as project manager:
 
 | File | What it is |
 | --- | --- |
+| `plans/plan-SCRUM-113-114.md` | 2026-09-29: commit-by-commit plan for SCRUM-114 (S10, no peer draft in the Annotate tab, the "X is annotating" block removed, 409 refusals) and SCRUM-113 (the panel reads the review queue, chooses a submission through the adjustment read, moves to the next one), as two stacked PRs. Checked against `main` `e367ebd` |
 | `jira/jira-break-review-guards.md` | 2026-09-27: from the D8 browser walkthrough and the PR #33 pre-merge comment — two new Mid-semester Break tickets (A: the review action refuses a decision on a submission not awaiting the caller; B: an annotator resubmits only work that is theirs to redo, rule to confirm at the weekly meeting) and an addition to SCRUM-109 (status after a submission), 1 → 1.5 points. Paste-ready |
 | `jira/jira-new-J3-invitee-screen.md` | 2026-09-26: SCRUM-115 (2 points, Tim, W8), split from SCRUM-90 at the review of PR #28 — the invitee's pending-invitation screen (SCRUM-90 criterion 4) and a role chosen at invitation (client Q5). Board fields, paste-ready description, and the edit to SCRUM-90. Review: `../../reviews/W8/review-cs57-tim-scrum-90-member-management.md` |
 | `jira/jira-scrum-93-queue-inputs.md` | 2026-09-26: full replacement description for SCRUM-93 after PR #35 (3 points after the split; the edit to make on the board is at the top) — queue rows, AI-assisted items, choosing a submission to review, API refusals, rework, `working_count` caveat; S10 kept. Checked against `38e7f4f` |
@@ -34,6 +38,8 @@ Also this week, as project manager:
 | `jira-new-D9-B7-B8.md` | 2026-09-24: paste-ready new tickets for the three stories added from the client's Round 2 — D9 (project owner reopens a finalised item, W9), B7 (JSONL import, one item per record, W11), B8 (task-level `annotation_type`, W11). Checked against `main` `fd273b9` |
 | `jira-replace-parent-tickets.md` | 2026-09-22: Jira would not convert subtasks, so the unfinished parents with subtasks — SCRUM-36, 39, 42 and their 11 subtasks — are deleted and replaced by 11 standalone tasks. The order (create first, then delete), paste-ready descriptions, the follow-ups (dead keys in `story_src.csv`, SCRUM-50, docs), and the deleted tickets' original text. Supersedes §0 of `jira-W8-sprint.md` |
 | `story-updates-client-qa-R1.md` | 2026-09-22: rewrites of D8, C4, I4, B2 and F2, applied directly to `story_src.csv` the same day, from the client's written answers of 2026-09-21 — AI first pass outside the human count (R1-4), blind-then-reveal moved from C4 to I4 (R1-2), policy versions instead of a freeze (R1-7) |
+| `msg/questions_from_Yi.md` | 2026-09-28: Yi's 73 dispute and canonicalization questions, answered in Chinese for Yi — 20 answered by the client, 26 settled, 17 internal, 10 to ask the client (approved answers that differ), plus a summary |
+| `msg/issue-40-rewrite.md` | 2026-09-28: new title and body for Yi's issue #40, which Hanchen edits directly — only the canonicalization conflict, a constraint until the client answers, unassigned. Checked against `main` `c5b428b` |
 | `msg/message-client-qa-R1-corrections.md` | 2026-09-22: messages to Kanishka (SCRUM-48/93), Michael (SCRUM-46) and Jingwei (SCRUM-20/50) on the same answers |
 | `msg/client-qa-round2.md` | 2026-09-22: draft questions for the client, in `shared/client-qa.md`'s own format, ready to paste into the shared doc for the 2026-09-23 meeting — F5, F2, F1, F3 (priority order), plus Hunter's still-unanswered branch-protection ask carried over from Round 1 |
 | `jira-scrum-5-89-swap.md` | 2026-09-22: SCRUM-5 back to Michael (his own request, board already updated), SCRUM-89 (J2) to Tim in its place — board fields and description append to paste in, roadmap changes already made, and an open question for Hanchen on the break-week accounting Michael asked for |

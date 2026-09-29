@@ -115,7 +115,7 @@ def cmd_new(required: int, ai: bool = False) -> None:
     project_id = ensure_project(admin)
     spec = {
         "title": TASK_TITLE + (" (AI)" if ai else ""),
-        "judgment_question": "Annotate the passage.",
+        "task_instruction": "Annotate the passage.",
         "task_type": "text",
         "annotation_mode": "human_first",
         "label_schema_ref": "default",

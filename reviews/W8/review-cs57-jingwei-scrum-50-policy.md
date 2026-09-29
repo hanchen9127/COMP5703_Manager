@@ -97,3 +97,38 @@ Thanks @Jingwei-Lin — a clear design, and the three ADRs make the decisions ea
 
 Happy to approve once 1 and 2 are in.
 ````
+
+## Round 2 — `944ae94` (2026-09-27)
+
+**Posted:** the round-1 comment above as a **Request changes** review (09:40, at `956e4da`). Jingwei pushed
+five commits (10:02) and replied point by point; the description now says per submission.
+
+| Round-1 point | Commit | Checked |
+| --- | --- | --- |
+| 1. Take `main` | `2047cd6` | `main` (`ffaac66`) is an ancestor of the head; GitHub CLEAN; imports, the escalation `note` and the `ai_assisted` fixture as listed |
+| 2. SQLite posture migration | `fda5aa8` | Round-1 probe re-run: expert-gate row `(1, 0)`, arbitration-ready `(0, 1)`, both pass `validate_project_policy_for_governance`. Sets the flags only in the run that adds each column; an arbitration-ready row recorded as `manual_review` becomes `open_dispute` (recorded, never enforced) |
+| Bundle name | `9b2ed28` | Named, not refused: single pass under a two-approval project → `review_dual_signoff_v1` (source `project`); a superseded bundle → its successor; a task stricter than its project keeps its own (source `task`). The task's stored ref is unchanged |
+| Consumer test | `93ce02e` | The review queue is spied and read after one of two approvals; it must still offer the item |
+| Docs | `944ae94` | adr002's SCRUM-27 note and `api_surfaces.md` updated; description corrected |
+
+**Verified** on `944ae94`: backend SQLite **663 passed, 6 skipped**; PostgreSQL 18 (Sydney session) **669
+passed**; web `tsc` clean, lint 0 errors, vitest **242 passed**. CI green.
+
+**Left, not blocking:** `REVIEW_REF_BY_MODE` has one bundle per mode, so a project count of 3 or more names
+`review_dual_signoff_v1`, whose own rule says 2; the count shown beside it is right.
+
+**Recommendation: approve.**
+
+### Approval comment (ready to paste)
+
+```markdown
+Thanks @Jingwei-Lin — all five are in, and I re-checked each on `944ae94`: SQLite 663 + 6 skipped, PostgreSQL 669 (Sydney session), web `tsc` clean, lint 0 errors, vitest 242.
+
+- My migration probe now passes. On a pre-#37 SQLite schema, the expert-gate row reads `(1, 0)` and the arbitration-ready row `(0, 1)`, and both pass `validate_project_policy_for_governance`.
+- The resolved bundle names the rule in force. Single pass under a two-approval project gives `review_dual_signoff_v1`, a superseded bundle gives its successor, and a task stricter than its project keeps its own. Naming rather than refusing is the better call, for the reason you give.
+- The review queue is in the consumer check at the point where it matters, one approval of two.
+
+One small thing for later, not for this PR: `REVIEW_REF_BY_MODE` has one bundle per mode, so a project count of 3+ is named `review_dual_signoff_v1`, whose own rule says 2. The count shown beside it is right.
+
+Approving.
+```

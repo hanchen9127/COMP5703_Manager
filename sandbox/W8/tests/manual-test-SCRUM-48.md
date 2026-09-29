@@ -19,10 +19,10 @@ What the automated tests prove, and what this walkthrough proves, are split like
 - **This walkthrough** proves the web app still works with those rules: the screens show the right
   things to the right person, and nothing the API now refuses is offered as a button that fails silently.
 
-Branch **`CS57-KANISHKA`** (PR #33), head `4d3352f`: Jingwei merged PR #35 into it on 2026-09-27, and its
-tree is identical to #35's last commit `5113d18`. Commits 16–18 (`submitted_at`, approvals since the last
-submission, an open escalation keeps an item disputed) change none of the flows below; the dry run was on
-`3d4d06d`. Helper script:
+Branch **`main`** since 2026-09-27: #35 merged into `CS57-KANISHKA`, and #33 into `main` (`ffaac66`). The
+browser run of 2026-09-27 was on `CS57-KANISHKA` at `4d3352f`. Since then `main` has taken #37 (policy) and
+#36 (annotation surfaces, `judgment_question` → `task_instruction`); the helper and the seed script were
+updated for #36 on 2026-09-28. Helper script:
 [`../scripts/sandbox-SCRUM-48.py`](../scripts/sandbox-SCRUM-48.py).
 
 **Dry run, 2026-09-27, on `3d4d06d`.** Parts 1–7 were run through the API on a throwaway PostgreSQL 18
@@ -38,7 +38,7 @@ is for. (The first dry run, 2026-09-26, was on `38e7f4f` and covered Parts 1–5
 
 ```powershell
 cd D:\COMP5703_Capstone\hej
-git switch CS57-KANISHKA
+git switch main
 git pull
 ```
 
@@ -47,17 +47,22 @@ git pull
 **Docker Compose (how this machine runs it).** The containers mount the source, so after the switch the
 backend reloads (`HEJ_RELOAD=true`) and the web app serves the branch; nothing needs rebuilding.
 
-**The dev database must be reset.** This branch adds `tasks.required_annotators` and
-`annotations.submitted_at`, and PostgreSQL has no additive migration, so an existing dev database fails
+**The dev database must be reset.** `main` adds `tasks.required_annotators` and `annotations.submitted_at`
+(#33/#35), two policy posture columns (#37) and renames task columns (#36), and PostgreSQL has no additive migration, so an existing dev database fails
 on its first task or annotation query. Resetting **wipes all dev data**:
 
 ```powershell
 cd D:\COMP5703_Capstone\hej
 docker compose up -d                                                     # postgres :5432, API :8000, web :3000
 docker compose exec -e PYTHONIOENCODING=utf-8 backend uv run python init_data.py --reset
+docker compose restart backend                                           # see note below
 cd apps\hej-api
 .venv\Scripts\python ..\..\..\docs\sandbox\tools\seed_test_roles.py       # charlie, dana, erin, frank, grace
 ```
+
+**Restart the backend after the reset.** Against an old schema the backend's startup backfill fails and the
+server exits, while the reloader keeps the port open, so every request is dropped ("Remote end closed
+connection"). Found 2026-09-28; the restart picks up the new schema.
 
 Done for the 2026-09-27 run: reset inside the container, accounts recreated, `submitted_at` present.
 

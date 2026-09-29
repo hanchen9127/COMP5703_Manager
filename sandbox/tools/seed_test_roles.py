@@ -107,10 +107,11 @@ def main() -> None:
     status, task = call(
         base, "POST", f"/projects/{project['id']}/tasks", token,
         {"title": TASK_TITLE,
-         "description": "Human-first text annotation used to exercise the draft lifecycle.",
-         "judgment_question": "Mark spans that support or contradict the claim.",
+         "task_instruction": "Mark spans that support or contradict the claim.",
          "task_type": "text", "annotation_mode": "human_first",
-         "label_schema_ref": "text_span_schema_v1",
+         # Since PR #36 the task names its annotation surface; the schema preset follows it.
+         "annotation_type": "text_spans",
+         "label_schema_ref": "text_spans_schema_v1",
          "text_span_label_options": ["supports", "contradicts", "insufficient_evidence", "ambiguous"]},
     )
     print(f"  created task    {task['id']}")

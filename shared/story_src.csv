@@ -54,7 +54,7 @@ B2,B,P0,BE,I can decide how carefully my project's work gets reviewed,"As a proj
 2. Put them on the project and task setup forms, with the client's 30% cross-review as the worked example.
 3. Show the policy in force on the project afterwards, with its version; correctable in place until the first task goes active.
 4. After that, a change creates a new policy version instead of editing the current one; each item keeps the version that governed it (F2 records it on the item).
-5. Stop at recording the choice faithfully — enforcement is G2.",,working,Jingwei Lin,"SCRUM-20, SCRUM-50",shipped
+5. Stop at recording the choice faithfully — enforcement is G2.",,done,Jingwei Lin,"SCRUM-20, SCRUM-50",shipped
 B3,B,P0,BE/FE,I can create a task for a specific piece of work,"As a project manager, I want to create a task stating whether it is an annotation task or a judgement task and what kind of data it covers, because the client's two task categories need different work surfaces and different result shapes.","1. I can create a task under a project, choosing annotation or judgement and the task type.
 2. The task records what a finished result should look like (labels for annotation, verdict plus reasoning for judgement).
 3. Text tasks are fully workable end-to-end; image and video tasks can be created without breaking, but are not committed demo paths in this phase.",No open defects — task creation exists; what's missing is the lifecycle (**B4**) and the schema/policy binding that makes it meaningful.,"1. Add the annotation-versus-judgement distinction to TaskCreate and the task form.
@@ -107,7 +107,7 @@ B8,B,P2,BE/FE,"My task chooses how people annotate it, not a hard-coded subtype"
 2. Add annotation_type to the task model and TaskCreate, and select it on the task form.
 3. Drive backend result mapping and the frontend editor choice from the task's annotation_type instead of task_subtype.
 4. Keep subtype templates as editable starting points for instructions and output schema.
-5. Test that a task's drafts and review page use the editor its annotation_type names.",,working,Yi Geng,SCRUM-112,added
+5. Test that a task's drafts and review page use the editor its annotation_type names.",,done,Yi Geng,SCRUM-112,added
 C1,C,P1,BE,The AI assistant can be swapped without disrupting my work,"As a project manager, I want the platform's AI assistant to be replaceable, because the client intends to move from a mock to open-source or self-hosted models later and I don't want the workflow rebuilt when that happens.","1. The mock AI assistant can be replaced with a different one without changing any review, dispute or export behaviour.
 2. Which assistant and version produced a suggestion is recorded against the item.
 3. Everything downstream treats an AI suggestion as a suggestion, never as a finished answer.","No open defects — this is net-new capability the brief calls for (“a replaceable, typed model interface, with mock and live modes interchangeable”).","1. Define an AnnotationAssistant protocol, with MockAssistant as the default and GeminiPreannotator moved behind it.
@@ -303,7 +303,7 @@ F3,F,P0,BE,"The AI's suggestion, the human's answer and the reviewer's correctio
 **Issue 4** (a finalised item can export more than one conflicting answer) — “the export identifies which value is authoritative” is precisely the missing concept; see **H4** for the export-side change.","1. Keep the AI suggestion, the annotator's decision and any reviewer correction individually retrievable.
 2. Make a later correction supersede visibly rather than overwrite — D3 makes the correction land, this keeps the original (issue 5).
 3. Mark which value is authoritative in the export, and show what it superseded — the missing concept behind issue 4.
-4. Depends on the canonical-annotation decision taken in D4.","4,5",,,SCRUM-38,shipped
+4. Depends on the canonical-annotation decision taken in D4.","4,5",,Hanchen Wang,SCRUM-38,shipped
 F4,F,P1,BE,History tells me who really did what,"As a project manager, I want the history to distinguish what a person did from what the platform did automatically, because an audit trail that attributes automated steps to people is worse than none.","1. Automated actions are shown as system actions, not attributed to a user.
 2. The history reads cleanly — one entry per thing that happened, without a change entry repeating what the summary already says.
 3. I can filter an item's history to just the human decisions.","**Issue 21** (audit log always shows “user” as the actor) — criterion 1 requires the actor to reflect what actually happened, which is the fix.
@@ -338,7 +338,7 @@ G2,G,P1,BE,My project's governance posture actually governs,"As a project manage
 5. The three postures are recorded and never applied — docs/terminology calls them ""signals, not separate workflow engines"".
 6. Add the expert-gate and adjudication-mandatory fields to the policy and B2's ResolvedPolicy; default cross-review to 0% under expert gate.
 7. Extend D1's self-approval guard to expert confirmation and adjudication.
-8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,working,Jingwei Lin,SCRUM-50,shipped
+8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,done,Jingwei Lin,SCRUM-50,shipped
 G3,G,P0,BE,My work stays inside my project,"As an organisation administrator, I want a person with access to one project to be unable to change anything in another, because access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.","1. Changing or deleting a task fails unless it genuinely belongs to the project it was requested under.
 2. The same applies to changing an item within a task.
 3. Attempts across a boundary are refused, not silently applied.","**Issue 9** (cross-project/cross-org write bypass) — a duplicated route means the check that would catch this is never reached. The story's criteria can only pass once the live path performs the ownership check, which also removes the shadowed duplicate.","1. Delete the shadowing duplicate PUT and DELETE /projects/{id}/tasks/{id} at projects.py:176 and :213 (issue 9).
@@ -407,7 +407,7 @@ I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality le
 2. Cover annotation, review, cross-validation, dispute and final judgement in a single run.
 3. State the expected outcome per scenario and report pass or fail.
 4. Keep results comparable across runs so a regression is visible.
-5. Reset to a clean seeded database between runs — depends on A3.",,,Jingwei Lin,"SCRUM-68, SCRUM-69",shipped
+5. Reset to a clean seeded database between runs — depends on A3.",,working,Jingwei Lin,"SCRUM-68, SCRUM-69",shipped
 I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","1. The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.
 2. Each case has a stated expected outcome and runs through I1.
 3. The casebook grows toward the 40–60 cases the brief specifies.",No open defects — net-new. These adversarial categories are taken directly from the brief.,"1. Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.
