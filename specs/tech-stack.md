@@ -230,8 +230,10 @@ board and the tracker.
   blank: the row records a PR awaiting review, and that PR is not merged. So the log's first column on a
   pending row is the date it was logged. That column was headed *Date merged* until the online sheet
   renamed it *Date* (seen 2026-09-21); the scripts accept either heading. A pending row is not a discrepancy — the report lists it as awaiting
-  review. *Review OK?* takes three values: blank (pending), `OK` (reviewed and passed) and `SELF-REVIEW`
-  (reviewed by its own author, which the Definition of Done does not accept).
+  review. *Review OK?* takes four values: blank (pending), `IN-PROCESS` (also pending: the review is under
+  way; first seen in the online sheet on 2026-09-30, and counted as pending by Hanchen's decision the same
+  day), `OK` (reviewed and passed) and `SELF-REVIEW` (reviewed by its own author, which the Definition of
+  Done does not accept).
 - **`done`** when the tracker's latest entry for the story says *Story complete? = Yes* **and its
   *Review OK?* is `OK`**, or every ticket for the story is Done on the board. A *Yes* on a pending row
   means the work is in review, not finished; a *Yes* on a `SELF-REVIEW` row fails the Definition of
@@ -296,7 +298,23 @@ board and the tracker.
     text ("With SCRUM-7; ...") — rewritten, with the extra ticket moved to *Notes*. Row 28 (PR #28) named
     SCRUM-20 and no story — corrected to SCRUM-90 and J3. `story_src.csv`'s C5 and D2 went `done` →
     `working` by hand the same day, and D5 on 2026-09-27 (SCRUM-116: a reject could reopen a finalised
-    item). No other cell changed;
+    item). No other cell changed. **Second hand change, 2026-09-30** (approved by Hanchen): every empty cell was
+    filled except *Reviewed by*, *Review OK?* (blank means pending, so it stays blank) and *Notes / evidence* —
+    28 cells in rows 2, 17, 29–32, 35, 36, 38, 40 and 41. Not-story rows (2, 17, 31) got `-` for ticket, epic,
+    priority and defects; story rows with no listed defect got `-` in *Defects closed*; row 36 (PR #36,
+    SCRUM-112) its work type, area, story B8 and its title, epic and priority; rows 38, 40 and 41 (PR #39, #43,
+    #44) their *What changed* and *Story complete? = No*; row 41 its PR number and link. Only empty cells were
+    written, as inline strings, and every other cell and workbook part was checked byte-for-byte unchanged
+    against a copy taken first. **Third hand change, 2026-09-30** (approved by Hanchen): the stories added on
+    2026-09-24 — B7, B8, D9 — were never in *Lists*' story table (rows 2–61), so the log's *Story ID* dropdown
+    marked B8 invalid and its title/epic/priority lookups found nothing. *Lists* rows 62–64 now hold them (story
+    ID, epic, priority, role, title, tickets, work bundle, board status; the work bundle is a judgement call),
+    and in the *Contribution Log* the dropdown (`Lists!$K$2:$K$64`) and all 1,772 lookup ranges
+    (`Lists!$K$2:$O$64`) end at row 64; row 36's title, epic and priority, typed as text earlier that day, are
+    the lookup formula again. **Not changed, by choice:** *Jira Statistics* (51 ranges), *Dashboard* (11) and
+    *Client Report* (18) still count stories over `Lists!…$3:…$61`, so they leave out B7, B8 and D9 until those
+    ranges are extended in the online sheet. Checked against a copy taken first: only those cells and rows
+    changed;
   - the workbook's *Jira Statistics* filter range, and recalculation on open.
 
   *Start Here*, *Dashboard* and *Client Report* are never written. Text goes in as inline strings, so the

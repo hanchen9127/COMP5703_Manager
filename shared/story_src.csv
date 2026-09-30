@@ -155,7 +155,7 @@ D1,D,P0,BE,I can't approve my own work,"As a reviewer, I should not be able to a
 2. Require a reviewer or expert capability to call the review endpoint at all.
 3. Apply the same restriction to dispute decisions, not only first-line review.
 4. Return a refusal that explains why, rather than a bare 403.
-5. Test that an annotator cannot approve their own item and that a reviewer can.",7,,"Parth, Hanchen Wang","SCRUM-86, SCRUM-116",shipped
+5. Test that an annotator cannot approve their own item and that a reviewer can.",7,,"Parth, Hanchen Wang, Yi Geng, Jingwei Lin","SCRUM-86, SCRUM-99, SCRUM-116",shipped
 D2,D,P0,BE,Approval history can't be rewritten behind my back,"As a project manager, I want an approval decision to be permanent and consistent with the item's actual state, because if an approval can be flipped or deleted afterwards, the record of who signed off on what is worthless.","1. There is one way to record a review decision, and it always moves the item's state with it.
 2. An existing approval cannot be edited or deleted into a different outcome by an ordinary member.
 3. Item state and review history always agree with each other.","**Issue 8** (a second, legacy review API can rewrite approval history) — an older set of endpoints lets any organisation member change or delete a review without touching item status. The “one way to record a decision” criterion requires retiring or locking down that path, which is the fix.","1. Retire or lock the legacy review-mutation endpoints at annotations.py:319, :364 and :426 (issue 8).
@@ -187,7 +187,7 @@ D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to 
 2. Make submit_draft one transaction; draft status, the annotation and the item status are three separate commits today (issue 11).
 3. Persist draft.annotation_id, which is declared on the model and never written (issue 11).
 4. Make reopening a finalised item an explicit, attributed action rather than a side effect.
-5. Test that a finalised item cannot be changed by a later submission.","2,11",working,Hanchen Wang,"SCRUM-26, SCRUM-28, SCRUM-116",shipped
+5. Test that a finalised item cannot be changed by a later submission.","2,11",working,"Hanchen Wang, Jingwei Lin","SCRUM-26, SCRUM-28, SCRUM-116",shipped
 D6,D,P0,BE,My unfinished work is mine,"As an annotator, I want my in-progress draft to be editable only by me, because right now anyone in the organisation can change, submit or delete my unfinished work — including submitting it before I'm ready.","1. Only I can edit, delete or submit my own draft.
 2. Someone else attempting it is refused, with a clear message.
 3. An administrator or reviewer override, if we allow one, is explicit and recorded in the item's history.","**Issue 6** (drafts have no ownership enforcement) — draft access is currently checked against organisation and project membership only, never against who owns the draft. This story's first criterion is that missing check.","1. Check draft ownership on update, delete and submit — drafts.py:158, :192 and :212 check org and project membership only (issue 6).
@@ -222,7 +222,7 @@ This is a prerequisite the rest of the epic quietly assumes. **D7** samples a sh
 6. Show how many people are working an item and how many have submitted.
 7. Record who took and who submitted each item in its history.
 8. Decide the review queue per submission, and finalise an item only once every required submission is in and approved.
-9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
+9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang, Jingwei Lin","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
 D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a project owner, I want to reopen a finalised item when its answer needs to be redone, keeping the old answer in its history, because finalised should mean locked against accidents — not locked against a deliberate, recorded correction.","1. Only the project owner can reopen a finalised item; the action requires a reason and is attributed.
 2. A reopened item returns to the normal open workflow for new annotation and review, not to the previous review step.
 3. The previous finalised answer remains in the item's history as a superseded version; it is never overwritten or deleted.
@@ -232,7 +232,7 @@ D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a p
 2. Mark the finalised answer superseded rather than editing it, and record the reopen as a provenance event (F1).
 3. Return the item to the available-work list (D8) with its annotation and review requirements reset for the new round.
 4. Show the reopen button to the project owner only, with the superseded answer visible in the item's history.
-5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,,Hanchen Wang,SCRUM-110,added
+5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,,"Hanchen Wang, Jingwei Lin",SCRUM-110,added
 E1,E,P0,BE,Disagreement is noticed without anyone reporting it,"As a project manager, I want the platform to detect when two reviewers disagree and open a dispute automatically, because disagreement I have to find manually is disagreement I will miss.","1. When independent reviews on the same item conflict, a dispute is raised automatically.
 2. The dispute shows both conflicting decisions and who made them.
 3. Disputed items are visible in one place and are excluded from release until resolved.",No open defects — net-new. Our own design notes are explicit that dispute should default to auto-detected disagreement rather than being a complaint button.,"1. Detect conflicting independent reviews on the same item and open a dispute without anyone reporting it.
@@ -257,7 +257,7 @@ E3,E,P1,BE,An expert's decision is recorded as its own decision,"As an expert, I
 3. Keep the annotator's label, the reviewers' decisions and the adjudication individually visible afterwards.
 4. Record the outcome — Accept, Return or Reject — with a required reason; Accept canonicalises the chosen judgement through the adjudication.
 5. Return reuses D9's reopen path; Reject leaves the item unresolved for the project owner to handle.
-6. Refuse an adjudication by anyone who annotated or reviewed the disputed work.",,,"Parth, Hanchen Wang","SCRUM-52, SCRUM-99",shipped
+6. Refuse an adjudication by anyone who annotated or reviewed the disputed work.",,,"Parth, Hanchen Wang, Yi Geng","SCRUM-52, SCRUM-99",shipped
 E4,E,P1,BE,Resolving a dispute doesn't erase the disagreement,"As a client, I want a resolved item to still show that people disagreed and how it was settled, because disagreement is evidence about the item's difficulty, and deleting it hides exactly what I most need to know.","1. Resolving a dispute adds a resolution; it never deletes or overwrites the conflicting decisions.
 2. A resolved item's history still shows the original disagreement.
 3. Reports can distinguish items that were contested from items that were unanimous.
@@ -266,7 +266,7 @@ E4,E,P1,BE,Resolving a dispute doesn't erase the disagreement,"As a client, I wa
 2. Keep the original disagreement visible in the item's history after resolution.
 3. Let reports tell a contested item from a unanimous one.
 4. Test that resolving a dispute deletes nothing.
-5. Record an ambiguous/unresolved resolution as its own outcome, so a release can exclude or carry it (H3, H4).",,,Hanchen Wang,SCRUM-100,shipped
+5. Record an ambiguous/unresolved resolution as its own outcome, so a release can exclude or carry it (H3, H4).",,,"Hanchen Wang, Yi Geng",SCRUM-100,shipped
 E5,E,P1,BE,Escalation matches the assurance my project needs,"As a project manager, I want to configure whether disputes must reach an expert, may reach one, or never do, because a routine labelling task and an arbitration-ready project need different escalation rules.","1. I can set the escalation posture when configuring the project or task.
 2. Where an expert gate is required, an item cannot complete without an expert decision.
 3. The posture in force is visible on the project.","No open defects — net-new. The escalation gate values exist internally but are not selectable or enforced; see **G2** for the wider posture enforcement this depends on.
