@@ -247,6 +247,10 @@ board and the tracker.
 - **Not started** (blank) when every ticket is To Do and nothing is logged, even if the CSV said
   `working`.
 - **Never downgraded automatically:** `done` and `dropped`. Change these by hand after agreement.
+  **Hand change, 2026-10-01** (approved by Hanchen): G2 `done` → `working` — SCRUM-118 was split from
+  SCRUM-107 for G2's enforcement (R2-7, R2-8), so G2 has open work again. No tracker row marks G2
+  complete, so no rule flips it back; it becomes `done` by the board rule once SCRUM-50, 107 and 118
+  are all Done.
 - **`allocated_to`**, using tracker roster names (aliases in the skill's `scripts/aliases.json`):
   - in progress — board assignees plus anyone who delivered a logged PR; keep the existing value if
     both are empty;

@@ -108,3 +108,53 @@ name and answer into the item lists for anyone who can both annotate and review.
   item it needs rethinking in SCRUM-93's list.
 - Each awaiting submission costs one adjustment read when the Review tab opens. Items take a handful of
   submissions, so this is kept simple.
+
+---
+
+## Review round 1 — 2026-10-01
+
+**On GitHub:** Kanishka requested changes (04:31 UTC); no other review yet. #44's base is still
+`CS57-Hanchen-scrum-114` (#43, approved by Jingwei, not merged). Head now `76398ea`; once #43 merges, retarget #44
+to `main`.
+
+### Kanishka's point — a failed submission read was shown as an empty submission
+
+`readAwaitingReview()` read the queue, then each submission's adjustment. A failed read still produced a submission
+with `payload: null`, rendered through `payload ?? {}` as an empty form with Accept enabled — a decision could be
+recorded against a real submission the reviewer never saw.
+
+- **Decided (Hanchen):** the whole read fails, through the existing error box, rather than disabling only the
+  failed submission; and a read that succeeds with `last_submitted_payload: null` counts as a failure too.
+- **Fixed in `35f2da8`:** ready only when every offered submission is read with its answer; otherwise
+  "Submission N of M: <API message>" or "Submission N of M has no submitted answer to show." `payload` is no longer
+  nullable, so the `?? {}` fallback is gone. Two tests (a 404 read, a null payload) fail before the fix.
+- Reply posted on the PR (06:35 UTC; the placeholder `<commit>` replaced with `35f2da8` at 06:40 UTC).
+
+### From Jingwei's review of #43 — the Review tab hid work by item status
+
+Checking Jingwei's point 2 on #44 (probe, not committed): a colleague's hydrated verdict no longer reaches the
+Review tab at any status. But the probe found the reverse gap: the queue excludes only `canonicalized` and
+`disputed`, and returning or rejecting one submission sets the whole item to `returned` / `rejected` while others
+still await review — the tab then hid the chooser and disabled decisions while still showing the answer.
+
+- **Fixed in `76398ea`:** `reviewDisabled` is true only when the item's status is not reviewable **and** the queue
+  has come back empty. The queue decides what may be reviewed; the status only explains an empty queue. While
+  the queue loads or fails, that is shown instead of the status notice. Tests: a `returned` and a `rejected` item
+  with a submission on offer can be decided; a `returned` item with nothing on offer still shows its notice.
+- Whether someone who reviewed an item may then annotate it (client Q4) stays with the API — said in the reply to
+  Jingwei on #43.
+
+### Merge of #43's fix into this branch — `77c0296`
+
+#43 gained `ba0cc0f` (a real "unknown" verdict no longer shown as "No verdict yet", Jingwei's point 1). Merging
+`CS57-Hanchen-scrum-114` into this branch needed three resolutions, two of which git did not flag:
+- the judgement destructuring (this branch removed `viewerItem`, #43 removed `judgementValue`) — kept both removals;
+- `latestJudgementOutput` came in as `viewer.*`, which no longer exists here — changed to `item.*` (found by `tsc`);
+- #43's new test set `draftIsReadOnly`, removed from `MockTaskItem` on this branch — dropped (found by `tsc`).
+
+### State after the round
+
+- Web **305 passed** (34 files), `tsc` clean, eslint 0 errors (3 pre-existing warnings). Backend unchanged.
+- Pushed: `35f2da8`, `77c0296`, `76398ea`. Awaiting Kanishka's re-review.
+- Known limitation updated: one failed adjustment read now blocks the item's other submissions until the tab is
+  reopened (the accepted cost of failing the whole read).

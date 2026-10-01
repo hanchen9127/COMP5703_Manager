@@ -17,8 +17,8 @@ and bug fixing are not counted.
 
 **Sprints end on Wednesday** (decided 2026-09-19). The client meeting is on Wednesday evening, so a
 sprint runs Thursday to Wednesday and closes after the meeting; the board's sprints use the same
-boundaries. W7 absorbs the change and runs ten days. W12 ends with the project on 1 Nov, so it is four
-days, not seven — see `mission.md` → Risks.
+boundaries. W7 absorbs the change and runs ten days. **W11 is the last sprint** (decided 2026-10-01): build
+work ends on 28 Oct, and the days to the project's end on 1 Nov carry no sprint — see `mission.md` → Risks.
 
 | Week | Dates |
 | --- | --- |
@@ -29,7 +29,7 @@ days, not seven — see `mission.md` → Risks.
 | W9 | 8–14 Oct |
 | W10 | 15–21 Oct |
 | W11 | 22–28 Oct |
-| W12 | 29 Oct–1 Nov (four days; the project ends) |
+| 29 Oct–1 Nov | No sprint and no build work (decided 2026-10-01); the project ends on 1 Nov |
 
 **Week boundaries** (decided 2026-09-14). A ticket in review at the end of a week counts as that week's
 work. Merging it the next week is listed in that week's plan as close-out, but not counted in its load
@@ -43,8 +43,9 @@ for one week and still open at its end moves into the next week's plan, listed b
   group. Where the board already has an assignee, the row says so.
 - Record the result on the Jira board (assignee) and in the tracker; `tracking-sync` carries it into
   `story_src.csv` at Hanchen's next sync. Hanchen's project-management work sits outside the plan.
-- W11 and W12 list their work without groups; they are formed at the preceding weekly meeting, once
-  carry-over is known.
+- W11 lists its work without groups; they are formed at the W10 meeting, once carry-over is known.
+- **From W9 the plan places work in groups only** (confirmed 2026-10-01): owners are picked at each weekly
+  meeting, and assignees already on the board stay.
 
 **Load.** Expected workload is measured in units (**u**). **1u is two to three subtasks**, at the size the
 backlog writes them — so a story with five subtasks is 2u. The anchor is the subtask list, not a clock:
@@ -71,13 +72,13 @@ units suggest is usually under-estimated** — that disagreement is the signal w
 **Capacity.** Each person carries **1.5u–3.5u** a week (decided 2026-09-14). There is no cap on the
 team's total, so with eight people a week holds 12u–28u. Close-out of the previous week's review queue
 is not counted. From W8 a group carries 2–3u; a 3u group needs a second person for part of the week.
-Planned loads: W7 20.5u, W8 21u, the break 7.5u (evaluation, plus one minimal feature), W9 14.5u, W10 13u, W11 13.5u and W12 3u — W12 is kept almost free for
-carry-over — only four days since sprints end on Wednesday, so carry-over must be small.
+Planned loads: W7 20.5u, W8 21u, the break 19.5u on the board (planned at 7.5u — evaluation plus one minimal feature — and grown into a full feature week; points set on 2026-10-01), W9 19.5u, W10 17.5u and W11 7.5u (replanned 2026-10-01; story points set the same day; SCRUM-118 split from SCRUM-107 into W10) — W11 is the last sprint and is kept light so it
+can absorb carry-over, since no week follows it.
 
 **Tickets.** A ticket shared by several stories — SCRUM-49, 50, 51 and 52 — is scheduled by story part,
-so it can appear in more than one week. SCRUM-51's parts are D7 (first slice W8, finished W9) and E1 (W9). D8's queues are two tickets:
+so it can appear in more than one week. SCRUM-51's parts are D7 (first slice carried over from W8 into the break, second slice W9) and E1 (the disagreement flag in its first slice; the automatic dispute is SCRUM-101). D8's queues are two tickets:
 SCRUM-48, the API (W7), and SCRUM-93, the screens (W8). SCRUM-52's four parts
-are D8 (W9, moved from W8 on 2026-09-18), E3 and E6 (W10), and G1, which is already complete. Stories and their tickets are listed in
+are D8 and E3 (the break, moved on the board on 2026-09-24), E6 (W10, now SCRUM-103) and G1, which is already complete. Stories and their tickets are listed in
 the tracker's *Jira Statistics* tab.
 
 **Close collaboration.** Each week lists the work that must be done closely together: it changes the same
@@ -89,8 +90,8 @@ database schema in one week, they agree one migration order on day one and each 
 **Coverage.** All 59 stories are accounted for:
 - 5 were complete before W6 — A2, A3, A4, B1 and B3. The board still has To Do tickets for two of
   them — SCRUM-91 (B1, organisation scoping) and SCRUM-85 (B3, annotation vs judgement result shape);
-  review them at the W7 meeting and either close them or bring the gap into W11–W12 as carry-over;
-- 48 are in the weekly plans W6–W12;
+  review them at the W7 meeting and either close them or bring the gap into W11 as carry-over;
+- 48 are in the weekly plans W6–W11;
 - 6 are set aside — A1, A5 and K1–K4 (see `mission.md` → Stories Set Aside). Those are not planned,
   grouped or counted here.
 
@@ -389,7 +390,7 @@ which the board gives to evaluation.
 - An expert's adjudication is its own record with an Accept, Return or Reject outcome and a reason, is final for the dispute, and leaves the conflicting decisions visible.
 - An invitee accepts a pending invitation from their list, and gets the role chosen when they were invited.
 
-## Break — Scenario testing, bug fixes and the evaluation harness (1–7 Oct) · 15u, minimal new feature
+## Break — Scenario testing, bug fixes and the evaluation harness (1–7 Oct) · 19.5u on the board
 
 The mid-semester break has its own sprint on the board, and its goal is the plan: **minimal new feature
 this week** (changed 2026-09-22; it was "no new feature"). Everyone scenario-tests the stories already
@@ -418,7 +419,7 @@ spends the week on them.
 
 Merge order on the review path: SCRUM-116, then SCRUM-110, whose reopen function SCRUM-99's Return calls.
 Carry-over from W8, listed but not counted: SCRUM-51, 109 (Parth), SCRUM-93 (Kanishka), SCRUM-115 (Tim), and
-the PRs still in review — #39, #41, #42, #43, #44.
+the PRs still in review — #39, #43, #44 (#41 merged on 30 Sep and #42 on 1 Oct).
 
 **Why this order.** Evaluation is a primary deliverable and was at zero. Giving it a week with no feature
 work alongside means I1 now finishes with W9 still between it and the W10 measurements that depend on
@@ -446,108 +447,128 @@ its repeatable runs (SCRUM-72 and 73) — a week of slack it did not have before
 - A reviewer chooses which of an item's submissions to review, and the decision lands on that submission.
 - A project manager sees the project's status and item counts by state, and they agree with the task and export screens.
 
-## W9 — Cross-validation, supersession, release artefact (8–14 Oct) · 12.5u
+## W9 — Cross-validation, provenance, the canonical answer and the release artefact (8–14 Oct) · 19.5u
+
+**Replanned 2026-10-01.** F1 moves here from W11, ahead of the release work in W10 — the W8 meeting's action
+(21 Sep). H4, F4 and the B1/B3 verification move here from W10 to even out the weeks: none of them reads
+anything W9 produces. Loads are the board's story points, set on 2026-10-01 by subtask count, complexity
+and risk (`../sandbox/Break/jira/jira-Break-W11-points.md`): **18u on the board**, plus SCRUM-51's second slice
+(1.5u), which the board does not show separately yet. Board changes:
+`../sandbox/Break/jira/jira-W9-W11-replan.md`. Groups only; owners are picked at the W9 meeting, and the
+board's existing assignees stay.
 
 | Group | Ticket | Story | Load | Work |
 | --- | --- | --- | --- | --- |
-| **1** | SCRUM-51 (D7 and E1 parts), SCRUM-57, 49 (E1 part) | D7, E1 | 2u | Board: Parth on SCRUM-51. D7 first: sample items by B2's cross-review percentage (W7) and place them in the second-review queue the break's group 6 (SCRUM-52) builds, which excludes the first reviewer. **E1's automatic dispute (SCRUM-101) moved to W8 on 2026-09-24**; what stays here is E1's release exclusion. Then E1: the disagreement flag from W7 opens a dispute automatically; disputed items are excluded from release. A 3u group — two people for part of the week |
-| **2** | SCRUM-32, 49 (D3 part) | D3 | 2u | **Unblocked 2026-09-15** — different authors keep different versions, so a reviewer's correction is a version authored by the reviewer, kept alongside the annotator's rather than superseding it. Closes issue 5. No fallback needed |
-| **3** | SCRUM-38 | F3 | 2u | **Moved to the break on the board (2026-09-28), Hanchen.** **Unblocked 2026-09-24** (follow-up F1 answered, R2-2): AI, annotator, reviewer and adjudicator outputs kept separate; at most one is marked the authoritative resolution, and every other version stays linked as provenance — "do not flatten the history into only the final answer". The AI model becomes a recorded field, not a note (R2-5). No fallback needed |
-| **4** | SCRUM-87, 7, 30 | C4, C3 | 2.5u | Two production modes, human-only and AI-first; mode recorded per item. Blind-then-reveal is an evaluation protocol and moved to I4 (client answer R1-2, 2026-09-21). On the same review screen, C3's close-out tests: a failed assist leaves no draft, and "no AI suggestion" is visible |
-| **5** | SCRUM-53 | F2 | 2u | Versioned guidelines, sources and review policies; guideline and source version recorded on every annotation, policy version on every item (R1-7). H2 and H3 need it by W10 |
-| **6** | SCRUM-64 | H1 | 2u | Immutable release artefact with a stable id, unaffected by later edits |
+| **1** | SCRUM-98 | F1 | 3u | **Moved from W11 on 2026-10-01**, unassigned. A provenance event record, separate from the audit log, written at each decision point — source registered, AI suggested, human responded, reviewed, disputed, adjudicated, released — with actor (a person or an AI model) and time; never edited or reconstructed. The submission event joins the draft-submission transaction, and SCRUM-48's `record_item_taken` moves onto it. Its events refer to the outputs F3 (break) keeps separate. 3u: one new record, but a call site at every decision point |
+| **2** | SCRUM-53 | F2 | 3u | Versioned guidelines, sources and review policies — nothing is versioned today, and there is no guideline entity at all. Guideline and source version recorded on every annotation, policy version on every item (R1-7). H2 and H3 need it in W10 |
+| **3** | SCRUM-32 (SCRUM-49's D3 part) | D3 | 2.5u | A reviewer's correction is a version authored by the reviewer, kept alongside the annotator's rather than superseding it (decided 2026-09-15). Closes issue 5. SCRUM-49 is the old umbrella for review transitions and carries no load: its D3 part is this, its E1 part SCRUM-101 |
+| **4** | SCRUM-37 | H4 | 2.5u | **Moved from W10 on 2026-10-01.** At most one authoritative value per item — none for an item resolved as ambiguous — with every other version kept as superseded provenance (R2-2); closes issue 4. Needs only F3 (break) and D4 (done) |
+| **5** | SCRUM-102 | H1 | 2u | Immutable release artefact with a stable id, unaffected by later edits. Replaces SCRUM-64 |
+| **6** | SCRUM-51 (second slice) | D7 | 1.5u | Board: Parth. Sample submissions by B2's cross-review percentage into the second-review queue SCRUM-52 builds in the break, which excludes the first reviewer; report how many were double-reviewed and how often the reviewers agreed. The first slice — blind second review and the disagreement flag — is break carry-over. E1's release exclusion moved to H3 (W10). Splitting this slice into its own ticket is proposed in the board file |
+| **7** | SCRUM-40, 41 | F4 | 1.5u | **Moved from W10 on 2026-10-01.** `actor_kind` from what actually happened (issue 21), escalation entries that stop repeating their summary as a change (issue 22), and a human-decisions-only filter. Issues 21 and 22 sit in today's audit history, so this does not wait for F1; doing it beside F1 settles one set of actor kinds — person, AI model, system — for both |
+| **8** | SCRUM-89 | J2 | 1.5u | Board: Tim. Read-only project overview — status, item counts by state, reconciled with the task and export screens; deliberately limited. Reads B4's task states (PR #41) and SCRUM-43's counting rule. P2, but it is its owner's only W9 ticket and displaces no P0 or P1 work |
+| **9** | SCRUM-87 | C4 | 1u | Human-only and AI-first already exist as the task's `annotation_mode`, and SCRUM-46 built the AI-first path. Left: record the mode on every item, and test that a human-only item never carries an AI suggestion in the API. Blind-then-reveal is I4's evaluation protocol (R1-2), not a mode |
+| **10** | SCRUM-85, 91 | B3, B1 | 1u | **Moved from W10 on 2026-10-01.** Verify first: the records count both stories complete, and `task_class`, `annotation_type` and the annotation surfaces (#27, #36) cover most of B3. Close each ticket whose criteria hold on `main`; otherwise build the gap — B3's `label_schema_ref` resolving to a result shape, B1's cross-org test and form errors |
 
-**Why this order.** D7 needs both B2's percentage and D8's queues. W7 delivers the percentage, and the break's group 6 (SCRUM-52) builds the reviewer queue; E1 follows in the same group because W7 already flags disagreement. D3, F3, C4
-and F2 all change what is stored per annotation, so they share one week and one migration order. F3 and C4
-are the two inputs I4 measures in W10, on the harness the break week built. H1 starts the release chain so H2, H3 and H4 have an artefact to work on.
+**Carry-over, listed but not counted:** whatever the break leaves open — SCRUM-51's first slice and
+SCRUM-109 (Parth), SCRUM-93 (Kanishka), SCRUM-115 (Tim), SCRUM-52, 99–101, 110, 116, 117, 38 and 68–70 —
+and the PRs still in review on 7 Oct.
+
+**Why this order.** H2's per-item provenance pointers and H3's "incomplete provenance" check are W10 work,
+and both read F1's events, so F1 is built a week ahead of them. H4, F4 and the B1/B3 verification read
+nothing W9 produces, so they go here rather than crowd W10, and H4 landing a week early shortens W10's
+release chain to H3 → H2. D7 needs B2's percentage and SCRUM-52's second-review queue (break). W9 is heavier
+than W10 on purpose: its work depends only on what is already built, while W10's sits downstream of it.
 
 **Close collaboration**
 
 | Groups | Why |
 | --- | --- |
-| 1 ↔ 4 | Both control what a reviewer sees before deciding, on the same review screen |
-| 2 ↔ 3 | One supersession model: D3 writes the superseding version, F3 keeps and displays both |
-| 2, 3, 4, 5 | All four change the annotation record — superseding version, output separation, AI mode, guideline version. One migration order, agreed on day one |
-| 3 ↔ 6 | A release must pin the authoritative version F3 marks |
-| 4 ↔ harness (break) | C4's modes are the conditions I4 compares on the harness next week |
+| 1, 2, 3, 9 | All change the annotation record or add beside it — provenance events, guideline version, corrected version, AI mode. One schema order, agreed on day one; development PostgreSQL databases are reset after it (SCRUM-94 rule) |
+| 1 ↔ 7 | One set of actor kinds for provenance events and the audit history |
+| 1 ↔ F3 (break) | F1's events refer to the separated AI, annotator, reviewer and adjudicator outputs F3 keeps |
+| 3 ↔ 4 | Which version is authoritative when a reviewer has corrected one — D3 writes it, H4 selects it |
+| 1 ↔ 3 | A reviewer's correction is an event F1 records |
+| 4 ↔ 5 | A release pins the authoritative value H4 selects |
+| 6 ↔ 9 | Both control what a reviewer sees before deciding, on the same review screen |
 
 **Exit check:**
-- A second review never reaches the first reviewer.
-- 30% of items route to a second reviewer.
-- A correction lands and the original stays visible.
+- Every decision point writes a provenance event, and an item's events read back in order with actor and time.
+- Guideline and policy versions are recorded; a correction lands and the original stays visible.
+- Each item has at most one authoritative value; the rest are superseded history.
 - A release artefact exists.
-- A disagreement between independent reviews opens a dispute.
-- C3's close-out tests pass.
+- A second review never reaches the first reviewer, and the share routed to a second reviewer matches B2's percentage.
+- History tells system actions from user actions, with no duplicate escalation entries.
+- The production mode is recorded on every item.
+- SCRUM-85 and 91 are closed or their gaps built.
+- A project manager sees the project's status and item counts by state, and they agree with the task and export screens.
 
-## W10 — Disputes end to end and the release gate (15–21 Oct) · 12u
+## W10 — Disputes end to end, the release gate, the Expert Gate and the item timeline (15–21 Oct) · 17.5u
+
+**Replanned 2026-10-01.** H2 and H3 are no longer at risk: F1 lands in W9, and H4 with it. I3 and I4 stay here
+although the board had them in W11 — evaluation is a primary deliverable, and their inputs (D7, C4, the
+break's harness) are in place by now. F5 moves here from W11 because W11 is the last sprint and I5 there checks
+what F5 shows. G2's enforcement (SCRUM-118) was split from SCRUM-107 on 2026-10-01 and placed here, a week
+ahead of E5, so the two can have different owners without editing the same path in the same week.
 
 | Group | Ticket | Story | Load | Work |
 | --- | --- | --- | --- | --- |
-| **1** | SCRUM-37 | H4 | 2u | **Unblocked 2026-09-24** (follow-up F1 answered, R2-2): at most one authoritative value per item — none for an item resolved as ambiguous — with every other version kept as superseded provenance; closes issue 4. No fallback needed |
-| **2** | SCRUM-66 | H3 | 2u | Refuse a release with unreviewed items, incomplete provenance or superseded versions, before it exists. **At risk (2026-09-24):** "incomplete provenance" needs F1, now in W11 |
-| **3** | SCRUM-65 | H2 | 2u | Manifest: counts, versions, producer, per-item provenance pointers. The client's minimum (R2-5): release id/version, included items, the resolution selected per item, and task, guideline and policy versions. **At risk (2026-09-24):** needs F1's events, now in W11 |
-| **5** | SCRUM-61, 52 (E6 part) | E6 | 2u | Board: Parth on SCRUM-52. Real cases on the dispute and arbitration screens and the adjudicator queue; build or delete the three `notFound()` routes |
-| **6** | SCRUM-73 | I4 | 2u | Accept, modify and override rates and time per item, by C4 mode; the blind-then-reveal protocol (independent judgement recorded, then the AI revealed, keep or revise) to measure anchoring and automation bias (R1-2) |
-| **7** | SCRUM-71, 72 | I2, I3 | 2u | Casebook to 40 cases; reviewer agreement by coefficient, not raw match |
+| **1** | SCRUM-105 | H3 | 2u | Refuse a release with unreviewed items, incomplete provenance (F1), superseded versions (H4) or disputed items (E1's release exclusion), before it exists, naming the items and why. Replaces SCRUM-66 |
+| **2** | SCRUM-104 | H2 | 2u | Manifest: counts, versions, producer, per-item provenance pointers. The client's minimum (R2-5): release id/version, included items, the resolution selected per item, and task, guideline and policy versions. Written only after H3's gate passes. Replaces SCRUM-65 |
+| **3** | SCRUM-103 | E6 | 2u | Board: Jingwei. Real cases on the dispute and arbitration screens and the adjudicator queue (SCRUM-52, break); build or delete the three `notFound()` routes; the expert's Accept, Return and Reject on the arbitration view, on SCRUM-99's backend |
+| **4** | SCRUM-73 | I4 | 3u | **Board W11 → W10.** Accept, modify and override rates and time per item, by C4 mode; the blind-then-reveal protocol — a stored pre-reveal judgement, the suggestion withheld by the API until it exists, then reveal, keep or revise — to measure anchoring and automation bias (R1-2) |
+| **5** | SCRUM-71, 72 | I2, I3 | 3.5u | **Board W11 → W10.** Casebook to 40 cases across the brief's adversarial categories (2u); reviewer agreement by an established coefficient, not raw match, on D7's second reviews, with AI suggestion quality against the gold fixtures (1.5u) |
+| **6** | SCRUM-45 | J4 | 1.5u | Board: Jingwei. Update a project, archive it as read-only — enforced on every write route — and record each change. Respects B4's lifecycle (PR #41) and H1's immutable releases (W9) |
+| **7** | SCRUM-106 | F5 | 1.5u | **Board W11 → W10.** An item's whole timeline on one screen, from F1's events (W9), with supersession as F3 (break) and H4 (W9) record it. Final before I5 checks provenance in W11 |
+| **8** | SCRUM-118 | G2 | 2u | **New, split from SCRUM-107 on 2026-10-01.** The Expert Gate — where `expert_gate_required` is set, an item is held after its approvals until an independent expert confirms it (R2-8) — and the invariant that no item canonicalises on AI output alone (R2-7), both in the backend. The flags exist on the project policy and in `resolve_for_task` but nothing enforces them. Uses SCRUM-52/99's independence helper |
 
-**Why this order.** Everything here consumes W9 (and E3/E4's record from W8): E6 needs the break's adjudicator queue and E1's disputes, H4 needs F3's
-supersession, H2 and H3 need F1 and F2, I4 needs C4 and F3, and I3 needs D7 and I1's repeatable runs. Two
-chains run inside the week — E6 on the break's adjudicator queue, and H4 → H3 → H2 — so the first days go to the upstream
-group.
+**Why this order.** Everything here consumes W9 and the break: H3 and H2 need F1, F2 and H4; E6 needs the
+break's adjudicator queue and the disputes SCRUM-101 opens; I4 needs C4 and F3; I3 needs D7 and I1's
+repeatable runs; F5 needs F1. One chain runs inside the week — H3 → H2 — so the gate goes first.
 
 **Close collaboration**
 
 | Groups | Why |
 | --- | --- |
-| 5 ↔ break group 6 | Adjudication decisions are made through E6's screens, on the adjudicator queue SCRUM-52 builds in the break; the disputes E1 opens from W8 are their input |
-| 1 ↔ 2 | The gate refuses superseded versions using H4's canonical-value rule; disputed items (E1, W9) are another reason it refuses |
-| 2 ↔ 3 | Same release pipeline: the manifest is written only after the gate passes |
-| 6 ↔ 7 | Both measure on the same harness runs and casebook |
+| 1 ↔ 2 | Same release pipeline: the manifest is written only after the gate passes |
+| 1, 2 ↔ W9 groups 1, 4 | The provenance check, the manifest's pointers and the per-item resolution read F1's events and H4's authoritative value |
+| 3 ↔ break group 6 | Adjudication decisions are made through E6's screens, on the adjudicator queue SCRUM-52 builds; SCRUM-101's disputes are their input |
+| 4 ↔ 5 | Both measure on the same harness runs and casebook |
+| 6 ↔ W9 group 5 | Archiving a project never changes a release |
+| 7 ↔ W9 group 7 | The timeline shows the actor F4 corrects |
+| 8 ↔ 1 | An item held at the Expert Gate is not canonical, so the release gate refuses it |
+| 8 ↔ 3 | The expert works from E6's screens; the confirmation screen itself is E5's (W11) |
 
 **Exit check:**
 - A disagreement opens a dispute and settles through the real screens.
 - A bad release is refused and names its causes.
 - A good release carries a manifest and one answer per item.
-- The casebook holds at least 40 cases.
+- The casebook holds at least 40 cases, and agreement and AI-influence figures come from harness runs.
+- A project can be updated or archived without touching its releases.
+- An item's full timeline shows on one screen, with the right actor for every event.
+- Under the Expert Gate an item waits for an independent expert; no item canonicalises on AI output alone.
 
-## W11 — Finish the journey on real screens (22–28 Oct) · 15.5u, not yet grouped
+## W11 — Finish the journey and check the records (22–28 Oct) · 7.5u, the last sprint, not yet grouped
 
-What W7–W10 leaves. P0 first, then P1, then P2. Groups are formed at the W10 meeting. **At 15.5u with F1 moved in (2026-09-24), the week is above its usual load** — J1 and J2 are the first to move to W12 if it does not fit.
-
-| Story | Ticket | Priority | Est. load | Why here |
-| --- | --- | --- | --- | --- |
-| **H6** — The export, policy and history screens show real data | SCRUM-67 | P0 | 2u | Displays what H1 (W9) and H2 (W10) produce. Built earlier, these screens would show sample data again — the defect this story exists to remove. First in the week because it is P0 |
-| **I2** — casebook toward 60 cases | SCRUM-71 | P0 | 1u | A standing commitment: the minimum of 40 is met in W10; W11 adds the cases for the surfaces built this week |
-| **F1** — I can ask how any label came to exist | SCRUM-98 | P0 | 2u | **Moved from W8 on the board, 2026-09-24**, unassigned. First in the week after H6: F5, H2's per-item provenance and H3's provenance check all read its events, and I5 checks them in W12 |
-| **G2** — My project's governance posture actually governs | SCRUM-50 (G2 part) | P1 | 2u | Board: Jingwei. Needs B2's policy (W7), and the posture must govern points that only exist from W9–W10: second-review routing (D7), disputes (E1) and the release gate (H3). Enforced earlier, it would be reopened every time a new point lands. Widened 2026-09-24 by R2-7 and R2-8: expert-gate and adjudication-mandatory become explicit policy fields, no expert confirms or adjudicates their own work, and no item finalises on AI output alone — the load may need re-estimating. Before E5 in the week |
-| **E5** — Escalation matches the assurance my project needs | SCRUM-60 | P1 | 2u | Configures how disputes escalate, and disputes only run end to end after E1, E3 and E4 in W10. Builds on G2's enforcement, so it follows G2 in the same week |
-| **F4** — History tells me who really did what | SCRUM-40, 41 | P1 | 1u | F1 records the default actor from W8 until F4 separates system from user actions and removes duplicate escalation changes (issues 21, 22). Before I5 checks provenance |
-| **F5** — I can see an item's whole story on one screen | SCRUM-63 | P1 | 2u | Yi, who builds F1 — on the board it sits in the W7 sprint and moves here. Needs F1 (W8) and shows supersession as F3 (W9) records it. Before I5 checks provenance |
-| **H5** — Export figures agree with the rest of the platform | SCRUM-43 (H5 check) | P1 | 0.5u | SCRUM-43 lands in W7 with B6. The remaining check — figures matching the task — waits until H1–H4 have reshaped the export path in W9–W10; written earlier, the tests would be rewritten. Log it as a follow-up against SCRUM-43 |
-| **J1** — My organisation has a stable identity | SCRUM-88 | P2 | 1u | Lowest priority. Changes the organisation URL every screen links to; doing it after the other screens settle avoids breaking routes still being built |
-| **J2** — I can see how my project is going at a glance | SCRUM-89 | P2 | 2u | Lowest priority. Aggregates figures whose rules — B6 (W7), B4 and D8 (W8) — are final by now; the board note says not to start before SCRUM-43 settles the counting rule |
-
-**Exit check:**
-- Every P0 story meets its Definition of Done.
-- The project screens show real releases, policy and history.
-- Provenance shows the right actor for every event and an item's full timeline.
-- The casebook holds 40–60 cases.
-
-## W12 — The integrity check, and room for carry-over (29 Oct–1 Nov, four days) · 3u, not yet grouped
-
-Kept almost free on purpose: 13u of the week absorb whatever W7–W11 did not finish. Groups are formed at
-the W11 meeting. Dependencies outrank priority here: I5 is P1 but goes last because it checks work that is
-final only in W11.
+**The last sprint** (decided 2026-10-01): build work ends on 28 Oct, and the days to 1 Nov carry no
+sprint. So W11 also holds the integrity check that used to be W12's, and there is no week after it for
+carry-over. What W9–W10 leaves comes first at the W10 meeting, then P0, P1, P2. Groups are formed at that
+meeting. The board holds 7u; H5's 0.5u check has no ticket.
 
 | Story | Ticket | Priority | Est. load | Why here |
 | --- | --- | --- | --- | --- |
-| **J4** — I can maintain a project after creating it | SCRUM-45 | P2 | 1u | Lowest priority. Updating or archiving a project must respect B4's lifecycle (W8) and H1's immutable releases (W9) |
-| **I5** — I can prove the platform's records hold up | SCRUM-74, 75 | P1 | 2u | Last on purpose. Integrity checks cover provenance (F1–F5, final in W11), roles (J3, W7) and releases (H1–H4, W10); the board lists SCRUM-74 as depending on SCRUM-69, F1 and H2. The findings record summarises I2–I4 |
+| **H6** — The export, policy and history screens show real data | SCRUM-108 | P0 | 2u | Displays what H1 (W9) and H2 (W10) produce. Built earlier, these screens would show sample data again — the defect this story exists to remove. First in the week because it is P0 |
+| **I2** — casebook toward 60 cases | SCRUM-71 | P0 | — | The minimum of 40 is met in W10; W11 adds the cases for the surfaces built this week, on the same ticket, counted in W10 |
+| **E5** — Escalation matches the assurance my project needs | SCRUM-107 | P1 | 2u | Builds on SCRUM-118 (G2, W10), split from this ticket on 2026-10-01. Arbitration-ready — where `adjudication_mandatory_on_dispute` is set, a dispute closes only by an independent adjudication (R2-8) — the expert's confirmation screen for the Expert Gate, choosing the posture on the project, and showing it on the project and each item. Reads SCRUM-50's resolved-policy contract |
+| **I5** — I can prove the platform's records hold up | SCRUM-74, 75 | P1 | 2.5u | Moved in from W12, which no longer exists. Integrity checks on provenance (F1–F5, final by W10), roles (J3) and releases (H1–H4) — every released item complete, governed actions by the right role, a release rebuilt from its manifest (1.5u) — and the findings record with negative results, summarising I2–I4 (1u). Starts once H6 and E5 are merged |
+| **H5** — Export figures agree with the rest of the platform | SCRUM-43 (H5 check) | P1 | 0.5u | The remaining check — figures matching the task — waits until H1–H4 have reshaped the export path. Log it as a follow-up against SCRUM-43 |
+| **J1** — My organisation has a stable identity | SCRUM-88 | P2 | 0.5u | **Board W10 → W11.** Organisations already have a unique `slug`; confirm the URL uses it everywhere and never changes. Lowest priority, and the first to drop if the week is full |
 
 **Exit check:**
 - Every story not set aside meets its Definition of Done.
+- The project screens show real releases, policy and history.
+- The casebook holds 40–60 cases.
+- The integrity checks pass on provenance, roles and releases, and the findings record includes negative results.
 - The containers SCRUM-36 and 42, and the parent SCRUM-39, can close: every task split from them, and SCRUM-39's subtasks, are Done.
-- The integrity checks pass on provenance, roles and releases.
-- The findings record includes negative results.
 
-W13 is not planned.
+No build work is planned after 28 Oct.

@@ -180,3 +180,130 @@ it is a contract change.
 >   so preselecting nothing may be safer.
 > - Tests: one `TestClient` test of the multipart route, and one that with `payload_preview.text` selected
 >   no item input contains `gold_annotations`.
+
+---
+
+# Round 2 — 2026-10-01
+
+Head `bd8d07f` (fix commit `af3f09b`, then `main` merged in at `75c27f2`, which includes #41). Base `main`,
+GitHub **MERGEABLE**. 5 commits, 25 files, +2714 / −256. CI green (SQLite and PostgreSQL) — **CI runs the
+backend only**.
+
+**On GitHub (checked with `gh pr view 42`):** Hanchen's Changes requested of 2026-09-30 11:46 UTC is the
+only review. Yi replied point by point at 17:26 UTC and asks one question: *should an authenticated
+raw-source download go on the backlog?* — not answered yet. No inline comments.
+
+**Recommendation: request changes — one line.** Every round-1 point is resolved, but the merge of `main`
+left a duplicated declaration in the panel, so the web app does not compile. Approve once that is fixed and
+`tsc` / vitest are rerun.
+
+## Verified on `bd8d07f`
+
+- Backend: **743 passed, 6 skipped** (in-memory SQLite).
+- Web `tsc --noEmit`: **fails** — `task-dataset-registration-panel.tsx(270,3): error TS1109: Expression
+  expected`. Vitest: the panel's suite fails to transform (`Unexpected "const"`). The task page imports the
+  panel, so the running web app fails to build on that page.
+- With line 269 deleted (scratch worktree only, not pushed): `tsc` clean, vitest **35 files / 261 passed**,
+  eslint on the changed web files 0 errors (one pre-existing `set-state-in-effect` warning).
+- Cause: `git blame` shows the two `const DATASET_INTAKE_DISABLED_MESSAGE =` lines are the merge's
+  resolution of #41's two-line change (`draft or ready` → `draft`); nothing else of #41 in the panel was lost.
+- Merged with #41, intake does no AI work any more (`register_dataset` → AI runs on Activate), and intake is
+  refused unless the task is `draft`, in both the panel and the API.
+- `private_sources/` is not reachable: the public route resolves inside its own media directory
+  (`_resolve_public_upload_file`), and `DataAccessService.resolve` has no `private_sources/` scheme, so a
+  pointer registered with that ref is refused too.
+- On a PostgreSQL database created before this PR, every audit write fails after merge: the psycopg dialect
+  renders `%(new_values)s::JSONB` into a `VARCHAR` column (compiled and checked). Expected under the
+  SCRUM-94 rule (reset after a schema change) — the startup migration is gone — but it needs a team message
+  on merge day.
+
+## Round-1 points
+
+| # | Point | Now |
+| --- | --- | --- |
+| 1 | ADR | ✅ `adr005_record_based_text_intake.md`, thorough. Gaps, non-blocking: no trade-off against the ticket's task-level option (later uploads may project differently; the task does not say what its input is); I1's gold lookup (`source_location_ref` + `source_record_number`, checked by `source_sha256`) is implied, not stated; *Permissions and lifecycle* and *Trade-offs* still say AI may run inline during upload — since #41 it runs on Activate |
+| 2 | Unauthenticated source file | ✅ Structured sources in `private_sources/`; traversal guarded; route test shows content endpoint, AI resolver and public text carry only the selected field, and the source is unreachable |
+| 3 | PostgreSQL migration rule | ✅ Migration dropped; `db_schema_strategy.md` stays true; the ADR says existing PostgreSQL databases must be reset. ⚠️ `api_surfaces.md` still has no note that `AuditLogRead.old_values/new_values` are objects now (asked in round 1; no web reader, so non-blocking) |
+| 4 | Inline AI per record | ✅ Moot since #41 — intake no longer runs AI. The cost moved to Activate (#41's concern) |
+| 5 | JSONL splitting | ✅ `split("\n")` + strip `\r`; regression test for CRLF, U+2028, U+2029, U+0085 |
+| 6 | Duplicate refs | ✅ (UI) — duplicate names refused case-insensitively in one selection; the API and later uploads still allow them, and `[:255]` can still drop `#N`. Yi raises the `external_item_ref` contract for discussion |
+| 7 | Non-leaf selection | ✅ Refused in browser and API, tested |
+| 8 | Default projection | ✅ No preselection; upload blocked until a field or Full record is chosen |
+| 9 | Tests | ✅ Multipart route test, `403` without `MANAGE_DATASET`, gold-leak test. No route-level "bad projection → 400" test (service-level only) |
+
+## Not raised before, non-blocking
+
+- The browser CSV parser refuses a blank line in the middle (or `\r\n\r\n` at the end) as "does not match
+  its CSV header"; Python's `DictReader` skips blank rows. The browser is stricter, so nothing reaches the
+  API that it would refuse — only a file the API would accept is refused in the UI.
+
+## Merge-day follow-ups (Hanchen)
+
+- Team message: after pulling `main` with #42, reset PostgreSQL dev databases
+  (`init_data.py --reset`; `seed_test_roles.py` is Hanchen's local helper in `sandbox/tools/`, not in the repo), or every audit write 500s ("Failed to fetch" in the web).
+- Answer Yi's question: an authenticated raw-source download (by source id, org/project check,
+  `MANAGE_DATASET`, audited) — backlog it or not; F-epic provenance and I1 are the likely consumers.
+- Decide whether the `external_item_ref` contract (Yi's point 6) goes to the client or stays internal.
+
+---
+
+## Comment to post on the PR (round 2, condensed)
+
+> Thanks @DIQI26 — all nine points are addressed, and the ADR is thorough. Re-checked on `bd8d07f`:
+> backend 743 passed + 6 skipped; the source file is now out of reach (public route and the content
+> resolver both refuse it), and your route test covers the gold leak.
+>
+> **One thing before merge:** the `main` merge left a duplicated line in
+> `task-dataset-registration-panel.tsx` (269–270, `const DATASET_INTAKE_DISABLED_MESSAGE =` twice), so the
+> web app no longer compiles: `tsc` → `TS1109 Expression expected`, and the panel's vitest suite fails to
+> load. CI only runs the backend, so it stayed green. Deleting one of the two lines fixes it — I checked:
+> `tsc` clean, vitest 261 passed. Please push that and I'll approve.
+>
+> **Small, can be a follow-up:**
+> - Since #41, intake runs no AI — the AI pass starts on Activate. The ADR's *Permissions and lifecycle* and
+>   the inline-mode bullet under *Trade-offs* still describe AI during upload.
+> - The ADR could add one line on how the harness finds an item's gold (`source_location_ref` +
+>   `source_record_number`, checked by `source_sha256`), and the trade-off against storing the projection
+>   on the task.
+> - `api_surfaces.md`: note that `AuditLogRead.old_values/new_values` are objects now.
+>
+> On your question: out of scope for now — see round 3.
+
+---
+
+# Round 3 — 2026-10-01
+
+Head `8a8c29a` ("Update task-dataset-registration-panel.tsx"), on top of `bd8d07f`; `main` (`75c27f2`) is
+still an ancestor, MERGEABLE. The commit deletes exactly the duplicated line and nothing else. No new comments.
+
+- Web `tsc --noEmit` clean; vitest **35 files / 261 passed**; `eslint .` 0 errors (50 warnings, none new).
+- Backend unchanged since round 2 (743 passed, 6 skipped). CI: SQLite passed on both runs, PostgreSQL passed
+  on one run, the other still pending when checked.
+- `next build` not rerun.
+
+**Recommendation: approve.** The round-2 non-blocking points (ADR lines on AI during upload, I1 gold lookup,
+the task-level trade-off, the `AuditLogRead` note) can follow in a later PR. Merge-day follow-ups from
+round 2 still apply — the PostgreSQL reset message in particular.
+
+**Recommended answer to Yi (2026-10-01):** authenticated raw-source download is out of scope for now, with no
+ticket. No story in `story_src.csv` needs the source file itself: F1 shows the source by reference, H1–H2
+freeze and list items (not sources), and I1 reads gold server-side through storage. ADR 005 already records
+it as deferred and says how to build it. Reopen if F5 or H2 turns out to need the original bytes.
+
+## Approve comment to post
+
+> Thanks @DIQI26 — re-checked `8a8c29a`: `tsc` clean, vitest 261 passed, backend unchanged and green.
+> Approving.
+>
+> Follow-ups, fine in a later PR: the ADR still mentions AI running during upload (since #41 it runs on
+> Activate); one line on how the harness finds an item's gold (`source_location_ref` +
+> `source_record_number`, checked by `source_sha256`); and a note in `api_surfaces.md` that
+> `AuditLogRead.old_values/new_values` are objects now.
+>
+> On your question about an authenticated raw-source download: out of scope for now, no ticket. Nothing
+> planned needs the file itself — F1 and the H2 manifest show the source by reference (filename, record
+> number, hashes), and the harness reads gold server-side. Your ADR already records it as deferred and how
+> it should be built; we reopen it if a story turns out to need it.
+>
+> Heads-up for everyone once this merges: existing PostgreSQL dev databases need
+> `uv run python -X utf8 init_data.py --reset` (from `apps/hej-api`), since `audit_logs` values are JSONB now.

@@ -72,7 +72,7 @@ B4,B,P0,BE,"My task moves through real states, not just “draft”","As a proje
 4. Close dataset intake once a task is active so items cannot be added mid-review.
 5. Decide whether a task holding annotation or review history may be deleted at all, then make deletion behave accordingly — it must never return a 500 (issue 30).
 6. Wire Activate / Pause / Complete into the task page, disabled with a reason when the transition is illegal.
-7. Check the state agrees across the project screen, the task screen and the export list.","28,30",working,Dishank Aswal,SCRUM-24,shipped
+7. Check the state agrees across the project screen, the task screen and the export list.","28,30",done,Dishank Aswal,SCRUM-24,shipped
 B5,B,P0,BE,Loading a dataset either works or leaves nothing behind,"As a project manager, I want registering a batch of items to either fully succeed or fully fail, because a batch that half-loaded leaves me with a task I can't trust and no way to tell which items are real.","1. If item registration fails partway, no partial items, pointers or drafts remain.
 2. I can load a task with hundreds or thousands of items — the client's example is 1,000 video recordings under one task.
 3. If I try to load items at a point in the workflow that doesn't allow it, I'm told that clearly (“intake is closed for this task”), not shown a generic server error.","**Issue 16** (dataset registration isn't transactional) — “leaves nothing behind on failure” is precisely the missing all-or-nothing behaviour, so implementing this story removes the partial-state cleanup problem.
@@ -98,7 +98,7 @@ B7,B,P1,BE,Each record in my dataset becomes its own item,"As a project manager,
 2. Split a .jsonl upload into one item per record inside B5's all-or-nothing registration.
 3. Store the full source record for provenance and project only the task's payload into the draft and the AI prompt.
 4. Keep gold_annotations out of annotator views and AI calls; keep it available to I1's evaluation harness.
-5. Test with the FewNERD sample: one item per record, payload_preview.text shown, gold_annotations never sent.",,working,Yi Geng,SCRUM-111,added
+5. Test with the FewNERD sample: one item per record, payload_preview.text shown, gold_annotations never sent.",,done,Yi Geng,SCRUM-111,added
 B8,B,P2,BE/FE,"My task chooses how people annotate it, not a hard-coded subtype","As a project manager, I want to choose my task's annotation surface from the editors the platform supports, with subtypes kept only as starting templates, because a task defined by its data, instructions and output schema should not need a new hard-coded subtype to be annotated.","1. A task records an annotation_type, chosen at creation from the supported editors.
 2. Result mapping on the backend and the editor on the draft and review pages both follow the task's annotation_type.
 3. Subtypes remain available only as optional templates for instructions and output schema, which I can edit.
@@ -202,7 +202,7 @@ D7,D,P1,BE,A defined share of items gets independently double-checked,"As a proj
 **Client answer R2-7 (2026-09-24)** — cross-review supplies the second approval rather than stacking on it, and sampled cross-review is a gate, not a post-hoc audit. The AI first pass is never an approval or a reviewer slot, and never becomes canonical without human review.","1. Sample the cross-review percentage set in B2 and place those items in a second-review queue that excludes the first reviewer.
 2. Hide the first reviewer's decision from the second until the second is recorded.
 3. Report per task how many items were double-reviewed and how often the two reviewers agreed.
-4. Depends on D8's queues — there is no queue to place an item in yet. It no longer depends on an assignee: by the decision of 2026-09-17 there is none.",,,Parth,SCRUM-51,shipped
+4. Depends on D8's queues — there is no queue to place an item in yet. It no longer depends on an assignee: by the decision of 2026-09-17 there is none.",,working,Parth,SCRUM-51,shipped
 D8,D,P0,BE/FE,"I can find the work I am able to do, and take it","As an annotator, I want to open the platform and see the items I can work on right now, because otherwise there is no answer to “what should I do next” — and as a project manager I want the queue itself to route work by role and by how many people an item still needs, rather than handing items out to named people one by one.","1. I can see the items I am able to work on, filtered to what my role allows, and open one directly from the list.
 2. An item leaves the annotate queue once it has as many human submissions as its task requires, so I never start work that can no longer be submitted. The AI's first pass is not one of them. On an AI-assisted task, an item the AI has annotated goes straight to review and is not offered for annotation; where the AI run failed, people annotate it.
 3. A reviewer is never offered an item they annotated themselves. Each submission is reviewed on its own, one reviewer may review every submission on an item, and a second approval of a submission never goes back to its first approver — independence is a property of the queue, not of who was assigned.
@@ -238,7 +238,7 @@ E1,E,P0,BE,Disagreement is noticed without anyone reporting it,"As a project man
 3. Disputed items are visible in one place and are excluded from release until resolved.",No open defects — net-new. Our own design notes are explicit that dispute should default to auto-detected disagreement rather than being a complaint button.,"1. Detect conflicting independent reviews on the same item and open a dispute without anyone reporting it.
 2. Show both conflicting decisions and who made them on the dispute.
 3. List disputed items in one place, scoped to what the viewer may see.
-4. Exclude disputed items from release until they are resolved.",,,"Parth, Yi Geng","SCRUM-49, SCRUM-51, SCRUM-101",shipped
+4. Exclude disputed items from release until they are resolved.",,working,"Parth, Yi Geng","SCRUM-49, SCRUM-51, SCRUM-101",shipped
 E2,E,P0,FE,I can send an item back to the annotator,"As an expert, I want to send a disputed item back to its annotator with a note, because not every dispute should be settled by me overruling — sometimes the right outcome is the original annotator redoing it with guidance.","1. “Send back to annotator” works from the dispute screen and is not a placeholder.
 2. The item returns to the annotator's queue with my note attached.
 3. The send-back appears in the item's history with who sent it back and why.","**Issue 15** (dispute “send back to annotator” isn't implemented) — users currently hit a placeholder message. issues.md confirms the platform already fully supports this behind the screen and has a ready client function for it, so this is a frontend-only story: wiring the existing button to the existing capability closes the defect.","1. Replace the ""not wired yet"" guard at task-dispute-desk.tsx:93 with the call the page already has (issue 15).
@@ -338,7 +338,7 @@ G2,G,P1,BE,My project's governance posture actually governs,"As a project manage
 5. The three postures are recorded and never applied — docs/terminology calls them ""signals, not separate workflow engines"".
 6. Add the expert-gate and adjudication-mandatory fields to the policy and B2's ResolvedPolicy; default cross-review to 0% under expert gate.
 7. Extend D1's self-approval guard to expert confirmation and adjudication.
-8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,done,Jingwei Lin,SCRUM-50,shipped
+8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,working,Jingwei Lin,"SCRUM-50, SCRUM-107, SCRUM-118",shipped
 G3,G,P0,BE,My work stays inside my project,"As an organisation administrator, I want a person with access to one project to be unable to change anything in another, because access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.","1. Changing or deleting a task fails unless it genuinely belongs to the project it was requested under.
 2. The same applies to changing an item within a task.
 3. Attempts across a boundary are refused, not silently applied.","**Issue 9** (cross-project/cross-org write bypass) — a duplicated route means the check that would catch this is never reached. The story's criteria can only pass once the live path performs the ownership check, which also removes the shadowed duplicate.","1. Delete the shadowing duplicate PUT and DELETE /projects/{id}/tasks/{id} at projects.py:176 and :213 (issue 9).
@@ -407,7 +407,7 @@ I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality le
 2. Cover annotation, review, cross-validation, dispute and final judgement in a single run.
 3. State the expected outcome per scenario and report pass or fail.
 4. Keep results comparable across runs so a regression is visible.
-5. Reset to a clean seeded database between runs — depends on A3.",,working,Jingwei Lin,"SCRUM-68, SCRUM-69",shipped
+5. Reset to a clean seeded database between runs — depends on A3.",,working,"Jingwei Lin, Hanchen Wang","SCRUM-68, SCRUM-69",shipped
 I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","1. The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.
 2. Each case has a stated expected outcome and runs through I1.
 3. The casebook grows toward the 40–60 cases the brief specifies.",No open defects — net-new. These adversarial categories are taken directly from the brief.,"1. Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.
@@ -415,7 +415,7 @@ I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a qual
 3. Cover a guideline changed after annotation, and an item with missing provenance.
 4. Cover an unreviewed item reaching a proposed release, and a release containing a superseded item.
 5. Use the gold fixtures in labeling_ai_assistnat_mvp/app/data/text/ — four 200-item sets with ground truth, already shaped in hej's own vocabulary.
-6. Grow toward the 40–60 cases the brief specifies, each ticket contributing the cases for its own surface as it lands.",,,,"SCRUM-70, SCRUM-71",shipped
+6. Grow toward the 40–60 cases the brief specifies, each ticket contributing the cases for its own surface as it lands.",,,Hanchen Wang,"SCRUM-70, SCRUM-71",shipped
 I3,I,P1,GOV,I can tell whether reviewers actually agree,"As a quality lead, I want reviewer agreement measured properly rather than as a raw match percentage, because raw agreement flatters any task where one answer dominates.","1. Agreement is reported using an established coefficient, not percentage match.
 2. Agreement is reported per task and comparable across tasks.
 3. AI suggestion quality and confidence calibration are reported alongside human agreement.",No open defects — net-new; depends on the cross-validation routing in **D7**.,"1. Report agreement with an established coefficient rather than raw percentage match.
