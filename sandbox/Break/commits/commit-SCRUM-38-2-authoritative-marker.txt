@@ -1,0 +1,21 @@
+feat(api): one authoritative version per item (SCRUM-38)
+
+An item keeps every version, and nothing recorded which one is its
+resolved answer, so an item whose answers differ exported them side by
+side (issue 4). The client wants both (R2-2): release output is the
+authoritative resolution, release provenance the complete history.
+
+Add is_authoritative to annotations, with who marked it, when and why,
+and a unique index on the item limited to marked rows: the database
+refuses a second marker whoever writes it. annotation_versions.py is the
+one helper that marks and clears. mark_authoritative refuses with 409 a
+superseded version or a second marker on the item; clear_authoritative
+keeps who, when and why on the version as history. An adjudication's
+Accept (SCRUM-99) and H4's rule (W9) are its callers. reopen_task_item
+clears the marker before it supersedes the round, so SCRUM-99's Return
+clears it too.
+
+Existing SQLite databases gain the columns, unmarked, and the index.
+PostgreSQL dev databases are reset.
+
+Story F3, SCRUM-38.

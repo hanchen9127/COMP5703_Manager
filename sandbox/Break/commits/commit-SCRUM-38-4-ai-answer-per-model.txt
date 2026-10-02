@@ -1,0 +1,20 @@
+feat(api): keep one AI answer per model, not one per item (SCRUM-38)
+
+A submission found its author's earlier answer by created_by, and every
+AI answer has created_by NULL, so a second model's submission matched
+the first model's row and rewrote it in place: new content under the
+old model's name. SCRUM-46 avoided that only by never letting a second
+AI run reach the item, and the normalized export, keyed by (item,
+created_by), kept one AI answer per item for the same reason.
+
+An AI answer now belongs to its model. The submission path looks a
+model's earlier answer up by role, provider and name, so another model's
+answer is a separate row, and the export keys AI answers by model too.
+
+How many models may answer an item is a rule of the task,
+ai_answers_allowed_per_item, which is one today. The worker's per-item
+check and the trigger's selection both read it, counting distinct models
+over every round, so a reopened item is still not re-run (SCRUM-110 D8).
+The task setting for a multi-model experiment (R1-4) is I4's.
+
+Story F3, SCRUM-38.

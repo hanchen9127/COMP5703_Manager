@@ -1,0 +1,23 @@
+feat(api): link each version to the one it derives from (SCRUM-38)
+
+version, base_annotation_id and is_latest said which versions belong
+together and which is current, but nothing said what a version replaced
+or why. #46 links a superseded answer to the reopen that closed its
+round; that link is per round, and story F3 asks for supersession to be
+visible per version.
+
+Add derived_from_annotation_id and derivation to annotations: the
+version this one follows and the reason, resubmission,
+reanswer_after_reopen or reviewer_correction. The list will grow (I4's
+revised_after_reveal), so the one write path checks it rather than a
+constraint. create_version writes a derived version and sets its link,
+number, group and is_latest together. A superseding reason continues the
+author's group and makes the earlier version not current; a correction
+starts its own group and leaves the corrected answer current (decided
+2026-09-15). The earlier version is otherwise never touched.
+
+#46's answer after a reopen now goes through it. Existing SQLite rows
+are backfilled: before #46 every annotation was version 1, so a later
+version follows the one numbered just below it in its group.
+
+Story F3, SCRUM-38.

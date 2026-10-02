@@ -1,0 +1,20 @@
+refactor(api): read machine authorship from the author role (SCRUM-38)
+
+Every reader still told the AI's answer from a person's by created_by IS
+NULL, the convention SCRUM-46 left until the AI had an author of its
+own. Now that each annotation records its role, submission_rules reads
+it: HUMAN_AUTHORED is the annotator role only, so a reviewer's correction
+(D3) will never count as a submission, and MACHINE_AUTHORED is ai_model.
+The AI batch lookups use the same rule, so it has one definition.
+
+is_peer_work also receives drafts, which have no role: an annotation is
+judged by its role, a draft still by its missing author. Switching the
+rule alone raised AttributeError on every draft privacy check.
+
+Test data in nine files wrote AI answers with no role; each now names
+ai_model, and no assertion changed. As a fallback, an annotation written
+without a role takes it from created_by, the rule the migration
+backfills by, so a forgotten role cannot pass the AI's answer off as a
+person's. A named role always wins.
+
+Story F3, SCRUM-38.

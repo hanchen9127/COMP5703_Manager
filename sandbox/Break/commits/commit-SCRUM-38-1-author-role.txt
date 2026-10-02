@@ -1,0 +1,22 @@
+feat(api): record each annotation's author role and model (SCRUM-38)
+
+Machine output was known only by created_by IS NULL: created_by is a
+foreign key to users, so an AI answer had no author of its own, and the
+model behind it lived only inside annotation_data.metadata.ai. Two
+models' answers on one item could not be told apart, and a reviewer's
+correction (D3) would be indistinguishable from an annotator's answer.
+
+Add author_role (annotator, reviewer or ai_model; a check constraint on
+new databases) and model_provider, model_name and model_version to
+annotations. The submission path people and the AI share sets them: a
+draft with no author becomes ai_model, with the model copied from
+metadata.ai, which stays the record of the run. A field the provider
+does not report stays empty, and a value longer than its column is cut,
+as PostgreSQL would otherwise refuse the whole submission. created_by
+stays NULL for the AI: no user is invented for it (client answer R2-5).
+
+Existing SQLite databases gain the columns once, and their AI rows are
+backfilled from metadata.ai; malformed JSON leaves the model empty
+rather than stopping the migration. PostgreSQL dev databases are reset.
+
+Story F3, SCRUM-38.
