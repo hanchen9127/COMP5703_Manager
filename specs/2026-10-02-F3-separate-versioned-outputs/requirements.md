@@ -38,7 +38,7 @@ finalised without a dispute. A reopen clears the marker. An item resolved as amb
 **An item's versions can be read back** with role, model, derivation links, round supersession and the
 authoritative marker. They are read through the annotation history and an item-level read, and in the
 task export. Story criterion 3 is met in this sense: the export says which version is authoritative and
-what each version superseded. Choosing the released value is H4's. These reads keep the annotator
+what each version superseded, and carries the superseded versions themselves, with their reviews. Choosing the released value is H4's. These reads keep the annotator
 independence rule that already applies: an annotator who has not answered does not see other answers.
 
 ## Out of Scope

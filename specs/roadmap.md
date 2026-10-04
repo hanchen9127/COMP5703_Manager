@@ -72,7 +72,7 @@ units suggest is usually under-estimated** — that disagreement is the signal w
 **Capacity.** Each person carries **1.5u–3.5u** a week (decided 2026-09-14). There is no cap on the
 team's total, so with eight people a week holds 12u–28u. Close-out of the previous week's review queue
 is not counted. From W8 a group carries 2–3u; a 3u group needs a second person for part of the week.
-Planned loads: W7 20.5u, W8 21u, the break 19.5u on the board (planned at 7.5u — evaluation plus one minimal feature — and grown into a full feature week; points set on 2026-10-01), W9 19.5u, W10 17.5u and W11 7.5u (replanned 2026-10-01; story points set the same day; SCRUM-118 split from SCRUM-107 into W10) — W11 is the last sprint and is kept light so it
+Planned loads: W7 20.5u, W8 21u, the break 19.5u on the board (planned at 7.5u — evaluation plus one minimal feature — and grown into a full feature week; points set on 2026-10-01), W9 21.5u (19.5u plus SCRUM-119, added 2026-10-04), W10 17.5u and W11 7.5u (replanned 2026-10-01; story points set the same day; SCRUM-118 split from SCRUM-107 into W10) — W11 is the last sprint and is kept light so it
 can absorb carry-over, since no week follows it.
 
 **Tickets.** A ticket shared by several stories — SCRUM-49, 50, 51 and 52 — is scheduled by story part,
@@ -87,7 +87,8 @@ shape at the start of the week, and its authors review each other's PRs. When se
 database schema in one week, they agree one migration order on day one and each appends its step to
 `migrate_db_schema()` in that order — there is no Alembic to reconcile them afterwards.
 
-**Coverage.** All 59 stories are accounted for:
+**Coverage.** All 59 stories are accounted for. Stories added later — B7, B8, D9 (2026-09-24) and A6
+(2026-10-04) — are planned where their tickets sit:
 - 5 were complete before W6 — A2, A3, A4, B1 and B3. The board still has To Do tickets for two of
   them — SCRUM-91 (B1, organisation scoping) and SCRUM-85 (B3, annotation vs judgement result shape);
   review them at the W7 meeting and either close them or bring the gap into W11 as carry-over;
@@ -414,7 +415,8 @@ spends the week on them.
 - SCRUM-99, 100 and 101 (E3, E4, E1) — Yi, from W8's group 8 and W9;
 - SCRUM-38 (F3) — Hanchen, from W9;
 - SCRUM-116 — Jingwei. A bug ticket that also carries SCRUM-86's routing half since 2026-09-30, so its 1 point is counted work, not bug fixing;
-- SCRUM-117 — Hanchen, a bug ticket;
+- SCRUM-117 — Dishank since 2026-10-03 (was Hanchen), a bug ticket;
+- SCRUM-120 (D9) — Jingwei, a bug ticket added 2026-10-04: a reopened item is flipped to expert send-back by the next read of task-items or setup, a write with no audit row. Found and reproduced by the performance investigation (`../sandbox/Break/tests/perf-findings.md`). PR #48 (Yi, paused) changes the same two functions in `task_item_status_resolution.py`; whichever merges second applies the reopen cutoff to both. Unfinished on 7 Oct → W9 carry-over;
 - SCRUM-86 — the container, unassigned, no points.
 
 Merge order on the review path: SCRUM-116, then SCRUM-110, whose reopen function SCRUM-99's Return calls.
@@ -447,13 +449,14 @@ its repeatable runs (SCRUM-72 and 73) — a week of slack it did not have before
 - A reviewer chooses which of an item's submissions to review, and the decision lands on that submission.
 - A project manager sees the project's status and item counts by state, and they agree with the task and export screens.
 
-## W9 — Cross-validation, provenance, the canonical answer and the release artefact (8–14 Oct) · 19.5u
+## W9 — Cross-validation, provenance, the canonical answer and the release artefact (8–14 Oct) · 21.5u
 
 **Replanned 2026-10-01.** F1 moves here from W11, ahead of the release work in W10 — the W8 meeting's action
 (21 Sep). H4, F4 and the B1/B3 verification move here from W10 to even out the weeks: none of them reads
 anything W9 produces. Loads are the board's story points, set on 2026-10-01 by subtask count, complexity
 and risk (`../sandbox/Break/jira/jira-Break-W11-points.md`): **18u on the board**, plus SCRUM-51's second slice
-(1.5u), which the board does not show separately yet. Board changes:
+(1.5u), which the board does not show separately yet. **2026-10-04:** SCRUM-119 (A6, 2u) added, so 20u on the
+board and 21.5u in all. Board changes:
 `../sandbox/Break/jira/jira-W9-W11-replan.md`. Groups only; owners are picked at the W9 meeting, and the
 board's existing assignees stay.
 
@@ -469,6 +472,7 @@ board's existing assignees stay.
 | **8** | SCRUM-89 | J2 | 1.5u | Board: Tim. Read-only project overview — status, item counts by state, reconciled with the task and export screens; deliberately limited. Reads B4's task states (PR #41) and SCRUM-43's counting rule. P2, but it is its owner's only W9 ticket and displaces no P0 or P1 work |
 | **9** | SCRUM-87 | C4 | 1u | Human-only and AI-first already exist as the task's `annotation_mode`, and SCRUM-46 built the AI-first path. Left: record the mode on every item, and test that a human-only item never carries an AI suggestion in the API. Blind-then-reveal is I4's evaluation protocol (R1-2), not a mode |
 | **10** | SCRUM-85, 91 | B3, B1 | 1u | **Moved from W10 on 2026-10-01.** Verify first: the records count both stories complete, and `task_class`, `annotation_type` and the annotation surfaces (#27, #36) cover most of B3. Close each ticket whose criteria hold on `main`; otherwise build the gap — B3's `label_schema_ref` resolving to a result shape, B1's cross-org test and form errors |
+| **11** | SCRUM-119 | A6 | 2u | **Added 2026-10-04**, board: Jason Wang (Hanchen) — with F1 that is 5u, over the 3.5u range, so the W9 meeting may move it. Every task page fetches drafts one request per item, and Annotate and Review fetch them again: 404 requests and 2,969 ms for a 200-item Annotate page on `df7c05a` (`../sandbox/Break/tests/perf-findings.md`). One batched read, `GET /tasks/{id}/drafts`, beside the unchanged per-item route; the tabs refresh with one call. Target under 300 ms and at most 10 requests; the prototype measured 222 ms and 5 requests with identical output. The repair on read (A6 subtask 3) is deferred to W10 or W11 |
 
 **Carry-over, listed but not counted:** whatever the break leaves open — SCRUM-51's first slice and
 SCRUM-109 (Parth), SCRUM-93 (Kanishka), SCRUM-115 (Tim), SCRUM-52, 99–101, 110, 116, 117, 38 and 68–70 —
@@ -491,6 +495,8 @@ than W10 on purpose: its work depends only on what is already built, while W10's
 | 1 ↔ 3 | A reviewer's correction is an event F1 records |
 | 4 ↔ 5 | A release pins the authoritative value H4 selects |
 | 6 ↔ 9 | Both control what a reviewer sees before deciding, on the same review screen |
+| 11 ↔ 9 | SCRUM-87 may change who sees which drafts; the batched read and the per-item route share one visibility helper, so the rule changes once |
+| 11 ↔ 1, 3 | F1 and D3 add what a reviewer sees on an item: they build on the batched read rather than adding another per-item fetch |
 
 **Exit check:**
 - Every decision point writes a provenance event, and an item's events read back in order with actor and time.

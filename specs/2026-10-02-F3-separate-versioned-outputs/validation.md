@@ -29,7 +29,10 @@ database reset at the merge commit, using two browsers for the annotator and rev
    - Marking a second on the same item is refused.
    - A reopen leaves the item with no authoritative version.
 5. **The export shows authority and supersession (criterion 3).** The task export carries, on each
-   annotation: role, model, derivation link and reason, round supersession, and the marker.
+   annotation: role, model, derivation link and reason, round supersession, and the marker. Each
+   current answer carries its author's earlier versions with their own reviews, so every derivation
+   link resolves inside the export, and the review that returned a version is exported with it (added
+   2026-10-04 after Yi's review of #47).
 6. **Independence is kept.** An annotator who has not answered on the item is refused other people's
    versions on the history read and the item-level read.
 7. **No regression in review.** In the web app:

@@ -1,0 +1,27 @@
+fix(api): a resubmission is a new version, not an overwrite (SCRUM-38)
+
+When a reviewer returned an answer and its author submitted again, the
+author's row was rewritten in place: its content replaced, its
+submission time moved. The review that returned it still pointed at the
+row, now showing an answer the reviewer never saw (R2-2: do not flatten
+the history). The same held for an AI model answering an item again.
+
+Every submission now writes a row. The author's first answer is version
+1; a later one is create_version'd from the one it follows, for
+resubmission or, after a reopen, reanswer_after_reopen. The earlier
+version keeps its content, submission time and reviews, and is no longer
+current. Approvals belong to a row, so the new version starts with none:
+what "approvals since it was last submitted" (#35) meant all along.
+
+assert_may_decide now refuses a submission with no review state (409)
+instead of letting it through: a superseded version is history, and no
+decision may land on it (#45's nit).
+
+Four tests pinned the in-place rewrite and now pin a new version, each
+with its intent kept: a full item still takes its author's resubmission
+without a fourth submitter; the draft links to the version it produced;
+review starts over on the new version; #46's in-round guard. Three test
+helpers faked a resubmission by moving submitted_at; they now write a
+version, and their nine callers review the version they return.
+
+Story F3, SCRUM-38.

@@ -110,7 +110,7 @@ roadmap coverage. They stay `dropped` in `story_src.csv`. Only Hanchen reopens t
 The brief still lists findings, decision records, a technical report and a demonstration among its
 expected outcomes, so these appear under [Risks](#risks).
 
-## Progress Snapshot — Mid-semester Break (2026-10-01)
+## Progress Snapshot — Mid-semester Break (2026-10-04)
 
 **Basis.** Two views are kept apart (decided 2026-09-14):
 - **By epic follows `shared/story_src.csv`**, Hanchen's local, client-facing copy of the team's
@@ -126,18 +126,25 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 
 | Epic | Stories | Complete | In progress | Not started | Discarded |
 | --- | --- | --- | --- | --- | --- |
-| A — Trustworthy Foundations | 5 | A2, A3, A4 | — | — | A1, A5 |
+| A — Trustworthy Foundations | 6 | A2, A3, A4 | — | A6 | A1, A5 |
 | B — Setting Up Work | 8 | B1, B2, B3, B4, B5, B6, B7, B8 | — | — | — |
 | C — AI-Assisted First Pass | 5 | C1, C2, C3 | C5 | C4 | — |
-| D — Review & Cross-Validation | 9 | D6 | D2, D4, D5, D7, D8 | D1, D3, D9 | — |
-| E — Disagreement & Dispute | 6 | E2 | E1 | E3, E4, E5, E6 | — |
-| F — Provenance & History | 5 | — | — | F1, F2, F3, F4, F5 | — |
+| D — Review & Cross-Validation | 9 | D4, D5, D6 | D1, D2, D7, D8 | D3, D9 | — |
+| E — Disagreement & Dispute | 6 | E2 | E1, E3, E4, E6 | E5 | — |
+| F — Provenance & History | 5 | F3 | — | F1, F2, F4, F5 | — |
 | G — Roles, Permissions & Organisations | 5 | G1, G3, G4, G5 | G2 | — | — |
 | H — Release & Export | 6 | H5 | — | H1, H2, H3, H4, H6 | — |
-| I — Evaluation | 5 | — | I1 | I2, I3, I4, I5 | — |
+| I — Evaluation | 5 | — | I1, I2 | I3, I4, I5 | — |
 | J — Organisations & Dashboard | 4 | — | J3 | J1, J2, J4 | — |
 | K — Evidence & Handover | 4 | — | — | — | K1, K2, K3, K4 |
-| **Total** | **62** | **21** | **10** | **25** | **6** |
+| **Total** | **63** | **24** | **13** | **20** | **6** |
+
+**Synced again on 2026-10-04.** D4, D5 and F3 became complete when SCRUM-113, 114, 116 and 38 reached Done (PRs
+#43, #44, #45, #47); D1, E3, E4, E6 and I2 are in progress. **A6 was added on 2026-10-04** (Hanchen's decision):
+the performance investigation measured that a 200-item Annotate page sends 404 requests and runs 6,882 SQL
+statements (2,969 ms) — no single statement is slow — and A6 makes a dataset-sized task open without a wait.
+Its first ticket is SCRUM-119 (W9); SCRUM-120 (break, D9) fixes a reopened item being flipped to expert
+send-back by the next read, found by the same investigation.
 
 Synced from the Jira board and the tracker on 2026-10-01. B4 and B7 became complete when PR #41 (2026-09-30)
 and PR #42 (2026-10-01) merged; D7 and E1 are in progress since SCRUM-51 moved to In Progress. **G2 went back

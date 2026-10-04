@@ -318,7 +318,11 @@ board and the tracker.
     the lookup formula again. **Not changed, by choice:** *Jira Statistics* (51 ranges), *Dashboard* (11) and
     *Client Report* (18) still count stories over `Lists!…$3:…$61`, so they leave out B7, B8 and D9 until those
     ranges are extended in the online sheet. Checked against a copy taken first: only those cells and rows
-    changed;
+    changed. **Fourth hand change, 2026-10-04** (approved by Hanchen): A6, added to `story_src.csv` the same
+    day, is *Lists* row 65 (story ID, epic, priority, role, title, ticket SCRUM-119, work bundle *Annotation page
+    & judgement*, board status), as inline strings before the existing Z65; the log's story dropdown and all 1,775
+    lookup ranges now end at row 65. *Jira Statistics*, *Dashboard* and *Client Report* again unchanged, by the
+    same choice. Checked against a copy taken first: only *Lists* row 65 and those range ends changed;
   - the workbook's *Jira Statistics* filter range, and recalculation on open.
 
   *Start Here*, *Dashboard* and *Client Report* are never written. Text goes in as inline strings, so the

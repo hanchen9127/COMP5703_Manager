@@ -41,6 +41,15 @@ Sequenced first because **B4**, **B6**, **G4** and **H5** all resolve disagreeme
 4. Consolidate the contract files into docs/contracts/integration-gaps.md — this is the W6 milestone artefact.
 5. Add a schema test that fails when the backend enum and the frontend lib/api/status-mapping.ts drift apart.
 6. Update docs/design and docs/terminology to match what was agreed, in the same change.",,dropped,,,shipped
+A6,A,P1,BE/FE,A dataset-sized task opens without a wait,"As an annotator or reviewer, I want a task holding hundreds of imported items to open as quickly as a small one, because the client's tasks are dataset-sized — one JSONL file is 200 records, their example is 1,000 recordings — and a page that takes seconds to show its items undermines the full journey on realistic data that the platform must demonstrate.","1. On a 200-item task, the Items, Annotate and Review pages load their data in under 300 ms on the team's reference measurement, against about 3 s today.
+2. The number of API requests a task page makes does not grow with the number of items it holds.
+3. Reading never writes: no GET request changes an item's status or any other record. A status changes only through the action that causes it, which records it.
+4. The project page does not repeat per-task work that grows with each task's review history.
+5. Each fix reports before and after numbers on the same re-runnable measurement.","No open defects catalogued — found in scenario testing during the mid-semester break (reported 2026-10-03) and measured on 2026-10-04 on origin/main (df7c05a). No single SQL statement is slow; pages run too many of them. A 200-item Annotate page sends 404 requests and runs 6,882 statements (2,969 ms), because every item's drafts are fetched one request at a time, twice. GET task-items repairs send-back statuses on every read (235 statements and a write per call on a task with history), which also flips a reopened item (**D9**) back to expert send-back. Prototypes of subtasks 1–3 brought the page to 58 ms with identical output.","1. One batched read of a task's drafts (GET /tasks/{id}/drafts), with the same visibility rule as list_drafts (app/api/routes/drafts.py:121). Document it in api_surfaces.md.
+2. The task shell reads it once. Annotate (task-annotation-workspace-with-real-data.tsx) and Review (task-workbench.tsx) reuse the shell's drafts instead of fetching again. Delete the unused use-hydrated-task-items.ts.
+3. Move the send-back repairs out of list_task_items_with_send_back_resolution (app/services/task_item_status_resolution.py:307) into the write paths that cause them, plus a one-off repair of existing rows. GET task-items and setup return stored statuses.
+4. Return backlog counts with the project's task list instead of one setup call per task (apps/hej-web/lib/project-data.ts:135), agreed with J2.
+5. Route tests as guards: the batched read runs the same number of statements for 10 and 200 items, and GET task-items and setup issue no INSERT, UPDATE or DELETE.",,,Hanchen Wang,SCRUM-119,added
 B1,B,P0,BE/FE,I can create a project to hold related work,"As a project manager, I want to create a project with a name, description and objective inside my organisation, because my work comes in programmes — the client's own example is an “Autonomous Driving” project holding several different annotation and evaluation tasks.","1. I can create a project and see it listed in my organisation.
 2. A project belongs to exactly one organisation and is visible only to that organisation's members.
 3. I can open a project and see the tasks inside it.",No open defects — the capability exists and works; it is listed because the workflow depends on it and because **J4** later extends it with lifecycle operations.,"1. Confirm POST /organizations/{org_id}/projects scopes the new project to the caller's organisation.
@@ -155,7 +164,7 @@ D1,D,P0,BE,I can't approve my own work,"As a reviewer, I should not be able to a
 2. Require a reviewer or expert capability to call the review endpoint at all.
 3. Apply the same restriction to dispute decisions, not only first-line review.
 4. Return a refusal that explains why, rather than a bare 403.
-5. Test that an annotator cannot approve their own item and that a reviewer can.",7,,"Parth, Hanchen Wang, Yi Geng, Jingwei Lin","SCRUM-86, SCRUM-99, SCRUM-116",shipped
+5. Test that an annotator cannot approve their own item and that a reviewer can.",7,working,"Yi Geng, Jingwei Lin","SCRUM-86, SCRUM-99, SCRUM-116",shipped
 D2,D,P0,BE,Approval history can't be rewritten behind my back,"As a project manager, I want an approval decision to be permanent and consistent with the item's actual state, because if an approval can be flipped or deleted afterwards, the record of who signed off on what is worthless.","1. There is one way to record a review decision, and it always moves the item's state with it.
 2. An existing approval cannot be edited or deleted into a different outcome by an ordinary member.
 3. Item state and review history always agree with each other.","**Issue 8** (a second, legacy review API can rewrite approval history) — an older set of endpoints lets any organisation member change or delete a review without touching item status. The “one way to record a decision” criterion requires retiring or locking down that path, which is the fix.","1. Retire or lock the legacy review-mutation endpoints at annotations.py:319, :364 and :426 (issue 8).
@@ -170,7 +179,7 @@ D3,D,P0,BE,The correction I make is the answer that gets saved,"As a reviewer, w
 3. Show the correction, not the original, when the item is reopened.
 4. Carry the corrected value into the exported dataset.
 5. Keep the original annotation visible in history — corrected, not erased (with F3).
-6. Blocked until the client says who authors a reviewer's correction.",5,,,"SCRUM-32, SCRUM-49",shipped
+6. Blocked until the client says who authors a reviewer's correction.",5,,Jingwei Lin,"SCRUM-32, SCRUM-49",shipped
 D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want certainty that the annotation in front of me belongs to the annotator it says it does, because on a double-annotated item the platform currently can't reliably tell, and I could approve or reject the wrong person's submission without any sign anything went wrong.","1. Opening an item for review always shows a specific, identified annotator's submission.
 2. On an item annotated by two people, both submissions are individually addressable — I never get an arbitrary one of the two.
 3. My decision is recorded against the submission I actually looked at.","**Issue 3** (reviewers can get shown the wrong annotator's work) — the “which annotation is current” pick is effectively random on multi-annotator items. This story requires a defined answer, which is the fix; issues.md notes the choice between one canonical annotation per item and per-annotator submissions is a product decision to settle with the client first.
@@ -178,7 +187,7 @@ D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want c
 2. Replace the effectively random ""latest annotation"" pick with the defined choice (issue 3).
 3. Make both submissions individually addressable on a double-annotated item.
 4. Record the decision against the submission the reviewer actually opened — impossible while draft.annotation_id is never written, the same root cause as issue 11.
-5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",working,"Jingwei Lin, Hanchen Wang","SCRUM-27, SCRUM-113",shipped
+5. Test that a two-annotator item returns a specific, identified submission every time.","3,11",done,"Jingwei Lin, Hanchen Wang","SCRUM-27, SCRUM-113",shipped
 D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to stay finalised unless someone deliberately reopens it, because a “locked” answer that a later submission can quietly change means no exported label can be defended.","1. Submitting new work against a finalised item is refused, or explicitly reopens review — never silently applied.
 2. Reopening a finalised item is a visible, attributable action.
 3. A submission either completes fully or not at all — it never leaves an item half-updated.","**Issue 2** (a finalised annotation can be silently overwritten) — currently a new draft updates the same record in place with no check on whether the item is already finalised. Criterion 1 is the missing check.
@@ -187,7 +196,7 @@ D5,D,P0,BE,Finalised means finalised,"As a client, I want a finalised result to 
 2. Make submit_draft one transaction; draft status, the annotation and the item status are three separate commits today (issue 11).
 3. Persist draft.annotation_id, which is declared on the model and never written (issue 11).
 4. Make reopening a finalised item an explicit, attributed action rather than a side effect.
-5. Test that a finalised item cannot be changed by a later submission.","2,11",working,"Hanchen Wang, Jingwei Lin","SCRUM-26, SCRUM-28, SCRUM-116",shipped
+5. Test that a finalised item cannot be changed by a later submission.","2,11",done,"Hanchen Wang, Jingwei Lin","SCRUM-26, SCRUM-28, SCRUM-116",shipped
 D6,D,P0,BE,My unfinished work is mine,"As an annotator, I want my in-progress draft to be editable only by me, because right now anyone in the organisation can change, submit or delete my unfinished work — including submitting it before I'm ready.","1. Only I can edit, delete or submit my own draft.
 2. Someone else attempting it is refused, with a clear message.
 3. An administrator or reviewer override, if we allow one, is explicit and recorded in the item's history.","**Issue 6** (drafts have no ownership enforcement) — draft access is currently checked against organisation and project membership only, never against who owns the draft. This story's first criterion is that missing check.","1. Check draft ownership on update, delete and submit — drafts.py:158, :192 and :212 check org and project membership only (issue 6).
@@ -222,7 +231,7 @@ This is a prerequisite the rest of the epic quietly assumes. **D7** samples a sh
 6. Show how many people are working an item and how many have submitted.
 7. Record who took and who submitted each item in its history.
 8. Decide the review queue per submission, and finalise an item only once every required submission is in and approved.
-9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang, Jingwei Lin","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
+9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang, Jingwei Lin, Dishank Aswal","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
 D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a project owner, I want to reopen a finalised item when its answer needs to be redone, keeping the old answer in its history, because finalised should mean locked against accidents — not locked against a deliberate, recorded correction.","1. Only the project owner can reopen a finalised item; the action requires a reason and is attributed.
 2. A reopened item returns to the normal open workflow for new annotation and review, not to the previous review step.
 3. The previous finalised answer remains in the item's history as a superseded version; it is never overwritten or deleted.
@@ -232,7 +241,7 @@ D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a p
 2. Mark the finalised answer superseded rather than editing it, and record the reopen as a provenance event (F1).
 3. Return the item to the available-work list (D8) with its annotation and review requirements reset for the new round.
 4. Show the reopen button to the project owner only, with the superseded answer visible in the item's history.
-5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,,"Hanchen Wang, Jingwei Lin",SCRUM-110,added
+5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,,"Hanchen Wang, Jingwei Lin","SCRUM-110, SCRUM-120",added
 E1,E,P0,BE,Disagreement is noticed without anyone reporting it,"As a project manager, I want the platform to detect when two reviewers disagree and open a dispute automatically, because disagreement I have to find manually is disagreement I will miss.","1. When independent reviews on the same item conflict, a dispute is raised automatically.
 2. The dispute shows both conflicting decisions and who made them.
 3. Disputed items are visible in one place and are excluded from release until resolved.",No open defects — net-new. Our own design notes are explicit that dispute should default to auto-detected disagreement rather than being a complaint button.,"1. Detect conflicting independent reviews on the same item and open a dispute without anyone reporting it.
@@ -257,7 +266,7 @@ E3,E,P1,BE,An expert's decision is recorded as its own decision,"As an expert, I
 3. Keep the annotator's label, the reviewers' decisions and the adjudication individually visible afterwards.
 4. Record the outcome — Accept, Return or Reject — with a required reason; Accept canonicalises the chosen judgement through the adjudication.
 5. Return reuses D9's reopen path; Reject leaves the item unresolved for the project owner to handle.
-6. Refuse an adjudication by anyone who annotated or reviewed the disputed work.",,,"Parth, Hanchen Wang, Yi Geng","SCRUM-52, SCRUM-99",shipped
+6. Refuse an adjudication by anyone who annotated or reviewed the disputed work.",,working,"Parth, Yi Geng","SCRUM-52, SCRUM-99",shipped
 E4,E,P1,BE,Resolving a dispute doesn't erase the disagreement,"As a client, I want a resolved item to still show that people disagreed and how it was settled, because disagreement is evidence about the item's difficulty, and deleting it hides exactly what I most need to know.","1. Resolving a dispute adds a resolution; it never deletes or overwrites the conflicting decisions.
 2. A resolved item's history still shows the original disagreement.
 3. Reports can distinguish items that were contested from items that were unanimous.
@@ -266,7 +275,7 @@ E4,E,P1,BE,Resolving a dispute doesn't erase the disagreement,"As a client, I wa
 2. Keep the original disagreement visible in the item's history after resolution.
 3. Let reports tell a contested item from a unanimous one.
 4. Test that resolving a dispute deletes nothing.
-5. Record an ambiguous/unresolved resolution as its own outcome, so a release can exclude or carry it (H3, H4).",,,"Hanchen Wang, Yi Geng",SCRUM-100,shipped
+5. Record an ambiguous/unresolved resolution as its own outcome, so a release can exclude or carry it (H3, H4).",,working,Yi Geng,SCRUM-100,shipped
 E5,E,P1,BE,Escalation matches the assurance my project needs,"As a project manager, I want to configure whether disputes must reach an expert, may reach one, or never do, because a routine labelling task and an arbitration-ready project need different escalation rules.","1. I can set the escalation posture when configuring the project or task.
 2. Where an expert gate is required, an item cannot complete without an expert decision.
 3. The posture in force is visible on the project.","No open defects — net-new. The escalation gate values exist internally but are not selectable or enforced; see **G2** for the wider posture enforcement this depends on.
@@ -282,14 +291,14 @@ This is the second of the four agreed objectives (“every screen backed by real
 2. Build or delete the three routes that return notFound() — /disputes/[id], /arbitration/[id] and /exports/[id] — and record which and why.
 3. Scope every dispute list to what the viewer is allowed to see.
 4. Confirm an action taken on these screens changes real state and survives a refresh.
-5. Offer the expert Accept, Return and Reject, each with a required reason, on the arbitration view (E3, R2-1).",,,"Parth, Jingwei Lin","SCRUM-52, SCRUM-103",shipped
+5. Offer the expert Accept, Return and Reject, each with a required reason, on the arbitration view (E3, R2-1).",,working,"Parth, Jingwei Lin","SCRUM-52, SCRUM-103",shipped
 F1,F,P0,BE,I can ask how any label came to exist,"As a client, I want to open any item in a delivered dataset and see the full sequence that produced its label, because a dataset that can't answer that can only be shipped, not defended.","1. Each item shows an ordered record of: what it came from, what the AI suggested, what the human did with that suggestion (accepted, modified, rejected or replaced), every review decision, and any dispute or adjudication.
 2. Each entry names who did it and when.
 3. The record is captured as the work happens, not reconstructed afterwards.","No open defects — net-new. Only a generic activity log exists today, holding opaque before/after values rather than a structured account of the workflow.","1. Add a provenance event record distinct from AuditLogDB (db_models.py:127), which holds opaque before/after blobs.
 2. Cover the ordered kinds: source registered, AI suggested, human responded, reviewed, disputed, adjudicated, released.
 3. Distinguish the human response — accepted, modified, rejected or replaced.
 4. Write events at the point of decision rather than reconstructing them afterwards.
-5. Name the actor and the time on every entry.",,,Yi Geng,SCRUM-98,shipped
+5. Name the actor and the time on every entry.",,,"Yi Geng, Hanchen Wang",SCRUM-98,shipped
 F2,F,P1,BE,Annotations remember which guideline and policy they followed,"As a project manager, I want to update annotation guidelines and review policies without rewriting history, because when I revise either mid-project I need to know which items were labelled or reviewed under the old one.","1. Updating a guideline, a source or a review policy creates a new version rather than replacing the current one.
 2. Every annotation records the guideline and source version in force when it was made, and every item records the policy version that governed it.
 3. I can see which items were annotated or reviewed under a superseded version.","No open defects — net-new. There is no versioning of any kind today, which is also what makes the “superseded version” release check in **H3** impossible to build until this exists.
@@ -303,7 +312,7 @@ F3,F,P0,BE,"The AI's suggestion, the human's answer and the reviewer's correctio
 **Issue 4** (a finalised item can export more than one conflicting answer) — “the export identifies which value is authoritative” is precisely the missing concept; see **H4** for the export-side change.","1. Keep the AI suggestion, the annotator's decision and any reviewer correction individually retrievable.
 2. Make a later correction supersede visibly rather than overwrite — D3 makes the correction land, this keeps the original (issue 5).
 3. Mark which value is authoritative in the export, and show what it superseded — the missing concept behind issue 4.
-4. Depends on the canonical-annotation decision taken in D4.","4,5",,Hanchen Wang,SCRUM-38,shipped
+4. Depends on the canonical-annotation decision taken in D4.","4,5",done,Hanchen Wang,SCRUM-38,shipped
 F4,F,P1,BE,History tells me who really did what,"As a project manager, I want the history to distinguish what a person did from what the platform did automatically, because an audit trail that attributes automated steps to people is worse than none.","1. Automated actions are shown as system actions, not attributed to a user.
 2. The history reads cleanly — one entry per thing that happened, without a change entry repeating what the summary already says.
 3. I can filter an item's history to just the human decisions.","**Issue 21** (audit log always shows “user” as the actor) — criterion 1 requires the actor to reflect what actually happened, which is the fix.
@@ -407,7 +416,7 @@ I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality le
 2. Cover annotation, review, cross-validation, dispute and final judgement in a single run.
 3. State the expected outcome per scenario and report pass or fail.
 4. Keep results comparable across runs so a regression is visible.
-5. Reset to a clean seeded database between runs — depends on A3.",,working,"Jingwei Lin, Hanchen Wang","SCRUM-68, SCRUM-69",shipped
+5. Reset to a clean seeded database between runs — depends on A3.",,working,Jingwei Lin,"SCRUM-68, SCRUM-69",shipped
 I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","1. The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.
 2. Each case has a stated expected outcome and runs through I1.
 3. The casebook grows toward the 40–60 cases the brief specifies.",No open defects — net-new. These adversarial categories are taken directly from the brief.,"1. Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.
@@ -415,7 +424,7 @@ I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a qual
 3. Cover a guideline changed after annotation, and an item with missing provenance.
 4. Cover an unreviewed item reaching a proposed release, and a release containing a superseded item.
 5. Use the gold fixtures in labeling_ai_assistnat_mvp/app/data/text/ — four 200-item sets with ground truth, already shaped in hej's own vocabulary.
-6. Grow toward the 40–60 cases the brief specifies, each ticket contributing the cases for its own surface as it lands.",,,Hanchen Wang,"SCRUM-70, SCRUM-71",shipped
+6. Grow toward the 40–60 cases the brief specifies, each ticket contributing the cases for its own surface as it lands.",,working,Hanchen Wang,"SCRUM-70, SCRUM-71",shipped
 I3,I,P1,GOV,I can tell whether reviewers actually agree,"As a quality lead, I want reviewer agreement measured properly rather than as a raw match percentage, because raw agreement flatters any task where one answer dominates.","1. Agreement is reported using an established coefficient, not percentage match.
 2. Agreement is reported per task and comparable across tasks.
 3. AI suggestion quality and confidence calibration are reported alongside human agreement.",No open defects — net-new; depends on the cross-validation routing in **D7**.,"1. Report agreement with an established coefficient rather than raw percentage match.

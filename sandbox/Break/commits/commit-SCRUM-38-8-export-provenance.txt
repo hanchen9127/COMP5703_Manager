@@ -1,0 +1,21 @@
+feat(api): export each answer's role, model, lineage and authority (SCRUM-38)
+
+Story F3 asks that the export identify the authoritative value and show
+what it superseded (client answer R2-2: release output = authoritative
+resolution, release provenance = complete judgement history). The task
+export said none of it: not who produced an answer beyond a user id,
+not what it derived from, not whether it was the resolved one.
+
+Every answer both formats emit now carries its author role and model,
+the version it derives from and why, the reopen that closed its round,
+and its authoritative marker with who set it, when and why, built in one
+helper so the formats cannot drift. Which value a release carries stays
+H4's (SCRUM-37).
+
+The legacy export grouped answers by str(created_by), so every AI answer
+on an item fell under "None" and only one was exported. An AI answer is
+now keyed by its model ("ai:<provider>/<model>") and named by it instead
+of "User_None"; a person's key is unchanged (Hanchen, 2026-10-02). The
+web reads only the normalized format.
+
+Story F3, SCRUM-38.

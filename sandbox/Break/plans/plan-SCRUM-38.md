@@ -188,6 +188,28 @@ The marker records who set it, when and why: `authoritative_by`, `authoritative_
   resubmits. The returned version keeps its content and its review, and is not current. The new one is
   current with no reviews, and is derived from it with reason `resubmission`.
 - Re-run #39's evaluation cases on top. If one pins an id, tell Jingwei rather than editing her case.
+
+**As built (2026-10-02):**
+- `_create_annotation_from_draft` writes a row for every submission. Its predecessor is the author's
+  current answer (`resubmission`) or else one a reopen superseded (`reanswer_after_reopen`). There
+  is one `create_version` call for both.
+- Four tests that pinned the in-place rewrite were flipped, with their intent kept. These are the two
+  in `test_draft_submission_atomicity`, one in `test_item_completion`, and #46's guard. The fifth
+  file on the list, `test_finalised_item_writes.py`, needed nothing.
+- Three `_resubmit` test helpers faked a resubmission by moving `submitted_at`. They now write a
+  version through `create_version`, and their nine callers review the returned version. That run
+  covers the read list: review states, `back_with_author`, approvals, the queue's awaiting ids,
+  target resolution and item completion.
+- Suites: SQLite 838 passed, 8 skipped. PostgreSQL 846 passed.
+- **#39 checked on top of commit 6** (`77f4a1d` merged with `CS57-Jingwei` `ac4c57b`, scratch worktree):
+  - **Result:** 4/4 cases pass, and 42 evaluation tests pass, the same as on `main` with #39.
+  - **What the check proves:** no case returns or resubmits (all actions are `accept`), so this shows
+    nothing broke, not that resubmission is exercised.
+  - **Why the harness is compatible anyway:** `driver.py:242` records each submission's returned
+    `annotation_id`, so after a resubmission it holds the new version. The AI lookup reads
+    `draft.annotation_id`, which also follows the new version.
+  - **For SCRUM-70:** a casebook case with a return and a resubmission is the first that will exercise
+    it.
 - **#45's nit, if Hanchen takes it here** (Jingwei asked on #46, 2026-10-02):
   - `assert_may_decide` (`review_policy_enforcement.py`) refuses with 409, "not a current submission",
     when the named submission has no review state, instead of returning;
@@ -223,10 +245,17 @@ The marker records who set it, when and why: `authoritative_by`, `authoritative_
   Which value a release carries stays H4's.
 - **Test:** an export of an item with a resubmission and a marked version shows both versions with
   their links and the marker on one.
-- **Open, found in commit 4 (decide here): the legacy export also hides a second model.** Its
-  `annotations_by_creator` is a dict keyed by `creator_id`, and two AI answers share `None`. Commit 4
-  fixes only the normalized export, whose shape (a list per item) does not change. Fixing the legacy
-  shape changes its keys, which its consumers may read. Check who reads it before choosing.
+- **Decided (Hanchen, 2026-10-02): the legacy export keys an AI answer by its model.** Found in
+  commit 4: `annotations_by_creator` was keyed by `str(created_by)`, so every AI answer shared `"None"`.
+  - **Who reads it:** the web reads only `normalized_json`. One test reads the legacy export, for its
+    `resolved_export_policy` only. `api_surfaces.md` promises nothing about the key. It is still the
+    default format, so outside callers may receive it.
+  - **The change:** an AI answer's key is `"ai:<provider>/<model>"` and its `creator_name` is the
+    model, instead of `"User_None"`. A person's key is unchanged.
+  - **Rejected:** leaving it as documented limits, and making `normalized_json` the default.
+  - **As built:** both formats share `_provenance_fields`. The normalized format gives
+    `authoritative_by` as a user ref; the legacy format gives a bare id, as its `confirmed_by` does.
+    Suites: SQLite 844 passed. PostgreSQL 852 passed.
 
 ### Commit 9 — `docs: record that every write is a version (SCRUM-38)`
 

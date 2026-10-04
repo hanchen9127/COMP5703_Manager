@@ -1,0 +1,15 @@
+feat(eval): a fixed set of case categories, with the brief's adversarial ones (SCRUM-70)
+
+A case's category was any lower_snake_case word. Story I2 asks the casebook to
+cover seven adversarial categories the brief names, and coverage can only be
+counted by name, so a near-miss spelling ("wrong_ai") would have dropped out of
+the count without anyone noticing.
+
+The category now comes from a fixed list: the brief's seven, and the ordinary
+ones the casebook already uses (smoke, workflow, ai_assist, policy) plus
+regression, for the case each break bug brings with its fix. Anything else is
+refused with the list of valid names. `python -m evaluation list --coverage`
+counts cases per adversarial category, marks the missing ones, and exits 1
+while any category has none.
+
+Story I2, SCRUM-70.

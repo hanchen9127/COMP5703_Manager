@@ -1,0 +1,9 @@
+docs: total_count counts authors, people and models alike (SCRUM-38)
+
+The annotation list's total_count counts current versions, one per
+author, and an AI model is an author. The route's comments and
+api_surfaces.md said it counts people; an item with two models' answers
+and one person's shows 3. Behaviour unchanged; found in the manual
+walkthrough's dry run.
+
+Story F3, SCRUM-38.

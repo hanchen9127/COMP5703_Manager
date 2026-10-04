@@ -1,0 +1,24 @@
+fix(ai): record the model version the provider served (SCRUM-38)
+
+An AI answer copies its model_version from metadata.ai.model_version,
+but no run wrote that field: _ai_metadata recorded the provider and the
+model asked for, nothing more. So every AI answer, and every export,
+had model_version null. The test that showed a version recorded put it
+into the metadata by hand. Found by Yi in the review of #47.
+
+OpenAICompatibleClient now keeps served_model, the model the provider
+reports answering each call (response.model). It is often a dated
+snapshot of the alias asked for, which is the version worth recording.
+It is reset at the start of every call, so a provider that names none
+leaves none. The run writes it to metadata.ai.model_version, for all
+four analyzers, which share the client. Nothing is guessed: no
+report, no version. A client without the attribute (a test double)
+records none. Answers written earlier keep none.
+
+Tests: the client records the served model and clears it when the next
+response names none; a completed run writes it to metadata.ai; and the
+submitted AI answer takes it from there (all red before the fix). A
+guard checks that no version appears when none is reported, or when the
+client is a mock. ADR 009 says where the version comes from.
+
+Story F3, SCRUM-38.

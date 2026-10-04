@@ -1,0 +1,18 @@
+feat(api): read an item's whole version history (SCRUM-38)
+
+Every resubmission is a version now, and the reads had not caught up.
+GET /annotations/{id}/history promised every version but filtered on the
+row's own id, so it returned one. GET /task-items/{id}/annotations
+promised the latest versions but filtered on nothing, so superseded
+answers came back as current and its count counted history; this has
+been so since #46's reopen made the first superseded rows.
+
+The history now returns the author's whole group, matching a first
+version by its own id where base_annotation_id is empty (init_data's
+seed, older rows). The list returns current versions, and earlier ones
+too with include_superseded; total_count counts current versions either
+way. Every read carries each version's role, model, derivation, the
+reopen that closed its round and its authoritative marker, built in one
+place. The annotator independence rule applies to all of it.
+
+Story F3, SCRUM-38.

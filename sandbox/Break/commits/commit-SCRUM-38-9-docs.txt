@@ -1,0 +1,24 @@
+docs: record that every answer is a version of its own (SCRUM-38)
+
+ADR 009 records the decisions behind SCRUM-38 and builds on ADR 008:
+- the author's role and model on every annotation, with no user account
+  for the AI;
+- one AI answer per model, and the task-level rule for how many models
+  may answer;
+- every submission writing a version, with the version it derives from
+  and why;
+- at most one authoritative version per item, held by a partial unique
+  index;
+- the reads and exports that carry all of this.
+It also lists the alternatives considered, the seams for SCRUM-99, D3,
+H4, F1, F4 and F5, and what is left to I4.
+
+The data-model docs, domain_model, domain_model_relations,
+db_schema_blueprint and db_schema_strategy, describe the new columns and
+relations. They say a resubmission is a new version, no longer an
+in-place rewrite. api_surfaces.md describes the version reads,
+include_superseded, the provenance fields in both export formats and the
+legacy export's model keys. workflow_states.md says a resubmission
+returns to review as a new version; the flow on screen is unchanged.
+
+Story F3, SCRUM-38.

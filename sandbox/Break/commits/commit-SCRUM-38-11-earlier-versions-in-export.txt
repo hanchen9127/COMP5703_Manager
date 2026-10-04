@@ -1,0 +1,24 @@
+fix(api): export each answer's earlier versions with their reviews (SCRUM-38)
+
+A resubmission is now a new version, and the review that returned the
+first one stays on the first one. Both export formats still kept one
+version per author and fetched reviews only for it. So the export named
+v1 in v2's derived_from_annotation_id but did not contain v1, and the
+reason v1 was returned, which the in-place rewrite used to keep on the
+exported row, was dropped. Found by Yi in the review of #47.
+
+Each current answer now carries earlier_versions in both formats: the
+author's other versions on the item, oldest first, each with its own
+content, reviews and provenance. A derivation link always resolves inside
+the export. Answers and annotation_count stay one per author; the
+normalized summary adds earlier_version_count. Building an answer is one
+function per format, used for both current and earlier versions.
+
+Tests: the export test returns Alice's v1 with a reviewer's verdict.
+Both formats must carry v1, its content and that review, and every
+derivation link must resolve in the export (red before the fix: v1 was
+in neither format). The reopen test pinned "Alice's round-1 version is
+not exported"; it now finds it in her earlier_versions, still marked
+superseded. api_surfaces.md and ADR 009 say so.
+
+Story F3, SCRUM-38.
