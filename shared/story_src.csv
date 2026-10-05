@@ -55,7 +55,7 @@ B1,B,P0,BE/FE,I can create a project to hold related work,"As a project manager,
 3. I can open a project and see the tasks inside it.",No open defects — the capability exists and works; it is listed because the workflow depends on it and because **J4** later extends it with lifecycle operations.,"1. Confirm POST /organizations/{org_id}/projects scopes the new project to the caller's organisation.
 2. Confirm the projects list shows only projects in the caller's organisation.
 3. Add a test that a project created in org A is invisible to a member of org B.
-4. Check project-create-form.tsx surfaces the API's validation errors rather than a generic failure.",,done,,SCRUM-91,shipped
+4. Check project-create-form.tsx surfaces the API's validation errors rather than a generic failure.",,done,Tim Chung,SCRUM-91,shipped
 B2,B,P0,BE,I can decide how carefully my project's work gets reviewed,"As a project manager, I want to set how many reviewers an item needs, how many review rounds run, and what share of items get independently double-checked, because a low-risk labelling job and a safety-critical judgement task shouldn't be governed identically.","1. When creating a project or task I can set: the number of approvals required, the proportion of items requiring independent cross-review (the client's example: 30%), and what happens when reviewers disagree.
 2. The settings I choose are visible on the project afterwards. Before work starts I can correct them in place; after that, a change creates a new policy version — new work follows it, and items already governed by an earlier version keep theirs.
 3. The workflow actually behaves according to what I set — this is not a label recorded and ignored.","No open defects — policy settings partially exist in the data model, but nothing enforces them. Enforcement is **G2**.
@@ -71,7 +71,7 @@ B3,B,P0,BE/FE,I can create a task for a specific piece of work,"As a project man
 3. Record what a finished result looks like: labels for annotation, verdict plus reasoning for judgement.
 4. Borrow the merged-schema idea from the MVP's SchemaMerger, but map fields explicitly rather than asking a model to infer them.
 5. Keep image and audio task creation working without breaking; text is the committed demo path.
-6. Add a test that a judgement task rejects a result with no verdict.",,done,,SCRUM-85,shipped
+6. Add a test that a judgement task rejects a result with no verdict.",,done,Yi Geng,SCRUM-85,shipped
 B4,B,P0,BE,"My task moves through real states, not just “draft”","As a project manager, I want to start a task, pause it and complete it, because right now a task stays a draft forever — which means the item list is never closed and I can never tell from the outside whether work is in progress.","1. I can move a task from draft into active work, and from active into complete.
 2. Once a task is active, new items can no longer be quietly added to it mid-review.
 3. The state shown on the project screen, the task screen and the export list agree with each other.","**Issue 28** (a task can never leave draft, so intake never closes) — the story's whole point is the missing activation step; adding it also makes the in_review / ready / disputed states reachable, which the export dashboard is already built around but can never currently display. issues.md flags this as needing a product decision first, so this story includes agreeing the intended path with the client.
@@ -149,7 +149,7 @@ C4,C,P1,BE/FE,I can choose whether the AI annotates first,"As a project manager,
 **Client answer, 2026-09-21** — human-only and AI-first are the annotation production modes. Blind-then-reveal is an evaluation protocol for human judgement, not a third mode, so it moves to **I4**. The AI's first pass is separate from the human annotator count (see **D8**).","1. Add human-only and AI-first to task setup.
 2. Route AI-first items straight to review, recording the AI model as the version's author, requiring no human first pass, and outside the human annotator count — SCRUM-46 builds this path.
 3. Record the mode in force against each item so results from different modes can be compared later (see I4).
-4. Test that a human-only item never receives an AI suggestion, and that none appears in its API responses.",,,,SCRUM-87,shipped
+4. Test that a human-only item never receives an AI suggestion, and that none appears in its API responses.",,,Jingwei Lin,SCRUM-87,shipped
 C5,C,P1,BE/FE,"I can record why I decided, not just what I decided","As a reviewer working on a judgement task, I want to record my reasoning alongside my verdict, because the client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers.","1. Judgement tasks capture a structured justification alongside the verdict, not an optional comment box.
 2. My reasoning is retrievable later, attached to the item and distinct from the verdict itself.
 3. Reasoning is carried into the export with the decision it explains.","No open defects — net-new. Client examples of what this must capture: why an AI answer is wrong, why one answer is preferred, how a person broke the problem down.
@@ -179,7 +179,7 @@ D3,D,P0,BE,My correction is saved and can become the answer,"As a reviewer, when
 3. Keep corrections out of submission counts, review states and review targets, so a correction never holds its item open.
 4. Show the correction to the corrected answer's author, the item's reviewers, adjudicators and project owner, and to no other annotator.
 5. Let an independent expert accept a correction in a dispute (E3), and record when an annotator's resubmission adopts it.
-6. Keep the original annotation visible in history — corrected, not erased (with F3).",5,,Jingwei Lin,"SCRUM-32, SCRUM-49",shipped
+6. Keep the original annotation visible in history — corrected, not erased (with F3).",5,working,Jingwei Lin,"SCRUM-32, SCRUM-49",shipped
 D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want certainty that the annotation in front of me belongs to the annotator it says it does, because on a double-annotated item the platform currently can't reliably tell, and I could approve or reject the wrong person's submission without any sign anything went wrong.","1. Opening an item for review always shows a specific, identified annotator's submission.
 2. On an item annotated by two people, both submissions are individually addressable — I never get an arbitrary one of the two.
 3. My decision is recorded against the submission I actually looked at.","**Issue 3** (reviewers can get shown the wrong annotator's work) — the “which annotation is current” pick is effectively random on multi-annotator items. This story requires a defined answer, which is the fix; issues.md notes the choice between one canonical annotation per item and per-annotator submissions is a product decision to settle with the client first.
@@ -241,7 +241,7 @@ D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a p
 2. Mark the finalised answer superseded rather than editing it, and record the reopen as a provenance event (F1).
 3. Return the item to the available-work list (D8) with its annotation and review requirements reset for the new round.
 4. Show the reopen button to the project owner only, with the superseded answer visible in the item's history.
-5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,,"Hanchen Wang, Jingwei Lin","SCRUM-110, SCRUM-120",added
+5. Test: a reviewer's reopen is refused; the owner's reopen keeps the old answer and makes the item claimable again.",,done,Jingwei Lin,"SCRUM-110, SCRUM-120",added
 E1,E,P0,BE,Disagreement is noticed without anyone reporting it,"As a project manager, I want the platform to detect when two reviewers disagree and open a dispute automatically, because disagreement I have to find manually is disagreement I will miss.","1. When independent reviews on the same item conflict, a dispute is raised automatically.
 2. The dispute shows both conflicting decisions and who made them.
 3. Disputed items are visible in one place and are excluded from release until resolved.",No open defects — net-new. Our own design notes are explicit that dispute should default to auto-detected disagreement rather than being a complaint button.,"1. Detect conflicting independent reviews on the same item and open a dispute without anyone reporting it.
@@ -282,7 +282,7 @@ E5,E,P1,BE,Escalation matches the assurance my project needs,"As a project manag
 **Client answer R2-8 (2026-09-24)** — Arbitration-ready is a guarantee, not a likelihood: “if a dispute occurs, it must reach independent adjudication”, stored as an explicit rule. This story makes that rule selectable and visible; G2 enforces it.","1. Make the escalation posture selectable when configuring a project or task.
 2. Where an expert gate is required, block completion until an expert has decided.
 3. Show the posture in force on the project.
-4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,,Jingwei Lin,SCRUM-107,shipped
+4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,,,SCRUM-107,shipped
 E6,E,P0,FE,The dispute and arbitration screens show my real cases,"As an expert, I want the dispute and arbitration screens to show the actual disputed items from my projects, because they currently display sample data — so everything Epic E builds underneath is invisible to the person who has to act on it.","1. The project dispute list, the individual dispute view and the arbitration view all show real cases from the backend, scoped to what I'm allowed to see.
 2. The task-level dispute and finalised views show that task's real items.
 3. Actions taken on these screens change real state, and the change is visible on refresh.
@@ -298,14 +298,14 @@ F1,F,P0,BE,I can ask how any label came to exist,"As a client, I want to open an
 2. Cover the ordered kinds: source registered, AI suggested, human responded, reviewed, disputed, adjudicated, released.
 3. Distinguish the human response — accepted, modified, rejected or replaced.
 4. Write events at the point of decision rather than reconstructing them afterwards.
-5. Name the actor and the time on every entry.",,,"Yi Geng, Hanchen Wang",SCRUM-98,shipped
+5. Name the actor and the time on every entry.",,,Hanchen Wang,SCRUM-98,shipped
 F2,F,P1,BE,Annotations remember which guideline and policy they followed,"As a project manager, I want to update annotation guidelines and review policies without rewriting history, because when I revise either mid-project I need to know which items were labelled or reviewed under the old one.","1. Updating a guideline, a source or a review policy creates a new version rather than replacing the current one.
 2. Every annotation records the guideline and source version in force when it was made, and every item records the policy version that governed it.
 3. I can see which items were annotated or reviewed under a superseded version.","No open defects — net-new. There is no versioning of any kind today, which is also what makes the “superseded version” release check in **H3** impossible to build until this exists.
 **Client answer, 2026-09-21** — policies may evolve after a project starts as new versions; the system must preserve which policy version applied to each item so its annotation, review and release history stays traceable. Guideline versions change instructions, not the output structure — a new structure is deliberate engineering (client answer R1-5).","1. Version guidelines, sources and review policies instead of replacing them in place — there is no versioning of any kind today.
 2. Record the guideline and source version in force on every annotation, and the policy version on every item.
 3. Let a manager see which items were annotated or reviewed under a superseded version.
-4. Sequence before H3 — its superseded-version check cannot be built until this exists. H2's manifest cites the policy version.",,,,SCRUM-53,shipped
+4. Sequence before H3 — its superseded-version check cannot be built until this exists. H2's manifest cites the policy version.",,,Michael Max,SCRUM-53,shipped
 F3,F,P0,BE,"The AI's suggestion, the human's answer and the reviewer's correction stay separate","As a client, I want to see the AI's suggestion, the annotator's decision on it and any reviewer correction as three distinct facts, because collapsing them into one value destroys the only evidence of what human judgement actually contributed.","1. All three are individually retrievable for any item.
 2. A later correction never overwrites the earlier record — it supersedes it visibly.
 3. The export identifies which value is authoritative and shows what it superseded.","**Issue 5** (reviewer corrections aren't saved) — **D3** makes corrections land; this story makes them land without destroying the original, which is the other half of the same defect.
@@ -319,13 +319,13 @@ F4,F,P1,BE,History tells me who really did what,"As a project manager, I want th
 **Issue 22** (escalation entries duplicate their own summary as a change) — criterion 2 removes exactly this noise from the history view.","1. Set actor_kind from what actually happened — task_audit_log_query.py:255 hardcodes ""user"" even when the display name is System (issue 21).
 2. Stop escalation entries repeating their own summary as a change (issue 22).
 3. Let an item's history be filtered to human decisions only.
-4. Test that a system-generated entry is never attributed to a person.","21,22",,,"SCRUM-40, SCRUM-41",shipped
+4. Test that a system-generated entry is never attributed to a person.","21,22",,Jingwei Lin,"SCRUM-40, SCRUM-41",shipped
 F5,F,P1,FE,I can see an item's whole story on one screen,"As a reviewer, I want to see an item's full timeline before I make a decision, because deciding without knowing that two people already disagreed about it is how bad decisions get made.","1. The item view shows its history in order: annotation, reviews, disputes, adjudication.
 2. Each entry shows who, when and what changed.
 3. I can reach the item's history from the review screen without losing my place.",No open defects — net-new; depends on **F1**.,"1. Show the item's timeline in order: annotation, reviews, disputes, adjudication.
 2. Show who, when and what changed on each entry.
 3. Reach the item's history from the review screen without losing your place.
-4. Sequence after F1 — the timeline has nothing to read until provenance events are being written.",,,Yi Geng,SCRUM-106,shipped
+4. Sequence after F1 — the timeline has nothing to read until provenance events are being written.",,,,SCRUM-106,shipped
 G1,G,P0,BE,My role determines what I can do,"As an organisation administrator, I want a person's role to determine which actions they can take, because at the moment being a member of the organisation is enough to do almost anything, which makes the roles I assign decorative.","1. Approving, disputing, adjudicating and releasing each require the appropriate role.
 2. A user without the required role is refused with a clear message rather than silently allowed.
 3. Adding a new role later doesn't require reworking the workflow.",**Issue 7** (annotators can approve their own work) — **D1** blocks self-review specifically; this story generalises the same enforcement across every governed action so the gap doesn't simply reappear on the next endpoint.,"1. Add a capability check that reads RoleAssignmentDB.role_key — app/core/permissions.py verifies tenancy only, and nothing anywhere checks a role before an action.
@@ -372,7 +372,7 @@ H1,H,P0,BE,A release is a fixed thing I can point at,"As a client, I want a rele
 3. Each release is identifiable and re-downloadable unchanged.","No open defects — net-new. Today's export list is derived live from task status; nothing is ever written or frozen, so there is no defect to fix, only a capability to build.","1. Add a release record storing the items as they were at the moment of release.
 2. Make later changes to the underlying items leave an existing release untouched.
 3. Give each release a stable identifier and an artefact that can be downloaded again unchanged.
-4. Today's export list is derived live from task status in project_exports_service.py:20 — nothing is ever written or frozen.",,,,SCRUM-102,shipped
+4. Today's export list is derived live from task status in project_exports_service.py:20 — nothing is ever written or frozen.",,,Kanishka Kathait,SCRUM-102,shipped
 H2,H,P0,BE,Every release explains what's in it,"As a client, I want each release to come with a manifest describing exactly what it contains, because I need to verify a dataset independently rather than take its contents on trust.","1. The manifest lists item count, the guideline and source versions covered, when it was produced and by whom.
 2. Each item in the release points to its provenance record.
 3. The release's contents can be checked against its manifest.",No open defects — net-new; depends on **F1** and **F2**.,"1. Write a manifest carrying item count, the guideline and source versions covered, when it was produced and by whom.
@@ -392,7 +392,7 @@ H4,H,P0,BE,Every released item has exactly one authoritative answer,"As a client
 2. Show other submissions as superseded history, never as competing answers.
 3. Match the authoritative value to what the review and adjudication record says it should be.
 4. The export tracks one slot per creator rather than one canonical value per item, which is how two answers reach one item.
-5. Depends on D4's canonical decision and F3's supersession model.",4,,,SCRUM-37,shipped
+5. Depends on D4's canonical decision and F3's supersession model.",4,,Dishank Aswal,SCRUM-37,shipped
 H5,H,P1,BE,Export figures agree with the rest of the platform,"As a project manager, I want the export list to report the same progress I see on the task, because two screens disagreeing about the same task tells me one of them is wrong and I don't know which.","1. Export readiness and item counts use the same completion rule as the task itself.
 2. A task marked complete never produces an export reporting zero completed items.
 3. Export behaviour is covered by tests that actually run, so this can't silently regress.","**Issue 19** (completion and export readiness disagree on “done”) — resolved jointly with **B6**, which unifies the rule; this story is the export-side half.
@@ -416,7 +416,7 @@ I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality le
 2. Cover annotation, review, cross-validation, dispute and final judgement in a single run.
 3. State the expected outcome per scenario and report pass or fail.
 4. Keep results comparable across runs so a regression is visible.
-5. Reset to a clean seeded database between runs — depends on A3.",,working,Jingwei Lin,"SCRUM-68, SCRUM-69",shipped
+5. Reset to a clean seeded database between runs — depends on A3.",,working,"Jingwei Lin, Yi Geng","SCRUM-68, SCRUM-69",shipped
 I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","1. The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.
 2. Each case has a stated expected outcome and runs through I1.
 3. The casebook grows toward the 40–60 cases the brief specifies.",No open defects — net-new. These adversarial categories are taken directly from the brief.,"1. Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.

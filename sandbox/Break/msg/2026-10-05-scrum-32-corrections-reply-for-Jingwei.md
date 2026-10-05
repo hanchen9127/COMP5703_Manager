@@ -14,6 +14,8 @@ checked against `main` at `bbb93cb`.
 - **Story D3 is updated** (title, story, criteria, subtasks) in the client backlog. Your four criteria are
   used, with criterion 3 naming the independent expert.
 - **Nine points below**, mostly scope notes and collaboration lines. None of them changes the model.
+- **SCRUM-51 doesn't change** while Parth is working on it: hiding a correction from an undecided second
+  reviewer moves into SCRUM-32 (point 9).
 
 ## What I checked, and it holds
 
@@ -69,8 +71,11 @@ checked against `main` at `bbb93cb`.
    verdict correction too.
 8. **D4's wording.** "While a dispute holds the answer" reads as annotation-scoped, which is exactly what
    #40 asks Hunter. Please word it so it holds under either scope.
-9. **SCRUM-51.** I'll add the line to Parth's ticket myself: a second reviewer who hasn't decided yet must
-   not see a first reviewer's correction.
+9. **The blind second review stays in SCRUM-32, not SCRUM-51.** Parth is still working on SCRUM-51, so
+   its scope doesn't change. Instead, SCRUM-32's visibility rule (D3) shows a correction to a reviewer
+   only once they have decided on that submission themselves, so a second reviewer never sees the first
+   reviewer's correction before deciding. If SCRUM-51's blind rule lands first, build on it; if yours does,
+   SCRUM-51 reads the same rule. Agree with Parth which function holds it.
 
 ## Board text
 
@@ -83,18 +88,13 @@ the adjudication's accepted judgement on a disputed item, which may be a reviewe
 
 ```text
 SCRUM-32, add under the description:
-Scope agreed 2026-10-05 (Jingwei, Hanchen): a correction is a proposal, not a submission. Returns (adjust, revise, reject) and escalations carry it when the panel sends corrected=true; an accept that changes the answer is refused with 422. It is never counted, reviewed or approved itself; it is seen by the corrected answer's author, the item's reviewers and adjudicators and the project owner, never by the item's other annotators; it becomes history when its answer is resubmitted. It becomes the item's answer only through an independent expert's Accept in a dispute (escalation reason "correction"), or when the annotator adopts it in a resubmission, recorded on the new version. BACKEND AND FRONTEND: the panel sends the flag, stops an edited accept, and shows the annotator the reviewer's suggested correction (annotation tasks). No schema change. ADR in the PR.
+Scope agreed 2026-10-05 (Jingwei, Hanchen): a correction is a proposal, not a submission. Returns (adjust, revise, reject) and escalations carry it when the panel sends corrected=true; an accept that changes the answer is refused with 422. It is never counted, reviewed or approved itself; it is seen by the corrected answer's author, the item's adjudicators and the project owner, and by a reviewer only once they have decided on that submission themselves, never by the item's other annotators; it becomes history when its answer is resubmitted. It becomes the item's answer only through an independent expert's Accept in a dispute (escalation reason "correction"), or when the annotator adopts it in a resubmission, recorded on the new version. BACKEND AND FRONTEND: the panel sends the flag, stops an edited accept, and shows the annotator the reviewer's suggested correction (annotation tasks). No schema change. ADR in the PR.
 
 Depends on: SCRUM-99's Accept (paused on issue #40) for the expert route's end-to-end test.
 
 Collaboration:
 - PR #48 (Yi, SCRUM-99/100): both change review_actions.py and its schema; whichever merges second rebases.
 - SCRUM-119 (Hanchen, W9): agree the order before changing visible_to_caller.
-- SCRUM-51 (Parth): its blind second review hides a first reviewer's correction.
-- SCRUM-52 (Parth): the reviewer who wrote a correction is never its adjudicator.
-```
-
-```text
-SCRUM-51, add:
-2026-10-05 (SCRUM-32): the blind second review also hides a first reviewer's correction from a second reviewer who has not decided yet.
+- SCRUM-51 (Parth, in progress, unchanged): a second reviewer sees a correction only after deciding — enforced here; agree with Parth which function holds the blind rule.
+- SCRUM-52 (Parth): this ticket tests that the reviewer who wrote a correction is refused as its adjudicator, using SCRUM-52's independence helper.
 ```

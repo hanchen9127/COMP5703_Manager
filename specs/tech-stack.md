@@ -256,6 +256,16 @@ board and the tracker.
     both are empty;
   - completed — the allocation already recorded, plus anyone who delivered;
   - not started — the allocation already recorded, plus any board assignee.
+
+  **Hand change, 2026-10-05** (approved by Hanchen), to bring allocations in line with the board's
+  assignees after the W9 assignments. The rules above only add names, so names whose tickets moved on
+  stay, and a completed story never takes the assignee of a verification ticket. Removed the people who
+  hold no ticket for the story and delivered none of it: D9 (Hanchen — SCRUM-110 moved to Jingwei on
+  2026-09-30), E5 (Jingwei — SCRUM-107 is unassigned), F1 (Yi — SCRUM-39/62 were replaced by SCRUM-98,
+  now Hanchen's), F5 (Yi — SCRUM-106 is unassigned). Added the assignees of the W9 verification tickets
+  on completed stories: B1 (Tim, SCRUM-91), B3 (Yi, SCRUM-85). Kept, although they hold no ticket: A3
+  and C1 (Michael), who delivered logged PRs. Not added: Parth to G1 — SCRUM-52's G1 part was already
+  complete, and his open work on it is D8 and E3.
 - **`scrum`** (decided 2026-09-16): add a board ticket when its `Jira.csv` description links the story —
   "Related to user story X" or "Story \*X\*". Additions only: a ticket is never removed automatically,
   because the CSV also carries links the board descriptions do not state (SCRUM-81, 82 and 84 for A2–A4,
