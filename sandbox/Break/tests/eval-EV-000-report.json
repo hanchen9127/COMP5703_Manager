@@ -1,0 +1,108 @@
+{
+  "run_at": "2026-10-04T11:57:42.816030+00:00",
+  "commit": "96d5e70",
+  "database": "sqlite",
+  "cases": 1,
+  "passed": 1,
+  "results": [
+    {
+      "id": "EV-000",
+      "title": "One annotator, one reviewer: an accept finalises the item",
+      "category": "smoke",
+      "file": "EV-000-single-accept.toml",
+      "passed": true,
+      "failure": null,
+      "steps": [
+        {
+          "number": 1,
+          "do": "annotate",
+          "actor": "alice",
+          "status": 200,
+          "passed": true,
+          "message": null
+        },
+        {
+          "number": 2,
+          "do": "review",
+          "actor": "rita",
+          "status": 200,
+          "passed": true,
+          "message": null
+        }
+      ],
+      "outcome": {
+        "i1": {
+          "expected": "canonicalized",
+          "actual": "canonicalized"
+        }
+      },
+      "exchanges": [
+        {
+          "step": null,
+          "actor": "owner",
+          "method": "POST",
+          "path": "/organizations/1/projects",
+          "status": 201
+        },
+        {
+          "step": null,
+          "actor": "owner",
+          "method": "POST",
+          "path": "/projects/proj_79821b73668c/tasks",
+          "status": 201
+        },
+        {
+          "step": null,
+          "actor": "owner",
+          "method": "POST",
+          "path": "/tasks/task_b16afb9a79f1/dataset-registration",
+          "status": 201
+        },
+        {
+          "step": null,
+          "actor": "owner",
+          "method": "POST",
+          "path": "/projects/proj_79821b73668c/tasks/task_b16afb9a79f1/activate",
+          "status": 200
+        },
+        {
+          "step": 1,
+          "actor": "alice",
+          "method": "POST",
+          "path": "/task-items/item_8e3d359854ca/drafts",
+          "status": 201
+        },
+        {
+          "step": 1,
+          "actor": "alice",
+          "method": "POST",
+          "path": "/drafts/draft_6e4d749f9d97/submit",
+          "status": 200
+        },
+        {
+          "step": 2,
+          "actor": "rita",
+          "method": "POST",
+          "path": "/tasks/task_b16afb9a79f1/task-items/item_8e3d359854ca/review-actions",
+          "status": 200
+        },
+        {
+          "step": null,
+          "actor": "rita",
+          "method": "GET",
+          "path": "/tasks/task_b16afb9a79f1/task-items",
+          "status": 200
+        },
+        {
+          "step": null,
+          "actor": "owner",
+          "method": "GET",
+          "path": "/tasks/task_b16afb9a79f1/task-items",
+          "status": 200
+        }
+      ],
+      "ai_calls": [],
+      "seconds": 0.14
+    }
+  ]
+}

@@ -222,6 +222,14 @@ with:
 - SCRUM-38 (F3, Hanchen, break): accept marks the selected judgement through F3's authoritative marker; agree the field on day one.
 ```
 
+**Added 2026-10-04** (Hanchen; pasted on the board by Hanchen). Append inside the `{noformat}` block:
+
+```
+Evaluation casebook (SCRUM-68, PR #39; SCRUM-70): the casebook runs in CI on both databases, so changing what an adjudication does turns EV-001 red. That is expected, and this ticket updates it in the same PR:
+- The harness's adjudicate step sends the legacy decision "finalize" with no annotation_id (evaluation/harness/driver.py). Implement the step SCRUM-70 defines as planned — do = "adjudicate", outcome = "accept" | "return" | "reject", accept = "<author alias or ai>" for an Accept, reason required — against the new decision route, and move EV-001 onto it.
+- Un-skip the casebook cases that wait for this ticket (EV-012, the ambiguous item resolved by Reject), with their expectations checked against the scope answer on #40.
+```
+
 ---
 
 ## SCRUM-110 — Review: Project owner reopens a finalised item

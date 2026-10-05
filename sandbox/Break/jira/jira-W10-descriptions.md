@@ -72,6 +72,12 @@ Updated 2026-10-01. Related issue: 15 (dispute send-back, fixed in PR #17, closu
 - Tests: each outcome changes real state and survives a refresh; Accept without a selected judgement and any outcome without a reason are refused.
 ```
 
+**Added 2026-10-04** (Hanchen; pasted on the board by Hanchen). Append inside the `{noformat}` block:
+
+```
+Evaluation casebook (SCRUM-68, PR #39): the casebook runs in CI on both databases. If this ticket retires the legacy POST .../escalations/decision route (410, once the desk uses SCRUM-99's decision route), check first that no case or harness step still calls it; SCRUM-99 moves the harness's adjudicate step and EV-001 onto the new route. The harness's escalate step routes to "expert" by default while the work panel sends "secondary_reviewer": if this ticket changes what the panel sends, keep the two in line.
+```
+
 ---
 
 ## SCRUM-73 — Evaluation6: Measure AI influence on human judgement, with blind-then-reveal

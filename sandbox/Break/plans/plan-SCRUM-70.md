@@ -39,7 +39,8 @@ is retargeted to `main` after merging `main` in. Never rebase (shared branch).
 | **Categories** | `category` from a fixed list: `workflow`, `regression` (a bug's case), and the seven adversarial ones below | Unknown category → invalid case. `list --coverage` prints cases per category, skipped ones counted apart |
 | **Gold items** | `[items] i1 = { gold = "ag_news:train:0042" }` beside today's `i1 = "text"` | The text comes from `evaluation/gold/<dataset>.jsonl`, holding only the records the cases use, copied verbatim (source fields and `gold_annotations` kept). An unknown reference → invalid case. The gold label is never sent to the AI or the API (R1-1) |
 | **Skip** | top-level `skip = "why, and what it waits for"` | A skipped case is still loaded and validated in full, so it can't rot. The runner reports SKIP (not PASS or FAIL); pytest marks it skipped with the reason. The exit status ignores skips |
-| **Planned steps** | `edit_guideline` (F2), `release` (H1–H3), `adjudicate` with `accept`/`return`/`reject` (SCRUM-99) | Allowed by name and shape **only in a skipped case**. A runnable case using one is invalid. Each becomes a real step when its surface lands |
+| **Planned steps** | `edit_guideline` (F2), `release` (H1–H3), `adjudicate` with `outcome` (SCRUM-99) | Allowed by name and shape **only in a skipped case**. A runnable case using one is invalid. Each becomes a real step when its surface lands |
+| **The new adjudicate step** (planned until SCRUM-99) | `do = "adjudicate"`, `outcome = "accept" \| "return" \| "reject"`, `accept = "<author alias or ai>"` (Accept only), `reason` (required, at most 2000 characters) | Matches Jingwei's proposed `POST /disputes/{id}/adjudication`. Today's `decision = "finalize" \| "send_back"` stays valid for EV-001 until SCRUM-99, which implements the new shape and moves EV-001 onto it in its own PR (line added to SCRUM-99 and 103 on 2026-10-04) |
 | **Outcome assertions** | `[outcome] i1 = { status, approved = ["ann"], authoritative = "ann", answer = { label = "Business" }, exported = true }` | `approved`: whose current answers are approved; `authoritative` and `answer`: the item's authoritative version (needs SCRUM-99/H4); `exported`: whether the export carries the item. Read from the normalized export as the task owner; keys needing an unbuilt surface appear only in skipped cases until it lands |
 | **`reopen` step** | `do = "reopen"`, `item`, `reason` | `POST …/task-items/{id}/reopen` (#46) |
 
@@ -51,12 +52,24 @@ IDs **EV-010 to EV-019** are reserved for SCRUM-70, so Jingwei's EV-004 onwards 
 | --- | --- | --- | --- | --- | --- |
 | **EV-010** | `confidently_wrong_ai` | AG News, a "Business" record | The AI answers "Sports" at 0.97. A reviewer rejects it with feedback | Item `rejected`, not canonicalized; the AI's answer is not approved; nothing exported | **Yes** |
 | EV-011 | `confidently_wrong_ai` | the same record | As EV-010, then an annotator answers "Business" and a reviewer accepts | Canonical; the human answer is authoritative; the AI's stays as a rejected version | Skip: #38 (rework of a rejected AI pass) and H4 |
-| EV-012 | `ambiguous_item` | Civil Comments, a borderline record | A reviewer escalates; an independent expert Rejects with a reason | Item `unresolved`; exported with no output; the reasons kept | Skip: SCRUM-99 (Reject), #40 |
-| EV-013 | `reviewer_disagreement` | AG News | Dual sign-off: one reviewer accepts, the other returns, with no guideline to settle it | A dispute opens automatically; both verdicts kept | Skip: SCRUM-51, 101 (and the panel rule, if adopted) |
+| EV-012 | `ambiguous_item` | `civil_comments:train:0102` | A reviewer escalates; an independent expert Rejects with a reason | Item `unresolved`; exported with no output; the reasons kept | Skip: SCRUM-99 (Reject), and #40 (option A assumed) |
+| EV-013 | `reviewer_disagreement` | `ag_news:train:0132` | Dual sign-off: one reviewer accepts, the other returns, with no guideline to settle it | A dispute opens automatically, whichever reviewer goes first; both verdicts kept | Skip: SCRUM-51, 101, and the review-panel decision |
 | EV-014 | `guideline_changed` | AG News | An answer under guideline v1; the owner edits the guideline; a second item annotated under v2 | Each answer records the version in force; the first item still shows v1 | Skip: F2 (SCRUM-53) |
 | EV-015 | `missing_provenance` | AG News | A finalised item whose provenance is incomplete (the harness removes one event, as a fault would) | The release is refused, naming the item and why | Skip: F1 (SCRUM-98), H3 (SCRUM-105) |
 | EV-016 | `unreviewed_in_release` | AG News, two records | One item canonical, one still unreviewed; the owner proposes a release | Refused before it exists, naming the unreviewed item | Skip: H1, H3 (SCRUM-102, 105) |
 | EV-017 | `superseded_in_release` | AG News | Canonical; the owner reopens (real step); a new round is accepted; the owner releases | The release carries only the new authoritative answer; the superseded one is history | Skip: H4 (SCRUM-37), H1 |
+
+**Skip reasons name every decision still open, not only the missing surface** (2026-10-04). EV-012's
+expectation (Reject leaves the item unresolved) is option A on #40; EV-013's (a split opens a dispute whichever
+reviewer goes first) needs the review-panel rule (D3 in Jingwei's proposal) as well as SCRUM-51/101. So:
+- EV-012: `skip = "Waits for SCRUM-99 (Reject) and the scope answer on #40; under option B the outcome differs."`
+- EV-013: `skip = "Waits for SCRUM-51 and 101, and for the review-panel decision; today the first return decides."`
+
+When the decision lands, whoever un-skips the case checks its expectation against it first.
+
+**Existing cases when disputes land** (checked 2026-10-04): EV-000, 002 and 003 use nothing that changes. EV-001's
+adjudicate step calls the legacy decision route with `finalize` and no `annotation_id`; PR #48 as it stands
+would refuse that (409/400), and the route is planned to return 410 after SCRUM-103. SCRUM-99 owns the update.
 
 **Why EV-016 is skipped rather than run at export level:** the export already leaves unreviewed items out, but
 silently. H3 asks for a refusal naming the item, and asserting silent exclusion would assert what H3 replaces.

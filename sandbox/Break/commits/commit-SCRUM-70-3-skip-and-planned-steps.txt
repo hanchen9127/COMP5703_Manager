@@ -1,0 +1,24 @@
+feat(eval): skip a case with its reason, and planned steps (SCRUM-70)
+
+Most adversarial categories have no surface to run on yet: no Reject, no
+guideline versions, no provenance events, no release. Their cases still have to
+be written now, with the outcome the platform owes, and not as assertions of
+today's behaviour.
+
+A case may now carry `skip = "what it waits for"`. A skipped case is loaded and
+validated in full like any other, so it cannot rot while it waits, but it is
+not run: no database is built and no request is sent. The runner reports it as
+SKIP with its reason, apart from passes and failures; the summary reads
+"N/M cases passed, K skipped", the JSON report counts skips, and pytest marks
+the case skipped with the reason. A skip is not a failure, so it does not
+change the exit status.
+
+The steps those cases need are named now as planned steps: edit_guideline
+(F2), release (H1-H3), remove_provenance_event (the fault a missing-provenance
+case injects), and adjudicate with outcome = accept | return | reject, the
+chosen answer for an Accept, and a reason (SCRUM-99). Each is checked for its
+shape, but is allowed only in a skipped case; a runnable case that uses one is
+invalid. The legacy adjudicate step with decision = finalize | send_back keeps
+running until SCRUM-99 moves EV-001 onto the new shape.
+
+Story I2, SCRUM-70.

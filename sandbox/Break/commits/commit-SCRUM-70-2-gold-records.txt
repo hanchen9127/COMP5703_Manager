@@ -1,0 +1,17 @@
+feat(eval): take an item's text from a gold record (SCRUM-70)
+
+A case could only spell out its items' texts. The adversarial cases need real
+records with a known reference answer, and the record's source and label have
+to travel with the text, or nobody can tell later which record a case was about
+or what the right answer was.
+
+An item may now name a gold record, `i1 = { gold = "ag_news:train:0090" }`. The
+case takes the text from evaluation/gold/<dataset>.jsonl, which holds only the
+records the cases use, copied byte for byte from Group A's delivery
+(dataset/text_dataset/, outside this repository): eight AG News records and one
+Civil Comments record. The record, with its reference label, is kept on the
+scenario apart from the items, so the driver registers the text alone and the
+label never reaches the API or the AI (client answer R1-1). A reference with no
+record, or a malformed gold entry, makes the case invalid.
+
+Story I2, SCRUM-70.
