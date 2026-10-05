@@ -68,7 +68,7 @@ Collaboration:
 - SCRUM-98 (F1, W9): the confirmation is an event.
 - SCRUM-107 (E5, W11): Arbitration-ready and the posture's screens build on this.
 - SCRUM-71 (I2): a case for the Expert Gate and one for the AI invariant.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000lp:,W10,,2.0,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,01/Oct/26 7:47 PM
-Review: an annotator resubmits only work that is theirs to redo,SCRUM-117,10177,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,27/Sep/26 6:15 PM,03/Oct/26 10:39 PM,03/Oct/26 10:39 PM,,,0,"{noformat}Related to user story D8
+Review: an annotator resubmits only work that is theirs to redo,SCRUM-117,10177,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,27/Sep/26 6:15 PM,05/Oct/26 5:50 PM,03/Oct/26 10:39 PM,,,0,"{noformat}Related to user story D8
 
 BACKEND AND FRONTEND
 
@@ -617,7 +617,7 @@ Deliberately limited — the client asked that time not be spent making this com
 
 The one that takes effort is criterion 2: the figures reconcile with the task and export screens. Both rules it needs are on main: SCRUM-43's counting rule (PR #26, is_task_item_export_eligible) and the task states draft, active, paused, completed (SCRUM-24, PR #41). Build on the existing project page (apps/hej-web/app/projects/[projectId]/page.tsx) rather than a new screen. W9, Tim (updated 2026-10-01).
 {noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxt,W9,,1.5,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",To Do,07/Sep/26 11:36 PM
-Organisation Management: Stable organisation identifier and URL,SCRUM-88,10116,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:35 PM,01/Oct/26 7:46 PM,01/Oct/26 7:46 PM,,,0,"{noformat}Related to user story J1
+Organisation Management: Stable organisation identifier and URL,SCRUM-88,10116,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:35 PM,01/Oct/26 7:46 PM,05/Oct/26 4:02 PM,,,0,"{noformat}Related to user story J1
 
 W11, the last sprint; the first to drop if the week is full. Rewritten 2026-10-01: verify first.
 
@@ -1074,10 +1074,12 @@ Collaboration:
 - SCRUM-99 (E3, Yi): accept selects one existing judgement through the adjudication.
 - SCRUM-32 (D3) and SCRUM-37 (H4), both W9: the reviewer's correction is a version; H4 marks the authoritative one.
 - SCRUM-98 (F1, W9): its events point at these records.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:wni,Mid-semester Break,,3.0,,,,10044,SCRUM-16,Provenance & Audit History,Done,04/Oct/26 5:36 PM
-Provenance: Guarantee one canonical answer per task item,SCRUM-37,10065,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:47 PM,05/Oct/26 3:45 PM,05/Oct/26 3:44 PM,,,0,"Story *H4* — Every released item has exactly one authoritative answer
+Provenance: Guarantee one canonical answer per task item,SCRUM-37,10065,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:47 PM,05/Oct/26 3:52 PM,05/Oct/26 4:01 PM,,,0,"
+
+{noformat}Story *H4* — Every released item has exactly one authoritative answer
 Issues *4*
 
-{noformat}Related to user story H4
+Related to user story H4
 
 BACKEND ONLY. W9 (moved from W10 on 2026-10-01). Rewritten 2026-10-01.
 
@@ -1086,7 +1088,7 @@ An export carrying two conflicting ""final"" answers for the same item is unusab
 Unblocked by the client's answer R2-2 (2026-09-24): one authoritative output plus the complete history.
 
 # Each item carries at most one authoritative value, set through F3's authoritative marker (SCRUM-38). An item resolved as genuinely ambiguous (SCRUM-99's reject, SCRUM-100) carries none and says so.
-# Which version is authoritative follows the recorded decisions: the approved submission on a single-submission item; the adjudication's accepted judgement on a disputed one; the adjudication's accepted judgement on a disputed item, which may be a reviewer's correction (SCRUM-32). A correction is never authoritative on its own: it becomes the answer through an independent expert's Accept — never the reviewer who made it — or through the annotator adopting it in a resubmission that is then approved. Record the rule in api_surfaces.md.
+# Which version is authoritative follows the recorded decisions: the approved submission on a single-submission item; the adjudication's accepted judgement on a disputed item, which may be a reviewer's correction (SCRUM-32). A correction is never authoritative on its own: it becomes the answer through an independent expert's Accept — never the reviewer who made it — or through the annotator adopting it in a resubmission that is then approved. Record the rule in api_surfaces.md.
 # The export carries the authoritative value once per item, with every other version as superseded history — never as a competing answer.
 # An item whose required submissions are not all approved (the multi-annotator rule of PR #35) has no authoritative value yet and is not exported as final.
 # Tests, each failing on the old behaviour: two approved submissions on one item export one authoritative answer and one superseded; an adjudicated item exports the accepted judgement; an ambiguous item exports no authoritative value.
@@ -1101,8 +1103,6 @@ Added 2026-10-01 (coverage of C5): C5's last criterion has no other ticket — "
 - Each exported authoritative value carries its reasoning: the annotator's rationale on a judgement, and the justification of the review or adjudication that made it authoritative.
 - Superseded versions carry their own reasoning in the history.
 - Test: an exported judgement carries its verdict, its rationale and the deciding justification.
-
-
 {noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vxux,W9,,2.5,,,,10044,SCRUM-16,Provenance & Audit History,To Do,06/Sep/26 5:47 PM
 "Dispute / Annotation: Implement ""Dispute & send back to annotator""",SCRUM-35,10063,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:35 PM,16/Sep/26 1:20 AM,,14/Sep/26 8:06 PM,,0,"Not every dispute should be settled by an expert overruling — sometimes the right outcome is the original annotator redoing it with guidance. Users currently hit a placeholder. Smallest ticket on the board. The backend endpoint and the typed API client both already exist; only the click handler is missing.
 
@@ -1112,36 +1112,43 @@ Task Lifecycle: Make dataset registration transactional,SCRUM-34,10062,Task,Done
 
 Story *B5* — Loading a dataset either works or leaves nothing behind
 Issues *16*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001i:o,W6 Governance & data-integrity,,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,14/Sep/26 10:10 PM
-Review: Persist reviewer corrections as structured data,SCRUM-32,10060,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:04 PM,05/Oct/26 3:43 PM,05/Oct/26 3:43 PM,,,0,"Story *D3* — The correction I make is the answer that gets saved
+Review: Persist reviewer corrections as structured data,SCRUM-32,10060,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:04 PM,05/Oct/26 3:52 PM,05/Oct/26 3:52 PM,,,0,"
+
+{noformat}Story *D3* — My correction is saved and can become the answer
 Issues *5*
 
-{noformat}Related to user story D3
+Related to user story D3
 
-BACKEND, with the review panel's existing correction field. W9. Rewritten 2026-10-01.
+BACKEND, plus a minimal web part in the review panel. W9. Rewritten 2026-10-01; scope agreed 2026-10-05.
 
-A reviewer can correct an answer and find the correction nowhere in the result. Any review action may carry final_payload or final_verdict (TaskItemReviewActionRequest), and the web panel sends final_payload, but _legacy_review_notes_projection (app/api/routes/review_actions.py:315) keeps only its first 500 characters inside review_notes. Issue 5 (Critical).
+A reviewer can correct an answer and find the correction nowhere in the result. Any review action may carry final_payload or final_verdict (TaskItemReviewActionRequest), and the web panel sends final_payload, but _legacy_review_notes_projection (app/api/routes/review_actions.py) keeps only its first 500 characters inside review_notes. Issue 5 (Critical).
 
 Unblocked 2026-09-15: a reviewer's correction is a version authored by the reviewer, kept alongside the annotator's rather than replacing it.
 
-# A decision that carries a correction — a final_payload or final_verdict that differs from the submission — creates a version authored by the reviewer, linked to the submission it corrects, with the reason ""correction"" (F3's supersession fields, SCRUM-38).
+Scope agreed 2026-10-05 (Jingwei, Hanchen): a correction is a proposal, not a submission. Returns (adjust, revise, reject) and escalations carry it when the panel sends corrected=true; an accept that changes the answer is refused with 422. It is never counted, reviewed or approved itself; it is seen by the corrected answer's author, the item's adjudicators and the project owner, and by a reviewer only once they have decided on that submission themselves, never by the item's other annotators; it becomes history when its answer is resubmitted. It becomes the item's answer only through an independent expert's Accept in a dispute (escalation reason ""correction""), or when the annotator adopts it in a resubmission, recorded on the new version. BACKEND AND FRONTEND: the panel sends the flag, stops an edited accept, and shows the annotator the reviewer's suggested correction (annotation tasks). No schema change. ADR in the PR.
+
+# A return (adjust, revise, reject) or an escalation sent with corrected=true creates a version authored by the reviewer, linked to the submission it corrects (derivation reviewer_correction, through F3's create_version, SCRUM-38). An accept that changes the answer is refused with 422.
 # The annotator's submission is unchanged and stays visible in the item's history.
 # The correction is stored whole, never truncated; review_notes no longer carries it.
-# Reopening the item shows the correction, marked as the reviewer's, beside the original.
-# The export carries the corrected value where it is the authoritative one; which version is authoritative is H4's rule (SCRUM-37, same week).
-# The review read returns the correction to the next reviewer only under the same independence rules as any decision (SCRUM-51's blind second review).
-# Tests, each failing on the old behaviour: a correction longer than 500 characters survives whole; the original submission is unchanged; the corrected version names the reviewer as author and links to the original.
+# The correction is shown, marked as the reviewer's, beside the original: in the item's details and on the annotator's returned work.
+# A correction never counts as a submission and never holds its item open: submission counts, review states and review targets leave it out.
+# The export carries the correction as a version with its role and link. It is the authoritative value only after an independent expert's Accept (SCRUM-99) or once the annotator's resubmission that adopts it is approved — H4's rule (SCRUM-37, same week).
+# A reviewer sees a correction only once they have decided on that submission themselves; the item's other annotators never see it.
+# Tests, each failing on the old behaviour: a correction longer than 500 characters survives whole; the original submission is unchanged; the correction names the reviewer as author and links to the original; a correction does not hold its item open; an edited accept is refused.
 
 SCRUM-49 is the umbrella for review transitions; this is its D3 part.
-
-Scope agreed 2026-10-05 (Jingwei, Hanchen): a correction is a proposal, not a submission. Returns (adjust, revise, reject) and escalations carry it when the panel sends corrected=true; an accept that changes the answer is refused with 422. It is never counted, reviewed or approved itself; it is seen by the corrected answer's author, the item's adjudicators and the project owner, and by a reviewer only once they have decided on that submission themselves, never by the item's other annotators; it becomes history when its answer is resubmitted. It becomes the item's answer only through an independent expert's Accept in a dispute (escalation reason ""correction""), or when the annotator adopts it in a resubmission, recorded on the new version. BACKEND AND FRONTEND: the panel sends the flag, stops an edited accept, and shows the annotator the reviewer's suggested correction (annotation tasks). No schema change. ADR in the PR.
 
 Depends on: SCRUM-99's Accept (paused on issue #40) for the expert route's end-to-end test.
 
 Collaboration:
+- SCRUM-38 (F3, break): the version and supersession model.
+- SCRUM-37 (H4, W9): when a correction becomes authoritative.
+- SCRUM-98 (F1, W9): a correction is an event.
 - PR #48 (Yi, SCRUM-99/100): both change review_actions.py and its schema; whichever merges second rebases.
 - SCRUM-119 (Hanchen, W9): agree the order before changing visible_to_caller.
 - SCRUM-51 (Parth, in progress, unchanged): a second reviewer sees a correction only after deciding — enforced here; agree with Parth which function holds the blind rule.
-- SCRUM-52 (Parth): this ticket tests that the reviewer who wrote a correction is refused as its adjudicator, using SCRUM-52's independence helper.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vxuzi,W9,,2.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",In Progress,05/Oct/26 3:43 PM
+- SCRUM-52 (Parth): this ticket tests that the reviewer who wrote a correction is refused as its adjudicator, using SCRUM-52's independence helper.
+{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vxuzi,W9,,2.5,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",In Progress,05/Oct/26 3:43 PM
 "Review: Record verdict, feedback & justification",SCRUM-31,10059,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:03 PM,16/Sep/26 1:20 AM,,14/Sep/26 8:06 PM,,0,"The client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers. Confirm with the client whether justification is required on accept, or only on reject, modify and dispute.
 
 Story *C5* — I can record why I decided, not just what I decided

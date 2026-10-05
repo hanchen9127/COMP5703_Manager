@@ -1,0 +1,15 @@
+feat(eval): planned outcome keys for what an item exports (SCRUM-70)
+
+Most adversarial categories are about what leaves the platform: which answer
+an item resolves to, and what its export carries. An outcome could only state
+an item's status, so the cases written now for those categories could not say
+what they expect.
+
+An item's outcome may now also state `authoritative` (the author alias, `ai`,
+or false when the item has no authoritative answer), `answer` (that answer's
+content) and `answers` (how many answers the export carries for the item), the
+shape proposed on #39. Until the runner reads the export, they are planned like
+the planned steps: checked for shape, allowed only in a skipped case, and each
+one in a runnable case is named as a problem.
+
+Story I2, SCRUM-70.

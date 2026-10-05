@@ -1,0 +1,16 @@
+test(eval): EV-010, a confidently wrong AI answer is not finalised (SCRUM-70)
+
+The casebook had no case for the brief's first adversarial category: an AI
+that is wrong and sure of it.
+
+EV-010 takes AG News record 0090, an Olympics story under a Reuters dateline
+from Athens. Its surface reads like world news and its reference label is
+Sports. The scripted AI answers World at 0.97. The case checks that the
+confidence decides nothing: the AI's pass waits in review, and a reviewer's
+reject leaves the item rejected, not canonicalized (story G2, R2-7).
+
+It runs today on both databases. What follows, a person answering the item,
+waits for #38 and will be EV-011. Asserting that the AI's answer is not
+approved and is not exported needs the outcome keys of a later commit.
+
+Story I2, SCRUM-70.

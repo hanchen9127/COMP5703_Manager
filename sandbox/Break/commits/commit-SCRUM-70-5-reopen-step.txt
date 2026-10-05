@@ -1,0 +1,16 @@
+feat(eval): a reopen step (SCRUM-70)
+
+The superseded-in-release case needs an item that was finalised, reopened and
+finalised again, and a case had no way to reopen one.
+
+A case may now say `do = "reopen"` with the item and a reason. The driver calls
+the project owner's reopen (#46, SCRUM-110) as the step's actor, so the API's
+own rule decides who may: a reviewer is refused with 403. The reason is
+required in the case, because the route requires one; a reason that is not a
+non-empty string makes the case invalid, and its length is left to the API.
+
+The test drives the whole round: a reviewer's reopen refused, the owner's
+reopen superseding the first answer and returning the item to pending, then a
+second annotation and accept finalising it again.
+
+Story I2, SCRUM-70.
