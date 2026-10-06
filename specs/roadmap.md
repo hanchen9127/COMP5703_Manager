@@ -402,7 +402,7 @@ spends the week on them.
 
 | Group | Ticket | Story | Load | Work |
 | --- | --- | --- | --- | --- |
-| **1** | SCRUM-68, 69 | I1 | 3u | Moved from W8 and W9 on 2026-09-18, following the board. Harness skeleton, one scripted scenario against a seeded database; then repeatable runs, pass/fail per scenario, comparable across runs. A 3u group — two people for part of the week. SCRUM-68 is Jingwei's (PR #39, in review). **SCRUM-69 moved to W9 on the board on 2026-10-05, Yi** (after a brief move to W10 the same day) |
+| **1** | SCRUM-68, 69 | I1 | 3u | Moved from W8 and W9 on 2026-09-18, following the board. Harness skeleton, one scripted scenario against a seeded database; then repeatable runs, pass/fail per scenario, comparable across runs. A 3u group — two people for part of the week. SCRUM-68 is Jingwei's: ✅ PR #39 merged 2026-10-06 (`b561dbb`), reviewed by Hanchen. **SCRUM-69 moved to W9 on the board on 2026-10-05, Yi** (after a brief move to W10 the same day) |
 | **2** | SCRUM-70 | I2 | 2u | Moved from W9. Casebook structure and the adversarial categories from the brief. Its first cases are the week's scenario tests, and the bugs they find. No assignee on the board yet |
 | **3** | SCRUM-5 | C2 | 1.5u | **Added 2026-09-22.** Michael's own request: he'd already planned it as one piece with SCRUM-1–3, and wanted it delivered alongside them rather than handed to Tim mid-week (whose SCRUM-5 slot became SCRUM-89 in W8 instead). Batch progress and per-item job status — an endpoint and a view, reading the job tables his own W8 tickets change |
 | **4** | SCRUM-110 | D9 | 2u | **Jingwei since 2026-09-30** (was Hanchen; board 1.5 → 2 points, for the rounds-of-work change below). **Added 2026-09-24** (client answer R2-3). Description rewritten 2026-09-30 (`../sandbox/W8/jira/jira-scrum-110-update.md`): reopen only on an active task; old submissions superseded, never counted again or overwritten; a history row until F1 exists; one reopen function shared with SCRUM-99's Return; the button after PR #43 and #44. Lands after SCRUM-116. The project owner reopens a finalised item with a reason; the item returns to the open workflow and the finalised answer stays as a superseded version. Requests from other roles are out of scope. W8's Return (E3) switches to this path |
@@ -416,7 +416,7 @@ spends the week on them.
   paused on the dispute-scope question (issue #40);
 - SCRUM-38 (F3) — Hanchen, from W9;
 - SCRUM-116 — Jingwei. A bug ticket that also carries SCRUM-86's routing half since 2026-09-30, so its 1 point is counted work, not bug fixing;
-- SCRUM-117 — Dishank since 2026-10-03 (was Hanchen), a bug ticket;
+- SCRUM-117 — Dishank since 2026-10-03 (was Hanchen), a bug ticket. ✅ PR #52 merged 2026-10-05 (`9f4ec6c`), Done on the board;
 - SCRUM-120 (D9) — Jingwei, a bug ticket added 2026-10-04: a reopened item is flipped to expert send-back by the next read of task-items or setup, a write with no audit row. Found and reproduced by the performance investigation (`../sandbox/Break/tests/perf-findings.md`). PR #48 (Yi, paused) changes the same two functions in `task_item_status_resolution.py`; whichever merges second applies the reopen cutoff to both. ✅ PR #50 merged 2026-10-04 (`bbb93cb`), Done on the board (0.5 points); #48 now applies the cutoff when it resumes;
 - SCRUM-86 — the container, unassigned, no points.
 
@@ -462,6 +462,8 @@ board does not show separately. Board changes: `../sandbox/Break/jira/jira-W9-W1
 - **2026-10-05: owners set on the board** ahead of the W9 meeting, following each member's earlier tickets.
   SCRUM-40 (F4's actor kinds) moved to W10, beside F5; SCRUM-69 (I1's repeatable runs) moved in from the break,
   Yi. **22u on the board, 23.5u in all.**
+- **2026-10-06:** SCRUM-119 (#54) and SCRUM-41 (#57) merged during the break. SCRUM-119 counts as break work, so
+  W9's counted load is 21.5u and Hanchen's W9 is F1 alone.
 
 | Group | Ticket | Story | Load | Owner | Work |
 | --- | --- | --- | --- | --- | --- |
@@ -471,19 +473,19 @@ board does not show separately. Board changes: `../sandbox/Break/jira/jira-W9-W1
 | **4** | SCRUM-37 | H4 | 2.5u | Dishank | **Moved from W10 on 2026-10-01.** At most one authoritative value per item — none for an item resolved as ambiguous — with every other version kept as superseded provenance (R2-2); closes issue 4. A correction is authoritative only through an expert's Accept or an adopted resubmission (2026-10-05). Needs only F3 (break) and D4 (done). Its test of two differing approved submissions waits on issue #40's second question |
 | **5** | SCRUM-102 | H1 | 2u | Kanishka | Immutable release artefact with a stable id, unaffected by later edits; freezes the value F3's authoritative marker holds. Replaces SCRUM-64. After PR #49 merges |
 | **6** | SCRUM-51 (second slice) | D7 | 1.5u | Parth | Sample submissions by B2's cross-review percentage into the second-review queue SCRUM-52 builds, which excludes the first reviewer; report how many were double-reviewed and how often the reviewers agreed. The first slice — blind second review and the disagreement comparison SCRUM-101 calls — is break carry-over. E1's release exclusion moved to H3 (W10). Not shown on the W9 board: SCRUM-51 sits in the W8 sprint |
-| **7** | SCRUM-41 | F4 | 0.5u | Jingwei | Escalation entries stop repeating their summary as a change (issue 22). **SCRUM-40** (`actor_kind`, issue 21, and the human-decisions-only filter) **moved to W10 on 2026-10-05**, beside F5 |
+| **7** | SCRUM-41 | F4 | 0.5u | Jingwei | ✅ **PR #57 merged 2026-10-06** (`49c6574`), reviewed by Hanchen; closes issue 22. History entries no longer list a field their summary already states, and a review's stored `key=value` pairs are no longer shown as its detail; a person's note on an escalation always is. Escalation entries stop repeating their summary as a change (issue 22). **SCRUM-40** (`actor_kind`, issue 21, and the human-decisions-only filter) **moved to W10 on 2026-10-05**, beside F5 |
 | **8** | SCRUM-89, 91 | J2, B1 | 2u | Tim | SCRUM-89 (1.5u): read-only project overview — status, item counts by state, reconciled with the task and export screens; deliberately limited. Reads B4's task states (PR #41) and SCRUM-43's counting rule. SCRUM-91 (0.5u): verify B1 on `main` — close it if its criteria hold, otherwise build the gap (the cross-organisation test, form errors) |
 | **9** | SCRUM-87 | C4 | 1u | Jingwei | Human-only and AI-first already exist as the task's `annotation_mode`, and SCRUM-46 built the AI-first path. Left: record the mode on every item, and test that a human-only item never carries an AI suggestion in the API. Blind-then-reveal is I4's evaluation protocol (R1-2), not a mode. Jingwei's own choice, taking him to 4u |
 | **10** | SCRUM-85 | B3 | 0.5u | Yi | Verify first: the records count B3 complete, and `task_class`, `annotation_type` and the annotation surfaces (#27, #36) cover most of it. Close the ticket if its criteria hold on `main`; otherwise build the gap — `label_schema_ref` resolving to a result shape |
-| **11** | SCRUM-119 | A6 | 2u | Hanchen | **Added 2026-10-04.** Every task page fetches drafts one request per item, and Annotate and Review fetch them again: 404 requests and 2,969 ms for a 200-item Annotate page on `df7c05a` (`../sandbox/Break/tests/perf-findings.md`). One batched read, `GET /tasks/{id}/drafts`, beside the unchanged per-item route; the tabs refresh with one call. Target under 1 s and at most 10 requests (lowered from 300 ms on 2026-10-06: #52's annotate queue request, about 520 ms, sits on the page's path); measured 546–586 ms and 6–8 requests on the branch. The repair on read (A6 subtask 3) is deferred to W10 or W11. In review by 7 Oct, it counts as break work and Hanchen's W9 drops to F1 alone |
+| **11** | SCRUM-119 | A6 | 2u | Hanchen | **Added 2026-10-04.** Every task page fetches drafts one request per item, and Annotate and Review fetch them again: 404 requests and 2,969 ms for a 200-item Annotate page on `df7c05a` (`../sandbox/Break/tests/perf-findings.md`). One batched read, `GET /tasks/{id}/drafts`, beside the unchanged per-item route; the tabs refresh with one call. Target under 1 s and at most 10 requests (lowered from 300 ms on 2026-10-06: #52's annotate queue request, about 520 ms, sits on the page's path); measured 546–586 ms and 6–8 requests on the branch. The repair on read (A6 subtask 3) is deferred to W10 or W11. In review by 7 Oct, it counts as break work and Hanchen's W9 drops to F1 alone. ✅ **PR #54 merged 2026-10-06** (`2343a19`), approved by Jingwei: items and drafts in one statement, one visibility rule for both drafts routes (`items_hiding_peers` / `visible_records_by_item`), and a banner when the drafts don't load. Yi's review was dismissed after his two points were fixed; development PostgreSQL databases need a reset for the two indexes |
 | **12** | SCRUM-101 | E1 | 1.5u | Yi | **Moved from the break on 2026-10-02.** A disagreement between two distinct reviewers' verdicts opens a dispute automatically on SCRUM-99's record when the resolved policy says `open_dispute`, and only flags it under `manual_review`; opened by the platform, idempotent, reaching the adjudicator queue like a routed dispute. Calls SCRUM-51's comparison |
-| **13** | SCRUM-69 | I1 | 1.5u | Yi | **Moved from the break on 2026-10-05.** Repeatable runs and regression reporting: pass/fail per scenario, comparable across runs. Builds on SCRUM-68's harness (PR #39), so it starts after #39 merges or from its branch. W10's I3 and I4 measure on these runs |
+| **13** | SCRUM-69 | I1 | 1.5u | Yi | **Moved from the break on 2026-10-05.** Repeatable runs and regression reporting: pass/fail per scenario, comparable across runs. Builds on SCRUM-68's harness (PR #39, merged 2026-10-06), so it starts from `main`. W10's I3 and I4 measure on these runs |
 
 **Load by person** — counted W9 work only; each person carries 1.5–3.5 units.
 
 | Person | W9 work | Load (units) |
 | --- | --- | --- |
-| Hanchen | SCRUM-98, SCRUM-119 | 5 — 3 if SCRUM-119 is in review by 7 Oct |
+| Hanchen | SCRUM-98 (SCRUM-119 merged in the break) | 3 |
 | Jingwei | SCRUM-32, SCRUM-41, SCRUM-87 | 4 — over the range by his own choice (2026-10-05) |
 | Yi | SCRUM-101, SCRUM-69, SCRUM-85 | 3.5 |
 | Michael | SCRUM-53 | 3 |
@@ -492,10 +494,11 @@ board does not show separately. Board changes: `../sandbox/Break/jira/jira-W9-W1
 | Tim | SCRUM-89, SCRUM-91 | 2 |
 | Parth | SCRUM-51 (second slice) | 1.5 |
 
-**Carry-over, listed but not counted** (board of 2026-10-05): SCRUM-51's first slice, SCRUM-109 and SCRUM-52
-(Parth — no commits on his branch since 20 Sep); SCRUM-93 (Kanishka, PR #49 in review); SCRUM-115 (Tim);
-SCRUM-99 and 100 (Yi, PR #48 paused on issue #40); SCRUM-117 (Dishank); SCRUM-68 (Jingwei, PR #39); SCRUM-70
-(Hanchen, PR #51); SCRUM-86, the container. Done in the break: SCRUM-38, 110, 116 and 120.
+**Carry-over, listed but not counted** (board of 2026-10-06): SCRUM-51's first slice and SCRUM-52 (Parth, PR #53
+in review, changes requested; it conflicts with `main` in `annotation_service.py` since #54) and SCRUM-109
+(Parth); SCRUM-93 (Kanishka, PR #49 in review); SCRUM-115 (Tim, PR #56 in review); SCRUM-99 and 100 (Yi, PR #48
+paused on issue #40); SCRUM-70 (Hanchen, PR #51); SCRUM-86, the container. Done in the break: SCRUM-38, 68, 110,
+116, 117 and 120; SCRUM-119 and SCRUM-41 (W9) merged early, on 2026-10-06.
 
 **Why this order.** H2's per-item provenance pointers and H3's "incomplete provenance" check are W10 work,
 and both read F1's events, so F1 is built a week ahead of them. H4, F4 and the B1/B3 verification read

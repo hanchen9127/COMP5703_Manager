@@ -1,0 +1,17 @@
+fix(web): say when a task's saved drafts couldn't be loaded (SCRUM-119)
+
+From Jingwei's review of #54. The task shell reads every item's drafts in one
+request now, and a failed read left the items without them and said nothing.
+Before, one failed read hid one item's drafts; now it hides every item's, and
+each item reads as having no saved draft, so an annotator could take that as
+lost work and start again.
+
+fetchLiveTaskWorkspace still keeps the items, and marks the view
+draftsUnavailable. The shell then shows "Saved drafts couldn't be loaded.
+Items are shown without them." with a retry, unless a whole-page banner
+(signed out, not found, unreachable) is already showing.
+
+Tests check the mark on a failed and a successful read, and that the shell
+shows the message, keeps the tab's content, and retries.
+
+Story A6, SCRUM-119.

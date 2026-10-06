@@ -1,0 +1,21 @@
+refactor(api): one visibility rule for the per-item and batched reads (SCRUM-119)
+
+From Jingwei's review of #54. SCRUM-119 asks both drafts routes to apply the
+visibility rule through one AnnotationService helper, so a later change to it
+(SCRUM-87's, say) lands once. Only the role half was shared. "Has this caller
+answered the item" was written twice: should_hide_other_annotators read it
+through find_by_item_and_creator for one item, and visible_drafts_by_item
+through item_ids_answered_by for a task. The two agreed because they were
+written to, and the equivalence test only checked that on the seeded cases.
+
+items_hiding_peers now holds the rule, for one item or a whole task: the role
+checks once and one "has answered" query, so the batch still takes the same
+statements for any number of items. visible_records_by_item applies it to
+drafts or annotations; the batched read calls it for every item, and
+visible_to_caller, should_hide_other_annotators and assert_visible_to_caller
+for one. item_ids_answered_by is the rule's only reading of "has answered".
+
+Tests change the rule in one place and see both routes follow it, and the
+statement count is compared for 10 and 200 items, the sizes the ticket names.
+
+Story A6, SCRUM-119.

@@ -1,6 +1,6 @@
 # Manual test: a task's drafts in one request (SCRUM-119, story A6)
 
-**About 30 minutes.** This checks SCRUM-119 in the running app, on branch `CS57-Hanchen-scrum-119`:
+**About 35 minutes.** This checks SCRUM-119 in the running app, on branch `CS57-Hanchen-scrum-119`:
 
 - **one request:** opening a task's Items, Annotate or Review page reads drafts with one
   `GET /tasks/{id}/drafts`, and no `GET /task-items/{id}/drafts` per item;
@@ -10,7 +10,10 @@
 - **reviewers:** a reviewer's response holds every draft;
 - **history:** the history drawer still loads (its query now has an index);
 - **Yi's review (2026-10-06):** the batch lists an item's drafts in the per-item route's order, and an item
-  registered while the batch reads can't make it fail (Part 5).
+  registered while the batch reads can't make it fail (Part 5);
+- **Jingwei's review (2026-10-06):** when the drafts read fails, the page says so and offers a retry instead
+  of showing every item without a draft (Part 6). The visibility rule is now one helper for both routes; Part 2
+  is what checks it in the browser, so run Part 2 again after this change.
 
 What the automated tests prove, and what this walkthrough proves:
 
@@ -18,7 +21,9 @@ What the automated tests prove, and what this walkthrough proves:
   including an answer from before a reopen; that its statement count doesn't grow with the items; and that the
   shell and both tabs send one request and apply its result as before. Since Yi's review, they also prove that
   drafts with equal times come in one order on both routes, and that an item registered just before the
-  statement that reads drafts comes with its draft instead of a `500` (the test forces the timing).
+  statement that reads drafts comes with its draft instead of a `500` (the test forces the timing). Since
+  Jingwei's review, a change to the visibility rule made in one place reaches both routes, the statement count
+  is compared at 10 and 200 items, and the shell shows the "drafts couldn't be loaded" message on a failed read.
 - **This walkthrough** proves it in the browser: the requests the pages really send, and that the panel shows
   the same drafts it showed before. It cannot hit the intake race by hand, since the window is one statement
   wide, so Part 5 runs that test on PostgreSQL, where the race existed.
@@ -134,8 +139,22 @@ uv run pytest -q tests/test_task_drafts_read.py -k "same_moment or registered_du
 Remove-Item Env:DATABASE_URL
 ```
 
-Run the whole file the same way without `-k` if time allows (`12 passed`). CI runs it on PostgreSQL on every
+Run the whole file the same way without `-k` if time allows (`13 passed`). CI runs it on PostgreSQL on every
 push as well.
+
+## Part 6: Jingwei's review — when the drafts don't load
+
+Added 2026-10-06. Chrome's request blocking stands in for a failed drafts read: DevTools → **Network** → right-click
+any request → **Block request URL**, then edit the pattern in the **Network request blocking** panel (⋮ → More
+tools) to `*/api/v1/tasks/*/drafts`. It blocks only the batched read, not `/task-items/…/drafts`.
+
+| # | Who | Do | Expect |
+| --- | --- | --- | --- |
+| 6.1 | charlie (A) | Block `*/api/v1/tasks/*/drafts` as above. Reload `/tasks/T1/annotate` | An amber banner: **"Saved drafts couldn't be loaded. Items are shown without them."**, badge **Drafts not loaded**, a **Retry** button. The items are listed and the page works |
+| 6.2 | charlie | Open I1 | The panel shows no saved draft (expected while blocked), and the banner above still says why |
+| 6.3 | charlie | Untick the blocking pattern. Click **Retry** | The banner goes. Open I1: `charlie draft 2` (from 3.2) is back |
+| 6.4 | charlie | Reload with blocking off | No banner |
+| 6.5 | — | Turn request blocking off entirely before anything else | Otherwise every later page in this browser shows the banner |
 
 ## If something fails
 

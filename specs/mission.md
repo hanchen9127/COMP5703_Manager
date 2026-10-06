@@ -110,7 +110,7 @@ roadmap coverage. They stay `dropped` in `story_src.csv`. Only Hanchen reopens t
 The brief still lists findings, decision records, a technical report and a demonstration among its
 expected outcomes, so these appear under [Risks](#risks).
 
-## Progress Snapshot — Mid-semester Break (2026-10-05)
+## Progress Snapshot — Mid-semester Break (2026-10-06)
 
 **Basis.** Two views are kept apart (decided 2026-09-14):
 - **By epic follows `shared/story_src.csv`**, Hanchen's local, client-facing copy of the team's
@@ -126,18 +126,27 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 
 | Epic | Stories | Complete | In progress | Not started | Discarded |
 | --- | --- | --- | --- | --- | --- |
-| A — Trustworthy Foundations | 6 | A2, A3, A4 | — | A6 | A1, A5 |
+| A — Trustworthy Foundations | 6 | A2, A3, A4 | A6 | — | A1, A5 |
 | B — Setting Up Work | 8 | B1, B2, B3, B4, B5, B6, B7, B8 | — | — | — |
 | C — AI-Assisted First Pass | 5 | C1, C2, C3 | C5 | C4 | — |
 | D — Review & Cross-Validation | 9 | D4, D5, D6, D9 | D1, D2, D3, D7, D8 | — | — |
 | E — Disagreement & Dispute | 6 | E2 | E1, E3, E4, E6 | E5 | — |
-| F — Provenance & History | 5 | F3 | — | F1, F2, F4, F5 | — |
+| F — Provenance & History | 5 | F3 | F4 | F1, F2, F5 | — |
 | G — Roles, Permissions & Organisations | 5 | G1, G3, G4, G5 | G2 | — | — |
 | H — Release & Export | 6 | H5 | — | H1, H2, H3, H4, H6 | — |
 | I — Evaluation | 5 | — | I1, I2 | I3, I4, I5 | — |
-| J — Organisations & Dashboard | 4 | — | J3 | J1, J2, J4 | — |
+| J — Organisations & Dashboard | 4 | — | J2, J3 | J1, J4 | — |
 | K — Evidence & Handover | 4 | — | — | — | K1, K2, K3, K4 |
-| **Total** | **63** | **25** | **14** | **18** | **6** |
+| **Total** | **63** | **25** | **17** | **15** | **6** |
+
+**Synced on 2026-10-06** (board export of 21:24; the tracker as corrected the same day). A6, F4 and J2 are in
+progress: SCRUM-119 in review as PR #54, SCRUM-41 as PR #57 and SCRUM-89 In Progress. Both PRs merged later that
+day (#54 at 09:52 UTC, #57 at 11:05 UTC), after the export, so the next sync moves their tickets on. The tracker's
+Contribution Log was corrected by hand: missing *Defects closed*, *What changed* and *Story complete?* entries
+filled in, and *Story complete?* now marks the PR that finished each story's last ticket. The tracker had
+marked D8 complete with SCRUM-117; it no longer does, since SCRUM-52 and SCRUM-93 are still in review. The Client Report's per-member *Stories involved*
+counts every story a member logged a PR on, not only the ones they finished, and every story range now
+reaches B7, B8, D9 and A6.
 
 **Synced again on 2026-10-05.** D9 became complete when SCRUM-120 reached Done (PR #50, after SCRUM-110's
 PR #46); D3 is in progress since SCRUM-32 moved to In Progress, with its scope agreed the same day: a reviewer's
@@ -163,9 +172,10 @@ tickets in W9; G1 is complete in the tracker while SCRUM-52, which it shares wit
 moved to W9 ahead of the release work; story points set from subtasks, complexity and risk. Loads: the
 break 19.5, W9 18 on the board, W10 17.5, W11 7.
 
-**In review** (logged in the tracker, not merged, 2026-10-05): PR #39 (I1, SCRUM-68), #49 (D8, SCRUM-93) and
-#51 (I2, SCRUM-70). The tracker marks #49 *Review OK* although it has not merged — a record check for the
-weekly sync. #43 and #44 merged on 2026-10-01.
+**In review** (logged in the tracker, not merged, 2026-10-06): PR #49 (D8, SCRUM-93), #51 (I2, SCRUM-70), #53
+(D7 and D8, SCRUM-51 and 52) and #56 (J3, SCRUM-115); #48 (E3/E4, SCRUM-99/100) is a paused draft. Merged since
+the last sync: #52 (D8, SCRUM-117) on 2026-10-05; #39 (I1, SCRUM-68), #54 (A6) and #57 (F4) on 2026-10-06.
+#39 and #57 still have no reviewer in the tracker — a record check for the weekly sync.
 
 ### Defects (`info/issues.md`, code view)
 

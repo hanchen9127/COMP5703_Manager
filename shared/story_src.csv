@@ -49,7 +49,7 @@ A6,A,P1,BE/FE,A dataset-sized task opens without a wait,"As an annotator or revi
 2. The task shell reads it once. Annotate (task-annotation-workspace-with-real-data.tsx) and Review (task-workbench.tsx) reuse the shell's drafts instead of fetching again. Delete the unused use-hydrated-task-items.ts.
 3. Move the send-back repairs out of list_task_items_with_send_back_resolution (app/services/task_item_status_resolution.py:307) into the write paths that cause them, plus a one-off repair of existing rows. GET task-items and setup return stored statuses.
 4. Return backlog counts with the project's task list instead of one setup call per task (apps/hej-web/lib/project-data.ts:135), agreed with J2.
-5. Route tests as guards: the batched read runs the same number of statements for 10 and 200 items, and GET task-items and setup issue no INSERT, UPDATE or DELETE.",,,Hanchen Wang,SCRUM-119,added
+5. Route tests as guards: the batched read runs the same number of statements for 10 and 200 items, and GET task-items and setup issue no INSERT, UPDATE or DELETE.",,working,Hanchen Wang,SCRUM-119,added
 B1,B,P0,BE/FE,I can create a project to hold related work,"As a project manager, I want to create a project with a name, description and objective inside my organisation, because my work comes in programmes — the client's own example is an “Autonomous Driving” project holding several different annotation and evaluation tasks.","1. I can create a project and see it listed in my organisation.
 2. A project belongs to exactly one organisation and is visible only to that organisation's members.
 3. I can open a project and see the tasks inside it.",No open defects — the capability exists and works; it is listed because the workflow depends on it and because **J4** later extends it with lifecycle operations.,"1. Confirm POST /organizations/{org_id}/projects scopes the new project to the caller's organisation.
@@ -320,7 +320,7 @@ F4,F,P1,BE,History tells me who really did what,"As a project manager, I want th
 **Issue 22** (escalation entries duplicate their own summary as a change) — criterion 2 removes exactly this noise from the history view.","1. Set actor_kind from what actually happened — task_audit_log_query.py:255 hardcodes ""user"" even when the display name is System (issue 21).
 2. Stop escalation entries repeating their own summary as a change (issue 22).
 3. Let an item's history be filtered to human decisions only.
-4. Test that a system-generated entry is never attributed to a person.","21,22",,Jingwei Lin,"SCRUM-40, SCRUM-41",shipped
+4. Test that a system-generated entry is never attributed to a person.","21,22",working,Jingwei Lin,"SCRUM-40, SCRUM-41",shipped
 F5,F,P1,FE,I can see an item's whole story on one screen,"As a reviewer, I want to see an item's full timeline before I make a decision, because deciding without knowing that two people already disagreed about it is how bad decisions get made.","1. The item view shows its history in order: annotation, reviews, disputes, adjudication.
 2. Each entry shows who, when and what changed.
 3. I can reach the item's history from the review screen without losing my place.",No open defects — net-new; depends on **F1**.,"1. Show the item's timeline in order: annotation, reviews, disputes, adjudication.
@@ -460,7 +460,7 @@ J2,J,P2,FE,I can see how my project is going at a glance,"As a project manager, 
 2. Figures agree with the task and export screens (see B6).
 3. Deliberately limited in scope — the client asked that time not be spent making this comprehensive.",No open defects — net-new.,"1. Show project status and item counts by state.
 2. Reconcile the figures with the task and export screens (see B6).
-3. Keep it deliberately limited — the client asked that time not be spent making this comprehensive.",,,Tim Chung,SCRUM-89,shipped
+3. Keep it deliberately limited — the client asked that time not be spent making this comprehensive.",,working,Tim Chung,SCRUM-89,shipped
 J3,J,P2,BE/FE,I can invite and manage my team,"As an organisation administrator, I want to invite colleagues and manage their membership and roles, because I can't run governed review without the people who perform it.","1. I can invite a person, see pending invitations, and remove a member.
 2. I can assign and change a member's role.
 3. Role changes take effect on what that person can do (see G1).",**Issues 17 & 18** (invitations broken; pending list unreachable) — **G5** fixes the underlying flow; this story is the administrator-facing capability built on top of it and cannot be demonstrated until those are closed.,"1. Invite a person, list pending invitations, and remove a member.
