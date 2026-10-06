@@ -1,0 +1,18 @@
+perf(web): Annotate and Review refresh drafts in one request (SCRUM-119)
+
+Opening the Annotate or Review tab read every item's drafts again, one request
+per item, so the tabs show drafts saved since the shell loaded. The two tabs
+held the same effect, word for word.
+
+useTaskDraftsRefresh holds it once: on opening and whenever the shell's items
+change, one listDraftsForTask, each item's drafts applied as the shell applies
+them. Until it returns, and if it fails, the shell's items are used; an item
+the response leaves out is left as it was; a response after the tab has closed
+is ignored. Both tabs now call it, so they still refresh when opened, with the
+same data as before, in one request instead of one per item.
+
+Tests cover one request per refresh, a new read when the items change, the
+failed and partial reads, a late response after unmount, and no request for a
+task with no items.
+
+Story A6, SCRUM-119.

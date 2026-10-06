@@ -8,6 +8,11 @@ For admin (reviewer view), ann1 (answered every 200-task item) and ann3, a
 fresh annotator who answered nothing - the case where peers' drafts are hidden.
 
     .venv/Scripts/python <path>/sandbox-perf-equivalence.py --tasks '<seed json>'
+
+SCRUM-119's route, on one server running the branch (--base and --exp the same):
+    ... --route scrum119 --base http://127.0.0.1:8013/api/v1 --exp http://127.0.0.1:8013/api/v1
+compares GET /tasks/{id}/drafts with each item's GET /task-items/{id}/drafts, and checks
+that every item of the task is a key.
 """
 
 from __future__ import annotations
@@ -34,6 +39,7 @@ def main() -> None:
     ap.add_argument("--base", default="http://127.0.0.1:8011/api/v1")
     ap.add_argument("--exp", default="http://127.0.0.1:8012/api/v1")
     ap.add_argument("--tasks", required=True)
+    ap.add_argument("--route", choices=["prototype", "scrum119"], default="prototype")
     args = ap.parse_args()
     t = json.loads(args.tasks)
 
@@ -48,7 +54,13 @@ def main() -> None:
         for size in ("t10", "t50", "t200"):
             tid = t[size]
             items = httpx.get(f"{args.base}/tasks/{tid}/task-items", headers=h).json()
-            batch = httpx.get(f"{args.exp}/tasks/{tid}/drafts-batch", headers=h, timeout=60).json()
+            if args.route == "scrum119":
+                batch = httpx.get(f"{args.exp}/tasks/{tid}/drafts", headers=h, timeout=60).json()["drafts_by_item"]
+                if set(batch) != {it["id"] for it in items}:
+                    failures += 1
+                    print(f"  KEYS DIFFER {user} {size}: {len(batch)} keys for {len(items)} items")
+            else:
+                batch = httpx.get(f"{args.exp}/tasks/{tid}/drafts-batch", headers=h, timeout=60).json()
             hidden_somewhere = False
             for it in items:
                 one = httpx.get(f"{args.base}/task-items/{it['id']}/drafts", headers=h).json()["drafts"]

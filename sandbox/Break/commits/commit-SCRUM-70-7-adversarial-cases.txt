@@ -1,0 +1,22 @@
+test(eval): the adversarial categories, written and skipped until their surfaces land (SCRUM-70)
+
+EV-010 covered one of the brief's seven adversarial categories. The others
+need surfaces that don't exist yet, but what the platform owes in each is
+known now, and writing it down later means writing it after the code.
+
+EV-011 to EV-017 cover the rest, one case or more per category, on real
+records from evaluation/gold: a person's answer after a rejected AI pass; an
+ambiguous item an expert rejects; reviewers who disagree, in both orders; a
+guideline change; missing provenance; an unreviewed item; a superseded answer
+after a reopen. Each states its expected outcome and is skipped with every
+ticket and open decision it waits for, so whoever un-skips it knows what to
+check first. Where a case's steps run today, its skip reason was checked by
+running them: EV-011 is refused with 409, EV-013's first return decides, and
+EV-016's export leaves the unreviewed item out silently.
+
+EV-013 needs a second borderline record for its second order, so AG News
+record 0074 is copied verbatim into gold/ag_news.jsonl.
+
+`list --coverage` now reports all seven categories covered.
+
+Story I2, SCRUM-70.

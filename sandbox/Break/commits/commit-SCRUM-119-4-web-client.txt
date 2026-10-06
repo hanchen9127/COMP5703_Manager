@@ -1,0 +1,11 @@
+feat(web): client for the batched drafts read (SCRUM-119)
+
+The API now answers every item's drafts in one request, but the web had no
+way to call it.
+
+listDraftsForTask(taskId) calls GET /tasks/{id}/drafts and returns the
+response as it comes: each item of the task keyed to its drafts, typed as the
+existing ApiDraft so the drafts can go straight into applyApiDraftsToMockItem.
+A failure is passed through for the caller to handle, like the other reads.
+
+Story A6, SCRUM-119.

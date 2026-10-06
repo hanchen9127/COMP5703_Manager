@@ -1,0 +1,20 @@
+feat(api): read every item's drafts in one request (SCRUM-119)
+
+The task shell reads each item's drafts with its own request, and the Annotate
+and Review tabs read them all again, so a 200-item page sends 400 requests and
+the API runs about 14 statements for each.
+
+GET /tasks/{task_id}/drafts answers for the whole task: every item of the task
+is a key, holding exactly what GET /task-items/{id}/drafts returns for it, and
+an empty list when there is no draft the caller may see. It loads the task's
+items and drafts in two queries, with their authors, and filters them with
+visible_drafts_by_item, so it takes the same 11 statements for 3 items as for
+30. The per-item route is unchanged.
+
+The tests check, item for item, that the batch matches the per-item route for
+a reviewer and for both annotators, including an item answered before a reopen,
+where the earlier answer must not count. They count statements for 3 and 30
+items, and cover an unknown task (404), another organisation's member and a
+removed member (403), and a token with no user (401).
+
+Story A6, SCRUM-119.

@@ -1,0 +1,25 @@
+\set ON_ERROR_STOP on
+\timing on
+-- 500 copies of every task and everything under it; ids and their foreign keys get the suffix _r<g>.
+CREATE TEMP TABLE g AS SELECT generate_series(1,500) AS g;
+INSERT INTO tasks SELECT t.id||'_r'||g, project_id, title, task_instruction, task_class, task_type, annotation_type, annotation_mode, required_annotators, ai_provider, ai_model, label_schema_ref, label_schema, text_span_label_options, label_definitions, review_policy_ref, dispute_policy_ref, export_policy_ref, status, created_at, created_by, updated_at, updated_by FROM tasks t, g;
+INSERT INTO data_pointers SELECT d.id||'_r'||g, task_id||'_r'||g, location_ref, access_policy_ref, source_version_ref, created_at FROM data_pointers d, g;
+INSERT INTO task_items SELECT i.id||'_r'||g, task_id||'_r'||g, data_pointer_id||'_r'||g, external_item_ref||'_r'||g, status, payload_preview, created_at, updated_at FROM task_items i, g;
+INSERT INTO annotations SELECT a.id||'_r'||g, base_annotation_id||'_r'||g, task_item_id||'_r'||g, annotation_type, annotation_data, confidence, version, is_latest, created_by, author_role, model_provider, model_name, model_version, confirmed_by, created_at, confirmed_at, updated_at, submitted_at, superseded_by_reopen_id||'_r'||g, superseded_at, derived_from_annotation_id||'_r'||g, derivation, is_authoritative, authoritative_by, authoritative_at, authoritative_cause FROM annotations a, g;
+INSERT INTO drafts SELECT d.id||'_r'||g, task_item_id||'_r'||g, annotation_id||'_r'||g, status, draft_data, annotation_type, revision_notes, created_by, created_at, submitted_at, updated_at FROM drafts d, g;
+INSERT INTO reviews SELECT r.id||'_r'||g, annotation_id||'_r'||g, task_item_id||'_r'||g, reviewed_by, review_status, verdict, justification, feedback, review_score, review_notes, created_at, updated_at FROM reviews r, g;
+INSERT INTO task_item_escalations SELECT e.id||'_r'||g, task_id||'_r'||g, task_item_id||'_r'||g, target, assignee_ref, note, routed_by, routed_at, status, decision, decision_note, decided_by, decided_at, payload_preview_snap, created_at, updated_at FROM task_item_escalations e, g;
+INSERT INTO audit_logs SELECT a.id + 10000*g, resource_type, resource_id||'_r'||g, operation, operator_id, old_values, new_values, description, created_at, project_id, task_id||'_r'||g FROM audit_logs a, g;
+-- One large task: the 200-item task's items, drafts and answers 100 times over (20,000 items).
+INSERT INTO tasks SELECT 'task_big', project_id, 'Big task', task_instruction, task_class, task_type, annotation_type, annotation_mode, required_annotators, ai_provider, ai_model, label_schema_ref, label_schema, text_span_label_options, label_definitions, review_policy_ref, dispute_policy_ref, export_policy_ref, status, created_at, created_by, updated_at, updated_by FROM tasks WHERE id='task_f6d71692c0d6';
+CREATE TEMP TABLE b AS SELECT generate_series(1,100) AS b;
+INSERT INTO data_pointers SELECT d.id||'_b'||b, 'task_big', location_ref, access_policy_ref, source_version_ref, created_at FROM data_pointers d, b WHERE d.task_id='task_f6d71692c0d6';
+INSERT INTO task_items SELECT i.id||'_b'||b, 'task_big', data_pointer_id||'_b'||b, external_item_ref||'_b'||b, status, payload_preview, created_at, updated_at FROM task_items i, b WHERE i.task_id='task_f6d71692c0d6';
+INSERT INTO annotations SELECT a.id||'_b'||b, base_annotation_id||'_b'||b, task_item_id||'_b'||b, annotation_type, annotation_data, confidence, version, is_latest, created_by, author_role, model_provider, model_name, model_version, confirmed_by, created_at, confirmed_at, updated_at, submitted_at, superseded_by_reopen_id||'_b'||b, superseded_at, derived_from_annotation_id||'_b'||b, derivation, is_authoritative, authoritative_by, authoritative_at, authoritative_cause FROM (SELECT a.* FROM annotations a JOIN task_items i ON i.id=a.task_item_id WHERE i.task_id='task_f6d71692c0d6') a, b;
+INSERT INTO drafts SELECT d.id||'_b'||b, task_item_id||'_b'||b, annotation_id||'_b'||b, status, draft_data, annotation_type, revision_notes, created_by, created_at, submitted_at, updated_at FROM (SELECT d.* FROM drafts d JOIN task_items i ON i.id=d.task_item_id WHERE i.task_id='task_f6d71692c0d6') d, b;
+-- 20,000 more people across both organisations, each with two role rows.
+INSERT INTO users (id, email, password_hash, name, account_status, two_factor_enabled, created_at) SELECT 1000+n, 'scale'||n||'@example.com', 'x', 'Scale '||n, 'active', false, now() FROM generate_series(1,20000) n;
+INSERT INTO organization_users (id, user_id, organization_id, status, created_at) SELECT 1000+n, 1000+n, 1+(n%2), 'active', now() FROM generate_series(1,20000) n;
+INSERT INTO role_assignments (id, user_id, organization_id, project_id, role_key, role_name, scope, granted_at, granted_by, created_at) SELECT 1000+2*n+k, 1000+n, 1+(n%2), NULL, CASE k WHEN 0 THEN 'annotator' ELSE 'reviewer' END, 'r', 'organization', now(), 1, now() FROM generate_series(1,20000) n, generate_series(0,1) k;
+ANALYZE;
+SELECT relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC LIMIT 10;

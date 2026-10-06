@@ -1,0 +1,19 @@
+refactor(api): decide peer visibility once per task (SCRUM-119)
+
+Whether an annotator may see a peer's drafts is decided per item: load the
+item, its task and project, check the caller's REVIEW and ANNOTATE roles, then
+look for the caller's current answer. A read across a task's 200 items would
+repeat all of it 200 times, though only the last check differs by item.
+
+`role_hides_peers` is the part that is the same for every item of a task, and
+`should_hide_other_annotators` now calls it, with its signature and behaviour
+unchanged. `item_ids_answered_by` finds the items of a task the caller has a
+current answer on in one query, beside `find_by_item_and_creator` and with its
+rule: an answer from a reopened item's earlier round does not count.
+
+`visible_drafts_by_item` uses both to give, for each item, the drafts
+`visible_to_caller` returns for it. Nothing calls it yet; the batched read in
+the next commit does, with tests that it matches the per-item read item for
+item. `visible_to_caller` and `assert_visible_to_caller` are unchanged.
+
+Story A6, SCRUM-119.

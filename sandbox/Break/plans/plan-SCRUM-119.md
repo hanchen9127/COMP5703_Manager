@@ -9,6 +9,22 @@ A6 has no feature spec yet; its criteria are in `shared/story_src.csv`.
 
 **Branch:** `CS57-Hanchen-scrum-119` from `origin/main` (`df7c05a` or later).
 
+## Re-check on `main` at `bbb93cb` (2026-10-05, after #46, #47, #50)
+
+The plan holds: every function, route and call site it names is still there (web line numbers moved by
+one). `find_by_item_and_creator` still reads `is_latest`, which after a reopen (#46) correctly leaves the
+superseded round out, so the batch's "has a current answer" query uses the same filter. Three PRs opened
+since overlap its files:
+
+| Open PR | Overlap | Effect on this plan |
+| --- | --- | --- |
+| #53 (Parth, SCRUM-51/52) | `annotation_service.py`: edits the bodies of `visible_to_caller` and `assert_visible_to_caller`, adding `reviewer_correction_hidden`. `api_surfaces.md`: work queues, reopen, disputes | Commit 1 leaves those two bodies untouched and refactors only `should_hide_other_annotators`. The new rule checks `derivation == "reviewer_correction"`, which drafts don't have, so it never hides a draft and the batch stays equivalent. The batch's docstring says to keep it in step with `visible_to_caller`, and the equivalence tests catch drift. The `api_surfaces.md` sections differ; *Work queues* ends three lines above *Task Items*, so a small conflict is possible |
+| #52 (Dishank) | `live-task-workspace.ts`: adds the annotate queue to the `Promise.all` and flags the mapped items, next to commit 5's loop | Small textual conflict for whichever merges second |
+| #49 (Kanishka, SCRUM-93, changes requested) | Both wrappers' imports, `task-workbench.tsx` elsewhere, and `lib/api/task-items.ts`, where it removes `ApiWorkQueueItem` just below `listDraftsForTaskItem` | Commit 4 adds `listDraftsForTask` above `listDraftsForTaskItem`; commit 6 touches the wrappers' imports. Small conflicts for whichever merges second |
+
+**Order:** backend commits 1–3 first (no real overlap), then the web commits. Before the web commits, check
+whether #49 and #52 have merged; if so, merge `main` in first so the conflicts are resolved here.
+
 ## Goal and target
 
 A 200-item Annotate page sends 404 requests and takes 2,969 ms, because the task shell fetches drafts once
@@ -16,7 +32,7 @@ per item and Annotate and Review fetch them all again. One batched read replaces
 
 | Page @200 items (perf bed) | Today | Target | Prototype |
 | --- | --- | --- | --- |
-| Annotate, Review, Items | 2,969 / 2,979 / 1,585 ms | under 300 ms | 222 / 233 / 235 ms |
+| Annotate, Review, Items | 2,969 / 2,979 / 1,585 ms | under 1 s (300 ms until 2026-10-06) | 222 / 233 / 235 ms |
 | API requests per page | 404 / 405 / 204 | at most 10 | 5 (6 with the tabs' refresh) |
 
 ## Ground rules (keep everyone else's work untouched)
@@ -28,7 +44,7 @@ per item and Annotate and Review fetch them all again. One batched read replaces
 | Every item's list is exactly what the per-item route returns | Same `DraftRead` shape, same order (`created_at` desc), so `applyApiDraftsToMockItem` and every component below it stay as they are |
 | Do not touch `task-item-workspace-sheet.tsx` or `task-workspace-data.ts` | The hottest files (SCRUM-117 now, SCRUM-32 and 87 in W9) |
 | `api_surfaces.md`: only the read-independence table and *Task Items* | PR #48 edits *Disputes and Arbitration* |
-| No schema change | Outside W9's day-one migration order |
+| Schema: two additive indexes only (commit 7, decided 2026-10-06) | No column changes. The indexes append one step to `migrate_db_schema()`, so they take a place in W9's migration order; tell the team at the break meeting |
 | Out of scope | The send-back repair on reads (A6 subtask 3), project page counts (A6 subtask 4), deleting `use-hydrated-task-items.ts` |
 
 ## Commits
@@ -103,6 +119,25 @@ opened, so they show the same fresh data as today.
 
 Test `hooks/use-task-drafts-refresh.test.ts`: one call per refresh, drafts applied, a late response after unmount ignored.
 
+### 7. `perf(api): index the audit log and role assignments for growing data (SCRUM-119)`
+
+Added 2026-10-06 by Hanchen's decision. Evidence in `plan-db-indexes.md`.
+- `app/models/db_models.py`: `Index("ix_audit_logs_task_created", "task_id", "created_at")` on `AuditLogDB` and
+  `Index("ix_role_assignments_user_org", "user_id", "organization_id")` on `RoleAssignmentDB`, in `__table_args__`.
+- `app/core/database.py`: `CREATE INDEX IF NOT EXISTS` for both in `migrate_db_schema()`, for existing SQLite dev
+  databases (`create_all` does not add indexes to existing tables).
+- Tests: `create_all` produces both named indexes; an existing SQLite database gains them through
+  `migrate_db_schema()`.
+- PR note: PostgreSQL dev databases are reset as usual; a persistent deployment would run the same statements
+  `CONCURRENTLY`, and no migration tool exists for it yet.
+
+### 8. Dropped (2026-10-06)
+
+Planned after the measurement, then dropped by Hanchen's decision the same day: SCRUM-119 opens its PR with the
+pages 5 to 6 times faster and 7 requests instead of 405; the page target is lowered to 1 s, which they meet. What holds
+the pages at about 570 ms is #52's annotate queue request (about 520 ms), which belongs to the work queue
+service, and is recorded as a limitation.
+
 ## Validation
 
 1. `npm run check` (`test:api`, `test:web`, `typecheck:web`, `lint:web`). The suite on PostgreSQL as well (CI does both).
@@ -134,5 +169,8 @@ Test `hooks/use-task-drafts-refresh.test.ts`: one call per refresh, drafts appli
 
 ## After merge
 
+- **No follow-up ticket** (decided 2026-10-06, for the workload ahead). The PR records as limitations: the annotate
+  queue request (about 520 ms on a 200-item task) that the page waits for, and `GET task-items`'s missing tie-break.
+  This plan's dropped commit 8 keeps a design for the first, should anyone take it up.
 - Log the PR in the tracker. A6 stays `working`: subtasks 3 to 5 remain.
 - Mark SCRUM-119 Done, and update `roadmap.md` (W9 group 11, or the break if it was in review by 7 Oct).

@@ -1,0 +1,20 @@
+perf(web): the task shell reads drafts in one request (SCRUM-119)
+
+Opening a task waited for its items, then sent one drafts request per item:
+200 requests for a 200-item task, after a round trip that only served to learn
+the item ids.
+
+The shell now reads every item's drafts with listDraftsForTask, in the same
+Promise.all as the items, the project and the annotate queue, and applies each
+item's list as before. If the read fails, the items stay without drafts, as one
+item's failed read left that item before. An item the response doesn't cover,
+one registered between the two reads, is left as it was: a missing key means
+not loaded, not none.
+
+The mapping-failure test passed only because the drafts mock returned nothing
+and reading it threw; an unknown task_type never failed, since the seed task's
+type is the fallback. It now fails the mapping with a project body the mapper
+can't read. New tests check that the per-item read is never called and that an
+uncovered item is left alone.
+
+Story A6, SCRUM-119.

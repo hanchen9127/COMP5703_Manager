@@ -50,14 +50,26 @@ class Browser:
         self.client.close()
 
 
-FRONTEND = "main"  # main: origin/main. dedupe: tabs reuse the shell's drafts. batch: one drafts-batch call.
+FRONTEND = "main"  # main: origin/main df7c05a. dedupe: tabs reuse the shell's drafts. batch: one drafts-batch call.
+# main-now: origin/main 9f4ec6c (#52 adds the annotate queue to the shell's batch).
+# scrum119: SCRUM-119's branch: drafts read once, alongside the items; each tab refreshes with one call.
 
 
 def task_shell(b: Browser, task_id: str):
     """TaskWorkspaceClientShell: hydration + enrichment, started together."""
     enrichment = b.pool.submit(b.get, f"/tasks/{task_id}/setup")
     task = b.get(f"/tasks/{task_id}")
-    items, _ = b.all([f"/tasks/{task_id}/task-items", f"/projects/{task['project_id']}"])
+    if FRONTEND == "scrum119":
+        items, _, _, _ = b.all([f"/tasks/{task_id}/task-items", f"/projects/{task['project_id']}",
+                                f"/tasks/{task_id}/work-queue/annotate?include_unavailable=true",
+                                f"/tasks/{task_id}/drafts"])
+        enrichment.result()
+        return items
+    if FRONTEND == "main-now":
+        items, _, _ = b.all([f"/tasks/{task_id}/task-items", f"/projects/{task['project_id']}",
+                             f"/tasks/{task_id}/work-queue/annotate?include_unavailable=true"])
+    else:
+        items, _ = b.all([f"/tasks/{task_id}/task-items", f"/projects/{task['project_id']}"])
     if FRONTEND == "batch":
         b.get(f"/tasks/{task_id}/drafts-batch")
     else:
@@ -66,10 +78,12 @@ def task_shell(b: Browser, task_id: str):
     return items
 
 
-def tab_drafts(b: Browser, items):
+def tab_drafts(b: Browser, items, task_id: str = ""):
     """The Annotate and Review tabs' own second fetch, gone unless FRONTEND is main."""
-    if FRONTEND == "main":
+    if FRONTEND in ("main", "main-now"):
         b.all([f"/task-items/{i['id']}/drafts" for i in items])
+    elif FRONTEND == "scrum119":
+        b.get(f"/tasks/{task_id}/drafts")
 
 
 def page_items(b, task_id):
@@ -77,13 +91,13 @@ def page_items(b, task_id):
 
 
 def page_annotate(b, task_id):
-    tab_drafts(b, task_shell(b, task_id))
+    tab_drafts(b, task_shell(b, task_id), task_id)
 
 
 def page_review(b, task_id):
     items = task_shell(b, task_id)
     audit = b.pool.submit(b.get, f"/tasks/{task_id}/audit-logs?limit=8")
-    tab_drafts(b, items)
+    tab_drafts(b, items, task_id)
     audit.result()
 
 
@@ -102,7 +116,7 @@ def main() -> None:
     ap.add_argument("--reps", type=int, default=5)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--only", default="", help="comma-separated scenario names")
-    ap.add_argument("--frontend", choices=["main", "dedupe", "batch"], default="main")
+    ap.add_argument("--frontend", choices=["main", "dedupe", "batch", "main-now", "scrum119"], default="main")
     args = ap.parse_args()
     global FRONTEND
     FRONTEND = args.frontend

@@ -102,11 +102,12 @@ Built to change nothing around it: one new route beside the old one, the same re
 # Both routes apply the visibility rule through one AnnotationService helper, so an annotator who has not answered an item sees no peer's draft on it from either route, and a later rule change (for example SCRUM-87's) lands once.
 # GET /task-items/{id}/drafts is unchanged. The panel's save path and the evaluation harness keep calling it.
 # The task shell makes one batched call instead of one per item. The Annotate and Review tabs keep refreshing drafts when opened, now with one batched call, so they show the same fresh data as today. applyApiDraftsToMockItem, the item panel and every component below it are not changed.
-# Target, on the same measurement: Annotate, Review and Items on a 200-item task under 300 ms, with no more than 10 API requests. The prototype measured 222 ms and 5 requests without the tabs' refresh; the refresh adds one call of about 25 ms.
+# Target, on the same measurement: Annotate, Review and Items on a 200-item task under 1 s, with no more than 10 API requests. (Lowered from 300 ms on 2026-10-06: #52 added an annotate queue request of about 520 ms to the page's path. Measured on the branch: 546–586 ms, 6–8 requests.) The prototype measured 222 ms and 5 requests without the tabs' refresh; the refresh adds one call of about 25 ms.
 # A route test proves the batched read returns exactly what the per-item route returns, for a reviewer, an annotator who answered and one who has not, and runs the same number of statements for 10 and 200 items.
 # api_surfaces.md documents the new route (Docs Sync).
+# Two indexes for growing data (added 2026-10-06): audit_logs (task_id, created_at) and role_assignments (user_id, organization_id), declared in the models and added to existing SQLite dev databases by migrate_db_schema(). On a copy scaled to 543k audit rows and 40k role rows, the history and repair queries go from 16 ms to under 0.25 ms and the permission check, run about three times per request, from 1.8 ms to 0.04 ms. Additive only: it takes a place in W9's migration order.
 
-Not in scope: the send-back repair on GET task-items (A6 subtask 3), the project page counts (A6 subtask 4), deleting the unused use-hydrated-task-items.ts.
+Not in scope: the send-back repair on GET task-items (A6 subtask 3), the project page counts (A6 subtask 4), deleting the unused use-hydrated-task-items.ts, other indexes (task_items (task_id, status), dropping indexes that duplicate primary keys).
 
 Collaboration:
 - SCRUM-87 (C4, W9) may change who sees which drafts: it changes the shared helper, and this route follows.

@@ -1,0 +1,20 @@
+fix(api): read a task's items and drafts in one statement, in one order (SCRUM-119)
+
+Two points from Yi's review of #54.
+
+The batched read took the task's item ids in one query and their drafts in a
+second, then filed each draft under its item. Dataset intake adds an item and
+its placeholder draft together, so an item registered between the two reads
+on PostgreSQL brought a draft for an item the first read never saw: a
+KeyError, so a 500. Items and drafts now come from one outer join, so both
+are read from one snapshot; an item without drafts still appears, empty.
+
+Both reads sorted drafts by time alone, so drafts with equal times had no
+fixed order, and the batch could list them differently from the per-item
+route it promises to match. Both now break the tie by draft id.
+
+Tests register an item and its draft just before the statement that reads
+drafts, which raised the KeyError before this change, and give one item's
+drafts equal times, which both routes now list in the same order.
+
+Story A6, SCRUM-119.

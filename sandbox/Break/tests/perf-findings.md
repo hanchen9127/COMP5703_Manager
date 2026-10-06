@@ -101,6 +101,34 @@ Admin shows the same pattern (Annotate @200: 2,477 → 55 ms, −98%). Requests 
 Absolute numbers depend on the machine: a native Linux PostgreSQL has cheaper round trips. The ratios hold
 because the cost is statement count, not statement speed.
 
+## Result: SCRUM-119 (measured 2026-10-06)
+
+Same bed, same seed, 5 measured reps plus a warm-up. Before: current `origin/main` `9f4ec6c` (after #52, whose
+shell also requests the annotate queue). After: the branch at `a7c3cdd`. Raw data in `perf/scrum119/`; runner
+`../scripts/sandbox-perf-scrum119.sh`, load modes `main-now` and `scrum119`.
+
+| Page @200 items | Before | After | Requests |
+| --- | --- | --- | --- |
+| Items (ann1 / admin) | 1,994 / 1,691 ms | 546 / 557 ms | 205 → 6 |
+| Annotate (ann1 / admin) | 3,390 / 2,847 ms | 571 / 571 ms | 405 → 7 |
+| Review (ann1 / admin) | 3,392 / 2,881 ms | 574 / 586 ms | 406 → 8 |
+| Project, 8 tasks | 256 ms | 260 ms | 13 → 13 |
+
+- **The drafts read is done:** one `GET /tasks/{id}/drafts`, 25 ms and 12 statements, where there were 400
+  requests of about 47 ms. Requests per page meet the target (at most 10).
+- **The original 300 ms target is missed; the target was lowered to 1 s on 2026-10-06, and is met.** The cause is a request added after the plan: #52's
+  `GET /tasks/{id}/work-queue/annotate?include_unavailable=true` takes **517 ms** (548 ms measured alone, so not
+  contention) and sits on the shell's critical path. Next are `task-items` and `setup`, about 210 ms each, the
+  send-back repair (A6 subtask 3). Without the queue request the critical path is about 230 ms, the prototype's.
+- **Why the queue is slow:** 475 of its 517 ms is SQL. Six grouped queries with `IN (…200 ids…)` take 40–90 ms
+  each as recorded, though the same query runs in about 1 ms in `psql`, so the cost is on the client side of
+  each call. Also 80 per-item `drafts` queries (an N+1). Owner: the work queue service (SCRUM-93, SCRUM-117).
+- **Equivalence on real data** (`sandbox-perf-equivalence.py --route scrum119`, admin, ann1, ann3 on all three
+  tasks): every item's batch list equals its per-item read, and every item is a key. ann3, who answered nothing,
+  sees 200 drafts on the 200-item task where admin and ann1 see 620. The one reported difference is the order of
+  `GET task-items` between two calls: items imported together share `created_at`, and the list has no tie-break,
+  so their order can change between reloads. Not SCRUM-119's; recorded as a limitation in its PR.
+
 ## Limits
 
 - One user at a time. Contention (H5) and concurrent users (H4) are not measured.

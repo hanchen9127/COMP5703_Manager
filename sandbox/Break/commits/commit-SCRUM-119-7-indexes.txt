@@ -1,0 +1,23 @@
+perf(api): index the audit log and role assignments for growing data (SCRUM-119)
+
+Two queries scan their whole table, and both tables grow. A task's history is
+read by task and newest first, from an audit log every action appends to, and
+the permission check reads a user's roles in an organisation about three times
+per request. On a copy of the perf data scaled to 543k audit rows and 40k role
+rows, the history queries took 16 ms each by parallel scan and the permission
+check 1.8 ms.
+
+audit_logs (task_id, created_at) and role_assignments (user_id,
+organization_id) bring them to 0.04-0.24 ms and 0.04 ms. The audit index also
+serves the send-back repair's lookups, which filter by operation as well, and
+sorts the history without a sort step. Both are declared in the models, so a
+new database has them, and migrate_db_schema adds them to an existing SQLite
+development database, which create_all does not; it runs before the step that
+stops early on a database without tasks. PostgreSQL development databases are
+reset as for any model change.
+
+Tests check the named indexes and that each query can use its index on both
+backends, that an existing SQLite database gains them and a second run
+changes nothing, and that a table too old for its index is left alone.
+
+Story A6, SCRUM-119.

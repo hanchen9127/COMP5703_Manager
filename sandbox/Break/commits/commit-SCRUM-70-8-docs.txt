@@ -1,0 +1,19 @@
+docs(eval): the case template, categories, gold records and the skip rule (SCRUM-70)
+
+The README still described the casebook before SCRUM-70: free-form
+categories, items as text only, no reopen step, an exit status that knew
+nothing of skips, and no way to write a case ahead of its surface.
+
+The README now lists the categories and what each covers, explains gold
+records, adds reopen to the steps, and gives the rules for a case written
+before its surface exists: it is checked in full but not run, its reason
+names every ticket and open decision it waits for, it never asserts today's
+wrong behaviour, and whoever lands the surface un-skips it. A table lists the
+planned steps and outcome keys, with what each waits for. The regression
+category carries the ticket's rule that each bug fixed brings its case.
+
+ADR 006 gains an amendment recording these four additions, and what they
+mean: coverage counts written cases, not passing ones, and a skip proves
+nothing.
+
+Story I2, SCRUM-70.

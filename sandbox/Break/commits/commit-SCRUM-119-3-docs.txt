@@ -1,0 +1,11 @@
+docs: document the batched drafts read (SCRUM-119)
+
+GET /tasks/{task_id}/drafts returns another person's work, so it belongs in
+the table of reads the annotator independence rule covers, and the task items
+surface should say it exists and that the per-item route stays.
+
+The table gains its row: for each item, what the per-item route returns, with
+the rule decided per item. Task Items gains the response's shape and when to
+use which route.
+
+Story A6, SCRUM-119.
