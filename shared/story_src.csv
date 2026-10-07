@@ -49,7 +49,7 @@ A6,A,P1,BE/FE,A dataset-sized task opens without a wait,"As an annotator or revi
 2. The task shell reads it once. Annotate (task-annotation-workspace-with-real-data.tsx) and Review (task-workbench.tsx) reuse the shell's drafts instead of fetching again. Delete the unused use-hydrated-task-items.ts.
 3. Move the send-back repairs out of list_task_items_with_send_back_resolution (app/services/task_item_status_resolution.py:307) into the write paths that cause them, plus a one-off repair of existing rows. GET task-items and setup return stored statuses.
 4. Return backlog counts with the project's task list instead of one setup call per task (apps/hej-web/lib/project-data.ts:135), agreed with J2.
-5. Route tests as guards: the batched read runs the same number of statements for 10 and 200 items, and GET task-items and setup issue no INSERT, UPDATE or DELETE.",,working,Hanchen Wang,SCRUM-119,added
+5. Route tests as guards: the batched read runs the same number of statements for 10 and 200 items, and GET task-items and setup issue no INSERT, UPDATE or DELETE.",,working,Hanchen Wang,"SCRUM-119, SCRUM-121",added
 B1,B,P0,BE/FE,I can create a project to hold related work,"As a project manager, I want to create a project with a name, description and objective inside my organisation, because my work comes in programmes — the client's own example is an “Autonomous Driving” project holding several different annotation and evaluation tasks.","1. I can create a project and see it listed in my organisation.
 2. A project belongs to exactly one organisation and is visible only to that organisation's members.
 3. I can open a project and see the tasks inside it.",No open defects — the capability exists and works; it is listed because the workflow depends on it and because **J4** later extends it with lifecycle operations.,"1. Confirm POST /organizations/{org_id}/projects scopes the new project to the caller's organisation.
@@ -149,7 +149,7 @@ C4,C,P1,BE/FE,I can choose whether the AI annotates first,"As a project manager,
 **Client answer, 2026-09-21** — human-only and AI-first are the annotation production modes. Blind-then-reveal is an evaluation protocol for human judgement, not a third mode, so it moves to **I4**. The AI's first pass is separate from the human annotator count (see **D8**).","1. Add human-only and AI-first to task setup.
 2. Route AI-first items straight to review, recording the AI model as the version's author, requiring no human first pass, and outside the human annotator count — SCRUM-46 builds this path.
 3. Record the mode in force against each item so results from different modes can be compared later (see I4).
-4. Test that a human-only item never receives an AI suggestion, and that none appears in its API responses.",,,Jingwei Lin,SCRUM-87,shipped
+4. Test that a human-only item never receives an AI suggestion, and that none appears in its API responses.",,working,Jingwei Lin,SCRUM-87,shipped
 C5,C,P1,BE/FE,"I can record why I decided, not just what I decided","As a reviewer working on a judgement task, I want to record my reasoning alongside my verdict, because the client's stated purpose for collecting human judgement is capturing how people reason — not harvesting yes/no answers.","1. Judgement tasks capture a structured justification alongside the verdict, not an optional comment box.
 2. My reasoning is retrievable later, attached to the item and distinct from the verdict itself.
 3. Reasoning is carried into the export with the decision it explains.","No open defects — net-new. Client examples of what this must capture: why an AI answer is wrong, why one answer is preferred, how a person broke the problem down.
@@ -211,7 +211,7 @@ D7,D,P1,BE,A defined share of items gets independently double-checked,"As a proj
 **Client answer R2-7 (2026-09-24)** — cross-review supplies the second approval rather than stacking on it, and sampled cross-review is a gate, not a post-hoc audit. The AI first pass is never an approval or a reviewer slot, and never becomes canonical without human review.","1. Sample the cross-review percentage set in B2 and place those items in a second-review queue that excludes the first reviewer.
 2. Hide the first reviewer's decision from the second until the second is recorded.
 3. Report per task how many items were double-reviewed and how often the two reviewers agreed.
-4. Depends on D8's queues — there is no queue to place an item in yet. It no longer depends on an assignee: by the decision of 2026-09-17 there is none.",,working,Parth,SCRUM-51,shipped
+4. Depends on D8's queues — there is no queue to place an item in yet. It no longer depends on an assignee: by the decision of 2026-09-17 there is none.",,done,Parth,SCRUM-51,shipped
 D8,D,P0,BE/FE,"I can find the work I am able to do, and take it","As an annotator, I want to open the platform and see the items I can work on right now, because otherwise there is no answer to “what should I do next” — and as a project manager I want the queue itself to route work by role and by how many people an item still needs, rather than handing items out to named people one by one.","1. I can see the items I am able to work on, filtered to what my role allows, and open one directly from the list.
 2. An item leaves the annotate queue once it has as many human submissions as its task requires, so I never start work that can no longer be submitted. The AI's first pass is not one of them. On an AI-assisted task, an item the AI has annotated goes straight to review and is not offered for annotation; where the AI run failed, people annotate it.
 3. A reviewer is never offered an item they annotated themselves. Each submission is reviewed on its own, one reviewer may review every submission on an item, and a second approval of a submission never goes back to its first approver — independence is a property of the queue, not of who was assigned.
@@ -231,7 +231,7 @@ This is a prerequisite the rest of the epic quietly assumes. **D7** samples a sh
 6. Show how many people are working an item and how many have submitted.
 7. Record who took and who submitted each item in its history.
 8. Decide the review queue per submission, and finalise an item only once every required submission is in and approved.
-9. Hand work returned or rejected in review back to its annotator.",,working,"Kanishka Kathait, Parth, Hanchen Wang, Jingwei Lin, Dishank Aswal","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
+9. Hand work returned or rejected in review back to its annotator.",,done,"Kanishka Kathait, Parth, Hanchen Wang, Jingwei Lin, Dishank Aswal","SCRUM-48, SCRUM-52, SCRUM-93, SCRUM-113, SCRUM-114, SCRUM-116, SCRUM-117",shipped
 D9,D,P1,BE/FE,The project owner can deliberately reopen a finalised item,"As a project owner, I want to reopen a finalised item when its answer needs to be redone, keeping the old answer in its history, because finalised should mean locked against accidents — not locked against a deliberate, recorded correction.","1. Only the project owner can reopen a finalised item; the action requires a reason and is attributed.
 2. A reopened item returns to the normal open workflow for new annotation and review, not to the previous review step.
 3. The previous finalised answer remains in the item's history as a superseded version; it is never overwritten or deleted.
@@ -299,7 +299,7 @@ F1,F,P0,BE,I can ask how any label came to exist,"As a client, I want to open an
 3. Distinguish the human response — accepted, modified, rejected or replaced.
 4. Write events at the point of decision rather than reconstructing them afterwards.
 5. Name the actor and the time on every entry.
-6. Record when an annotator's resubmission adopts a reviewer's correction (D3, SCRUM-32), naming the correction it came from.",,,Hanchen Wang,SCRUM-98,shipped
+6. Record when an annotator's resubmission adopts a reviewer's correction (D3, SCRUM-32), naming the correction it came from.",,,Parth,SCRUM-98,shipped
 F2,F,P1,BE,Annotations remember which guideline and policy they followed,"As a project manager, I want to update annotation guidelines and review policies without rewriting history, because when I revise either mid-project I need to know which items were labelled or reviewed under the old one.","1. Updating a guideline, a source or a review policy creates a new version rather than replacing the current one.
 2. Every annotation records the guideline and source version in force when it was made, and every item records the policy version that governed it.
 3. I can see which items were annotated or reviewed under a superseded version.","No open defects — net-new. There is no versioning of any kind today, which is also what makes the “superseded version” release check in **H3** impossible to build until this exists.
@@ -417,7 +417,7 @@ I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality le
 2. Cover annotation, review, cross-validation, dispute and final judgement in a single run.
 3. State the expected outcome per scenario and report pass or fail.
 4. Keep results comparable across runs so a regression is visible.
-5. Reset to a clean seeded database between runs — depends on A3.",,working,"Jingwei Lin, Yi Geng","SCRUM-68, SCRUM-69",shipped
+5. Reset to a clean seeded database between runs — depends on A3.",,working,"Jingwei Lin, Hanchen Wang","SCRUM-68, SCRUM-69",shipped
 I2,I,P0,GOV,The platform is tested against cases designed to break it,"As a quality lead, I want a casebook of deliberately difficult cases, because a system demonstrated on easy items proves nothing about the ones that matter.","1. The casebook covers, at minimum: a confidently wrong AI suggestion; a genuinely ambiguous item; reviewers who disagree with no guideline resolution; a guideline that changes after annotation; missing provenance; an unreviewed item reaching a proposed release; a release containing a superseded item.
 2. Each case has a stated expected outcome and runs through I1.
 3. The casebook grows toward the 40–60 cases the brief specifies.",No open defects — net-new. These adversarial categories are taken directly from the brief.,"1. Write the adversarial categories the brief names, starting with a confidently wrong AI suggestion.
@@ -466,7 +466,7 @@ J3,J,P2,BE/FE,I can invite and manage my team,"As an organisation administrator,
 3. Role changes take effect on what that person can do (see G1).",**Issues 17 & 18** (invitations broken; pending list unreachable) — **G5** fixes the underlying flow; this story is the administrator-facing capability built on top of it and cannot be demonstrated until those are closed.,"1. Invite a person, list pending invitations, and remove a member.
 2. Assign and change a member's role.
 3. Make a role change take effect on what that person can actually do (see G1).
-4. Cannot be demonstrated until G5 fixes the invitation flow (issue 17) and the pending-invitation listing (issue 18).","17,18",working,Tim Chung,"SCRUM-90, SCRUM-115",shipped
+4. Cannot be demonstrated until G5 fixes the invitation flow (issue 17) and the pending-invitation listing (issue 18).","17,18",done,Tim Chung,"SCRUM-90, SCRUM-115",shipped
 J4,J,P2,BE/FE,I can maintain a project after creating it,"As a project manager, I want to rename a project, update its policy or team, and archive it when finished, because a project I can only create and never adjust doesn't survive contact with real work.","1. I can rename a project and update its description, policy, team and storage settings.
 2. I can archive a completed project; archived projects are read-only but still viewable.
 3. Changes are recorded in the project's history.","No open defects — net-new. Client's own list: rename, update, update policy, update team settings, update storage location, archive.","1. Rename a project and update its description, policy, team and storage settings.

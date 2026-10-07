@@ -266,6 +266,10 @@ board and the tracker.
   on completed stories: B1 (Tim, SCRUM-91), B3 (Yi, SCRUM-85). Kept, although they hold no ticket: A3
   and C1 (Michael), who delivered logged PRs. Not added: Parth to G1 — SCRUM-52's G1 part was already
   complete, and his open work on it is D8 and E3.
+
+  **Hand change, 2026-10-07** (approved by Hanchen), by the same reasoning: F1 `Hanchen Wang, Parth` → `Parth`.
+  The board moved SCRUM-98 from Hanchen to Parth that day, and Hanchen holds no F1 ticket and delivered none of
+  it. Only that cell changed, checked against a copy taken first.
 - **`scrum`** (decided 2026-09-16): add a board ticket when its `Jira.csv` description links the story —
   "Related to user story X" or "Story \*X\*". Additions only: a ticket is never removed automatically,
   because the CSV also carries links the board descriptions do not state (SCRUM-81, 82 and 84 for A2–A4,
