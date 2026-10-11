@@ -110,7 +110,7 @@ roadmap coverage. They stay `dropped` in `story_src.csv`. Only Hanchen reopens t
 The brief still lists findings, decision records, a technical report and a demonstration among its
 expected outcomes, so these appear under [Risks](#risks).
 
-## Progress Snapshot — Mid-semester Break (2026-10-07)
+## Progress Snapshot — W9 (2026-10-09)
 
 **Basis.** Two views are kept apart (decided 2026-09-14):
 - **By epic follows `shared/story_src.csv`**, Hanchen's local, client-facing copy of the team's
@@ -133,11 +133,17 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 | E — Disagreement & Dispute | 6 | E2 | E1, E3, E4, E6 | E5 | — |
 | F — Provenance & History | 5 | F3 | F4 | F1, F2, F5 | — |
 | G — Roles, Permissions & Organisations | 5 | G1, G3, G4, G5 | G2 | — | — |
-| H — Release & Export | 6 | H5 | — | H1, H2, H3, H4, H6 | — |
+| H — Release & Export | 6 | H5 | H1, H4 | H2, H3, H6 | — |
 | I — Evaluation | 5 | — | I1, I2 | I3, I4, I5 | — |
 | J — Organisations & Dashboard | 4 | J3 | J2 | J1, J4 | — |
 | K — Evidence & Handover | 4 | — | — | — | K1, K2, K3, K4 |
-| **Total** | **63** | **28** | **15** | **14** | **6** |
+| **Total** | **63** | **28** | **17** | **12** | **6** |
+
+**Synced on 2026-10-09** (board export of 01:03). SCRUM-85 is Done after PR #61 merged (`891fc4b`): B3's
+result-shape check on submit, and D8 subtask 2's web half, the required-annotators count. B3 was already
+complete in the records, so only its `allocated_to` changed: Jingwei was added beside Yi, the ticket's earlier
+assignee. H1 and H4 are in progress: SCRUM-102 and SCRUM-37 moved to In Progress. On the board, F5 went to Yi
+and I4 to Jingwei, and SCRUM-99 and 100 moved from the break sprint to W9.
 
 **Synced on 2026-10-07** (board export of 23:35). D7, D8 and J3 became complete: SCRUM-51, 52, 93 and 115 are
 Done after PRs #53, #49 and #56 merged. J3 is complete by the board rule although #56's tracker row still awaits its
