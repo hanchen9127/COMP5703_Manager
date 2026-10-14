@@ -1,0 +1,2 @@
+I'm working on scrum-37 and For H4 / issue #4, could you please confirm the authority rule for a multi-annotator item where all required submissions are approved and there is no adjudication.
+My current implementation selects the earliest submitted approved answer as the single authoritative export value, while retaining every other approved answer as provenance/history. Is “earliest submitted answer wins” the intended rule, or should these items instead have no authoritative answer until adjudication explicitly selects one?

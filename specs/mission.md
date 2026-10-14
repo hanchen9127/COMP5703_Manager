@@ -110,7 +110,7 @@ roadmap coverage. They stay `dropped` in `story_src.csv`. Only Hanchen reopens t
 The brief still lists findings, decision records, a technical report and a demonstration among its
 expected outcomes, so these appear under [Risks](#risks).
 
-## Progress Snapshot — W9 (2026-10-09)
+## Progress Snapshot — W9 (2026-10-14)
 
 **Basis.** Two views are kept apart (decided 2026-09-14):
 - **By epic follows `shared/story_src.csv`**, Hanchen's local, client-facing copy of the team's
@@ -128,16 +128,31 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 | --- | --- | --- | --- | --- | --- |
 | A — Trustworthy Foundations | 6 | A2, A3, A4 | A6 | — | A1, A5 |
 | B — Setting Up Work | 8 | B1, B2, B3, B4, B5, B6, B7, B8 | — | — | — |
-| C — AI-Assisted First Pass | 5 | C1, C2, C3 | C4, C5 | — | — |
-| D — Review & Cross-Validation | 9 | D4, D5, D6, D7, D8, D9 | D1, D2, D3 | — | — |
-| E — Disagreement & Dispute | 6 | E2 | E1, E3, E4, E6 | E5 | — |
-| F — Provenance & History | 5 | F3 | F4 | F1, F2, F5 | — |
+| C — AI-Assisted First Pass | 5 | C1, C2, C3, C4, C5 | — | — | — |
+| D — Review & Cross-Validation | 9 | D1, D2, D4, D5, D6, D7, D8, D9 | D3 | — | — |
+| E — Disagreement & Dispute | 6 | E1, E2, E3, E4, E6 | — | E5 | — |
+| F — Provenance & History | 5 | F3, F4 | F1, F2 | F5 | — |
 | G — Roles, Permissions & Organisations | 5 | G1, G3, G4, G5 | G2 | — | — |
 | H — Release & Export | 6 | H5 | H1, H4 | H2, H3, H6 | — |
-| I — Evaluation | 5 | — | I1, I2 | I3, I4, I5 | — |
+| I — Evaluation | 5 | I1, I2 | — | I3, I4, I5 | — |
 | J — Organisations & Dashboard | 4 | J3 | J2 | J1, J4 | — |
 | K — Evidence & Handover | 4 | — | — | — | K1, K2, K3, K4 |
-| **Total** | **63** | **28** | **17** | **12** | **6** |
+| **Total** | **63** | **39** | **8** | **10** | **6** |
+
+**Synced on 2026-10-14** (board export of 18:45). F4 and I2 became complete: SCRUM-40 is Done after PR #68 (2026-10-13) and SCRUM-71 after PR #71 (2026-10-14, `f6f8eb0`, approved by Hanchen; 57 cases, 48 running); I2 is now Hanchen's and Jingwei's. SCRUM-123 (A3) merged as PR #67 (2026-10-14) but is still In Review on the board. SCRUM-98 (F1, Parth) is In Review as PR #70. SCRUM-45 (J4) and SCRUM-73 (I4) lost their assignee (Jingwei) and are unassigned for W10. The W10 sprint is named "W10 Gate releases, prove them". **SCRUM-122 (E2, Yi, PR #69):** the team decided on 2026-10-14 that a reviewer's Return or Reject on an AI first pass goes to a person (no AI retry), that an expert's dispute Reject keeps `main`'s rule (no replacement; a single answer ends `unresolved`), that AI-assisted tasks have exactly one annotator, and that an expert's Return goes to the author or to a new annotator with an optional context cutoff; #69 is in its fourth review round, one fix left. E2 stays complete in the records while SCRUM-122 is open.
+
+**Synced on 2026-10-13** (board export of 22:48). C5, D1, D2, E1, E6 and I1 became complete: SCRUM-49 and SCRUM-86 are Done, SCRUM-109 after PR #60 (2026-10-13), SCRUM-103 after PR #64 (2026-10-12), and SCRUM-69 and 70 after PRs #62 and #51 (2026-10-12). SCRUM-37 (H4, PR #66), SCRUM-102 (H1, PR #65) and SCRUM-123 (A3, PR #67) are In Review; SCRUM-91 (B1) is In Progress. **SCRUM-124 was added** (D3 and E3, Dishank, W10): an expert can accept a reviewer's correction, the team's decision of 2026-10-12; E3 stays complete in the records, while its board status is in progress again. **SCRUM-123** (A3, Jingwei, PR #67) seeds the named test cast; A3 likewise stays complete. SCRUM-122 (E2, Yi) moved to W9 and is In Progress. The board's sprints were set to where the work was done (deliberate): SCRUM-32, 41, 87, 99 and 100 sit in the break sprint, SCRUM-68 in W8, SCRUM-27 in W7. SCRUM-72 (I3) went to Jingwei. SCRUM-74, 75, 88, 107 and 108 moved from W11 to W10 on the board.
+
+**Synced on 2026-10-12** (board export of 00:41). C4, E3 and E4 became complete: SCRUM-87 (PR #59, 2026-10-10)
+and SCRUM-99, 100 and 101 (PR #48, 2026-10-11) are Done, and SCRUM-52, shared with E3, already was. F1 and F2 are
+in progress: SCRUM-98 In Progress, SCRUM-53 In Review as PR #63. SCRUM-32 (D3) is Done after PR #58 (2026-10-09), yet
+D3 stays in progress in the records because its tracker row still awaits its review record. SCRUM-103 (E6) moved to
+W9 and is In Review. **SCRUM-122 was added** (E2, Yi, W10, 1.5 points): a returned or rejected AI first pass goes to a
+human annotator, the team's own design for issue #38 with no AI retry; E2 stays complete in the records, since a
+complete story is never downgraded automatically, so whether it goes back to working is Hanchen's call. **SCRUM-91
+(B1) grew to 1 point and SCRUM-40 (F4) to 1.5**: the Create project form offers only the first organisation, and the
+intake's audit description overflows its 255-character column on PostgreSQL (found by Yi in PR #48). B1 is likewise
+complete in the records while SCRUM-91 is To Do. SCRUM-121 (A6) has no assignee since Hanchen released it.
 
 **Synced on 2026-10-09** (board export of 01:03). SCRUM-85 is Done after PR #61 merged (`891fc4b`): B3's
 result-shape check on submit, and D8 subtask 2's web half, the required-annotators count. B3 was already

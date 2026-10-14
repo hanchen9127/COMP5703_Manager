@@ -10,6 +10,9 @@ limit. 2026-10-12 (earlier): fixed limit of 5 retries, then people. **2026-10-12
 Return or Reject on an AI answer hands the item to human annotators. This is "Human Rework", the first of the three
 workflows in issue #38, and it needs no new AI run.
 
+**As pasted on the board (export of 2026-10-12 00:41): SCRUM-122, sprint W10, assignee Yi, 1.5 points, story E2.**
+That differs from the draft below (W9, unassigned, 1u); the board is the source, and `roadmap.md` follows it.
+
 ## Board steps
 
 | Field | Value |
