@@ -4,8 +4,8 @@
 
 Usage (from apps/hej-api, with the API already running on :8000):
 
-    .venv/Scripts/python ../../../docs/plans/seed_test_roles.py
-    .venv/Scripts/python ../../../docs/plans/seed_test_roles.py --base http://localhost:8011/api/v1
+    .venv/Scripts/python ../../../docs/reviews/plans/seed_test_roles.py
+    .venv/Scripts/python ../../../docs/reviews/plans/seed_test_roles.py --base http://localhost:8011/api/v1
 
 Idempotent: users that already exist are left alone; the project/task/items are
 only created if the task is missing.

@@ -11,7 +11,7 @@ PR, because D7's sampling (SCRUM-51) and the adjudicator queue (SCRUM-52) build 
 **Read before this review:** `sandbox/W7/msg/message-kanishka-SCRUM-48-questions.md` (19/09),
 `message-SCRUM-48-client-answer.md` (17–18/09), `sandbox/W8/msg/message-client-qa-R1-corrections.md`
 (22/09), `message-pr29-followups-kanishka-yi.md` (23/09), `chat_from_Kanishka.md`, `info/client-question.md`
-questions 1 and R1-4, `shared/client-qa.md` R2-7 and R2-8, and the SCRUM-48 description in `Jira.csv`
+questions 1 and R1-4, `info/client-qa.md` R2-7 and R2-8, and the SCRUM-48 description in `Jira.csv`
 (24/09).
 
 **Recommendation: request changes, as Jingwei did.** Each of her blocking points holds in the code. Two

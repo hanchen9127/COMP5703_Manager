@@ -9,12 +9,12 @@ the affected rows in `../specs/roadmap.md` lose their ⏳ once an answer arrives
 answered; question 6 in the written Round 1 of 2026-09-21, which also answered seven further questions.
 **The written Round 2 of 2026-09-24 answered F1, F2, F3 and F5 and four new questions** — and **corrected
 question 4**: an expert's adjudication no longer goes back to a reviewer (R2-1). See the "Round 1" and
-"Round 2" sections at the end of this file (source: `../shared/client-qa.md`). Roadmap and mission were
+"Round 2" sections at the end of this file (source: `client-qa.md`). Roadmap and mission were
 updated for Round 1 on 2026-09-22 and for Round 2 on 2026-09-24, together with `../shared/story_src.csv` (new stories B7, B8, D9).
 
 **所有问题都已答复。**问题 1–7 已答复；问题 6 在 2026-09-21 的书面第一轮中答复，该轮还回答了另外七个问题。
 **2026-09-24 的书面第二轮答复了 F1、F2、F3、F5 和四个新问题**——并**修正了问题 4**：专家裁决不再退回 reviewer
-（R2-1）。见本文件末尾的“第一轮”和“第二轮”两节（来源：`../shared/client-qa.md`）。roadmap 和 mission 已于
+（R2-1）。见本文件末尾的“第一轮”和“第二轮”两节（来源：`client-qa.md`）。roadmap 和 mission 已于
 2026-09-22 按第一轮、2026-09-24 按第二轮更新，`../shared/story_src.csv` 同步更新（新增 story B7、B8、D9）。
 
 | # | Topic / 主题 | Priority / 优先级 | Needed by / 最晚答复 | Blocks / 阻塞 | Answer / 答复 |
@@ -520,13 +520,13 @@ The full quotation and its reading are in [question 1](#1-one-authoritative-anno
 
 ## Round 1 of 2026-09-21 — the client's written answers / 2026-09-21 第一轮：客户的书面答复
 
-Source: `../shared/client-qa.md`, exported on 2026-09-21 from the client's Q&A document (the link is in
+Source: `client-qa.md`, exported on 2026-09-21 from the client's Q&A document (the link is in
 `docs/.env` as `CLIENT_QA_URL`; never copy it into the repository). The document numbers its questions 1–7
 again, so they are **R1-1 to R1-7** here to avoid colliding with the questions above. **R1-6 is question 6
 above**, asked again and now answered. The quotations are the client's own words; *Reading* and *Effect*
 are ours.
 
-来源：`../shared/client-qa.md`，2026-09-21 从客户的问答文档导出（链接在 `docs/.env` 的 `CLIENT_QA_URL`，
+来源：`client-qa.md`，2026-09-21 从客户的问答文档导出（链接在 `docs/.env` 的 `CLIENT_QA_URL`，
 不得复制进仓库）。该文档的问题又从 1 到 7 编号，这里记为 **R1-1 至 R1-7**，以免与上文的问题混淆。
 **R1-6 就是上文的问题 6**，重新提出，现已答复。引文是客户的原话；*解读*和*影响*是我们的。
 
@@ -810,13 +810,13 @@ section above and `../sandbox/W8/msg/client-qa-round2.md`. / **F1、F2、F3、F5
 
 ## Round 2 of 2026-09-24 — the client's written answers / 2026-09-24 第二轮：客户的书面答复
 
-Source: `../shared/client-qa.md`, exported on 2026-09-24 from the same online document (the link is in
+Source: `client-qa.md`, exported on 2026-09-24 from the same online document (the link is in
 `docs/.env` as `CLIENT_QA_URL`). Round 2 was drafted on 2026-09-22 (`../sandbox/W8/msg/client-qa-round2.md`)
 and extended with questions 5–8 before it was sent. Questions are numbered **R2-1 to R2-8**. **R2-1 to R2-4
 are follow-ups F2, F1, F5 and F3** — all four are now answered. The quotations are the client's own words;
 *Reading* and *Effect* are ours.
 
-来源：`../shared/client-qa.md`，2026-09-24 从同一份在线文档导出（链接在 `docs/.env` 的 `CLIENT_QA_URL`）。
+来源：`client-qa.md`，2026-09-24 从同一份在线文档导出（链接在 `docs/.env` 的 `CLIENT_QA_URL`）。
 第二轮于 2026-09-22 拟稿（`../sandbox/W8/msg/client-qa-round2.md`），发送前又加了第 5–8 题。问题记为
 **R2-1 至 R2-8**。**R2-1 至 R2-4 就是追问 F2、F1、F5、F3**——四个现在都已答复。引文是客户原话；*解读*和
 *影响*是我们的。

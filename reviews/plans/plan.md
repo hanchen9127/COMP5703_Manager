@@ -662,7 +662,7 @@ One more worth fixing while you're here: **D6 subtask 1 in `current_user_stories
 call sites are `:177`, `:216`, `:250`. Update the story so the "am I done?" check lines up with the
 code you actually changed.
 
-> **Done 2026-09-13.** The story (now `docs/stories/current_user_stories.md`) cites the ownership
+> **Done 2026-09-13.** The story (then `docs/stories/current_user_stories.md`, removed on 2026-10-14; the backlog now lives in `docs/shared/story_src.csv`) cites the ownership
 > checks at `drafts.py:177`, `:205` and `:240` — where `verify_user_owns_draft` is called after the
 > `main` merge. The `:216` / `:250` above were the `verify_user_draft_access` call sites at `63bcfab`.
 

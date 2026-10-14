@@ -6,8 +6,8 @@ to count as break work (roadmap → Week boundaries), and ideally merged, becaus
 day-one schema order wait on it.
 
 - **Spec (the big picture):**
-  `../../../specs/2026-10-02-F3-separate-versioned-outputs/` — `requirements.md`, `plan.md`,
-  `validation.md`. This file is how it gets built, commit by commit, and does not repeat the
+  `2026-10-02-F3-separate-versioned-outputs/` — `requirements.md`, `plan.md`, `validation.md`, removed from `docs/specs/` in commit
+  `7af4e60` (2026-10-14); read them with `git show 7af4e60^:specs/2026-10-02-F3-separate-versioned-outputs/plan.md`. This file is how it gets built, commit by commit, and does not repeat the
   decisions.
 - **Ticket text:** `../jira/jira-break-descriptions.md` → SCRUM-38 (2026-10-01).
 - **Branch:** `CS57-Hanchen-scrum-38`, from `main` **after PR #46 merges**. #45 and #46 change the same

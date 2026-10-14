@@ -8,7 +8,7 @@ head (before `main` moved).
 
 **Read before this review:** SCRUM-112 on the board (7 criteria, "ADR first", "no new editors"); story B8;
 client answer R2-6 (`annotation_type` is the annotation surface, the subtype a starting template) and
-Hunter's R1 follow-up in `shared/client-qa.md` (a task = data + instructions/examples + output schema; no
+Hunter's R1 follow-up in `info/client-qa.md` (a task = data + instructions/examples + output schema; no
 hard-coded subtype needed). Earlier messages to Yi (`sandbox/W8/msg/message-pr29-followups-kanishka-yi.md`)
 are about SCRUM-62, not this ticket. Jingwei noted on #33 that #36's rename breaks 7 of #33's test files.
 

@@ -1,6 +1,6 @@
 # Story 改写稿 —— 客户第一轮书面答复（2026-09-21）
 
-2026-09-22。依据 `../../shared/client-qa.md` 和 `../../info/client-question.md` → Round 1（R1-2、R1-4、R1-7）。
+2026-09-22。依据 `../../../info/client-qa.md` 和 `../../../info/client-question.md` → Round 1（R1-2、R1-4、R1-7）。
 **已于 2026-09-22 由 Claude 直接写入 `story_src.csv`**（20 个单元格，其余不变）；本文件保留作改动记录。
 只列出改动的字段；没列出的字段没动。`status`、`allocated_to`、
 `scrum` 三列由 `tracking-sync` 管，这里不涉及。

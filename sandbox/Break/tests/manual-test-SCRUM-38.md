@@ -2,7 +2,7 @@
 
 **About 40 minutes.** This checks SCRUM-38 in the running app, on branch `CS57-Hanchen-scrum-38`
 (`f089ebb`, all nine commits). It covers `validation.md` §1 of the spec
-([`../../../specs/2026-10-02-F3-separate-versioned-outputs/validation.md`](../../../specs/2026-10-02-F3-separate-versioned-outputs/validation.md)):
+(`specs/2026-10-02-F3-separate-versioned-outputs/validation.md`, removed in commit `7af4e60` on 2026-10-14; `git show 7af4e60^:specs/2026-10-02-F3-separate-versioned-outputs/validation.md`):
 
 | Spec check | What it checks | Where |
 | --- | --- | --- |

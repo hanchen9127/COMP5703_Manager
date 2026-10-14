@@ -1,6 +1,6 @@
 # Messages — corrections from the client's written answers (2026-09-21)
 
-2026-09-22. Three short messages. Source: `../../../shared/client-qa.md`, R1-4 and R1-7.
+2026-09-22. Three short messages. Source: `../../../info/client-qa.md`, R1-4 and R1-7.
 
 ---
 

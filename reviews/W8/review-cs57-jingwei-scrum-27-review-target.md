@@ -9,7 +9,7 @@ comments yet.
 
 **Read before this review:** the SCRUM-27 description on the board (`Jira.csv`, 24/09, drafted in
 `sandbox/W8/jira/jira-W8-descriptions.md`), story D4, issue 3 in `info/issues.md`, S7 in
-`sandbox/W7/plans/defects-SCRUM-25.md`, and `shared/client-qa.md` Round 1 Q4 (several human judgements
+`sandbox/W7/plans/defects-SCRUM-25.md`, and `info/client-qa.md` Round 1 Q4 (several human judgements
 per item, 21/09). The only earlier message to Jingwei (`message-client-qa-R1-corrections.md`) was
 about SCRUM-20/50, not this ticket.
 

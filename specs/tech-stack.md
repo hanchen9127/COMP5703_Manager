@@ -160,15 +160,15 @@ From `hej/AGENTS.md`:
 | `docs/implementation/planning/` | Inherited milestone definition, risk register, demo scenarios, integration contract, team allocation |
 | `docs/team-discipline/` | `dev-workflow.md`, AI coding guidelines and project profile, `gov.md` templates (not yet adopted) |
 
-**`COMP5703_Capstone/docs/` — the team's working area (not in git):**
+**`COMP5703_Capstone/docs/` — the team's working area: Hanchen's own git repository (`hanchen9127/COMP5703_MyRepo`, since 2026-10-14), separate from the product repo `hej`; `.env` is ignored:**
 
 | Path | Role |
 | --- | --- |
 | `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` — the big picture for each story, written with the `feature-spec` skill |
-| `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 29 defects) and its fix plan (`fix-plan.md`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
+| `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 29 defects) and its fix plan (`fix-plan.md`), the client Q&A (`client-question.md`, with the client's own Round 1 and 2 answers exported in `client-qa.md`), and the course's progress submissions (`CS57_Group_Progress.pdf`, `CS57_Status_Checking_1.pdf`, `CS57_Status_Checking_2.pdf`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
 | `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots of the team's online Google Sheet and the Jira board, fetched by `tracking-sync download` or downloaded by hand, and possibly behind the live versions. `Jira.csv` is never edited, only replaced whole by a fresh export; `tracking-sync` refreshes the tracker's snapshot tabs and may append log rows, which Hanchen copies back into the online sheet (see *Tracking data*). `story_src.csv` is the backlog data behind `user-stories.html`, the client view: only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
-| `sandbox/` | Hanchen's personal files supporting work on his own branches — never uploaded to GitHub. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
-| `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`) |
+| `sandbox/` | Hanchen's personal files supporting work on his own branches — never pushed to the team's `hej` repository. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
+| `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`). `reviews/plans/` keeps the early plans and commit drafts that lived in `docs/plans/` until 2026-10-14 |
 
 ### Personal sandbox: `docs/sandbox/`
 
