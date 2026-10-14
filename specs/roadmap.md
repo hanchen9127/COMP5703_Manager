@@ -493,6 +493,7 @@ board does not show separately. Board changes: `../sandbox/Break/jira/jira-W9-W1
   SCRUM-99 and 100; SCRUM-68 moved to W8 and SCRUM-27 to W7. This table keeps them in W9 as planned and counted;
   the W9 sprint on the board now holds 15 issues.
 - **2026-10-14, board (export of 18:45) and GitHub:** SCRUM-40 (W10 group 7, PR #68, merged 2026-10-13) and SCRUM-71 (W10 group 5, PR #71, merged 2026-10-14, `f6f8eb0`) are Done and sit in the W9 sprint on the board, so both were delivered in W9; whether they count in W9's load is for the 14 Oct meeting. PR #67 (SCRUM-123) merged 2026-10-14; the ticket is still In Review on the board. SCRUM-98 (group 1) is In Review as PR #70. SCRUM-102 (group 5): Hanchen commented on #65 (2026-10-14: release deleted with its task, the Exports screen labels it a draft export, EV-017 not run); **Jingwei is its formal reviewer** and decides on changes, approval and merge. **SCRUM-122 (E2, Yi, PR #69)** is in its fourth review round with one fix left; decided 2026-10-14: a reviewer's Return or Reject on an AI first pass goes to a person, an expert's dispute Reject keeps `main`'s rule (no replacement), AI-assisted tasks have exactly one annotator, and an expert's Return goes to the author or to a new annotator with an optional context cutoff (built in #69, cases EV-102 to EV-104). Since #71, casebook ids are a plain sequence (next EV-105).
+- **2026-10-14, board (export of 20:02):** **SCRUM-122 is Done**: PR #69 merged at 08:48 UTC (`5ef9202`), approved by Hanchen in the fifth round. Development databases need `init_data.py --reset`.
 
 | Group | Ticket | Story | Load | Owner | Work |
 | --- | --- | --- | --- | --- | --- |
@@ -589,6 +590,8 @@ reviewer's correction, and an item's reconciliation then takes the accepted corr
 planned here for W11; not added to W10's load until the 14 Oct meeting confirms the move.
 
 **2026-10-14, board (export of 18:45):** the W10 sprint is named "W10 Gate releases, prove them". SCRUM-40 (group 7) and SCRUM-71 (group 5) were delivered in W9 (PRs #68 and #71). **SCRUM-45 (group 6, J4) and SCRUM-73 (group 4, I4) lost their assignee (Jingwei) and are unassigned**: owners to be picked at the 14 Oct meeting. SCRUM-72 (I3) stays Jingwei's.
+
+**2026-10-14, board (export of 20:02):** **SCRUM-118 (group 8, G2) is Yi's.** SCRUM-107 (E5, W11 here) checked against `main`: a dispute already closes only by an independent adjudication under every posture, and the posture can be chosen on the project create form; what is left (the Expert Gate's confirmation screen, the item's gate state, posture-specific tests and one casebook case per posture) waits for SCRUM-118.
 
 **Replanned 2026-10-01.** H2 and H3 are no longer at risk: F1 lands in W9, and H4 with it. I3 and I4 stay here
 although the board had them in W11 — evaluation is a primary deliverable, and their inputs (D7, C4, the

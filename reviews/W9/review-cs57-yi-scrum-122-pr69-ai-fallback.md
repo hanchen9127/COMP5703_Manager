@@ -398,3 +398,35 @@ Test the during-the-dispute path.
 ([issuecomment-6163471235](https://github.com/USYD-CS-Capstone/hej/pull/69#issuecomment-6163471235)), at
 `11e9d8b`: the rebase, the new cases and the queue fix confirmed. One fix left: a draft from the subject's author
 hides the slot from every new annotator. Approve once it is in. The earlier Request changes still stands on GitHub.
+
+---
+
+## Fifth look at `6418b8a` (2026-10-14)
+
+Yi pushed `6418b8a` ("draft visibility"), with no comment.
+
+- `working_user_ids_by_item` takes the replacement entitlements. For a `dispute_return` slot it counts only pending
+  drafts that claim the source, the same predicate as the claim at submission. The queue, the evidence concealment
+  and the context read all pass it.
+- `_assert_not_subject_author_of_new_annotator_return` refuses the subject's author with 409, in `create_draft` and
+  in the submission guard.
+- One new test: `test_subject_draft_does_not_hide_new_annotator_slot`.
+
+**Checked locally:**
+
+- A draft saved by Alice during the open dispute no longer hides the slot. After the Return, Bob's row reads
+  `can_annotate=True, fallback_action="dispute_return"` and his claim submits. Alice's queue is empty, and her new
+  draft is refused with 409.
+- The earlier probes still hold:
+  - A: a co-author's rework is accepted;
+  - B: no source evidence with no context;
+  - point 4: no leak to a multi-role account, and the reviewer-Reject slot is still offered and claimable.
+- Backend (SQLite): 1,800 passed, 18 skipped, 209 subtests.
+- Casebook: 52/52 passed with 8 skipped, all 60 unchanged against the baseline.
+- CI on `6418b8a` (push and pull_request): SQLite and PostgreSQL both green.
+
+**Verdict at `6418b8a`: Approve.** Every review point is closed.
+
+**Approved on GitHub 2026-10-14 by hanchen9127 and merged 08:48 UTC (`5ef9202`, merge commit)** at `6418b8a`, after
+CI passed on SQLite and PostgreSQL. After merge, every development database needs
+`uv run python -X utf8 init_data.py --reset`, for the new `annotation_disputes` columns and the seed changes.

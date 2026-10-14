@@ -98,7 +98,7 @@ Collaboration:
 - Everyone testing locally: the new logins replace annotator.test, reviewer2.test, owner.test, arbitrator.test and dispute.test.
 - SCRUM-103 (#64, merged): its dispute pages and links have cases to show.
 - SCRUM-51 (Parth, done): project D shows its sampling and blind second review.",,Jingwei Lin,,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,,,,,,,,,,{},,0|i0001b:vxi0i,"W9 Trace decisions, settle on",,0.5,,,,,10111,SCRUM-83,Trustworthy Foundations,In Progress,12/Oct/26 6:30 PM
-Review: a returned or rejected AI first pass goes to a human annotator,SCRUM-122,10214,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,12/Oct/26 12:14 AM,13/Oct/26 12:08 AM,13/Oct/26 4:26 PM,,,0,"{noformat}Related to user story E2
+Review: a returned or rejected AI first pass goes to a human annotator,SCRUM-122,10214,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,12/Oct/26 12:14 AM,14/Oct/26 7:57 PM,13/Oct/26 4:26 PM,14/Oct/26 7:53 PM,,0,"{noformat}Related to user story E2
 
 BACKEND, with a small change to the review panel. W9. Added 2026-10-11, rewritten 2026-10-12. Our design for client issue #38.
 
@@ -122,7 +122,7 @@ Collaboration:
 - SCRUM-98 (F1, W9): the hand-over is a decision point and an event. Write it through the same helper as other review actions.
 - SCRUM-70 (I2): EV-011.
 
-Definition of done: the above in the running app on an AI-assisted task, tests in the same change, docs for the changed state (workflow_states.md, api_surfaces.md), reviewed by someone other than the author.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxuz6,"W9 Trace decisions, settle on",,1.5,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",In Progress,12/Oct/26 1:45 PM
+Definition of done: the above in the running app on an AI-assisted task, tests in the same change, docs for the changed state (workflow_states.md, api_surfaces.md), reviewed by someone other than the author.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxuz6,"W9 Trace decisions, settle on",,1.5,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,14/Oct/26 7:53 PM
 "Performance: Reads never write, and the project page counts its tasks once",SCRUM-121,10213,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Lowest,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Oct/26 10:47 PM,12/Oct/26 1:42 PM,12/Oct/26 5:32 PM,,,0,"Discarded given time contraint.
 
 {noformat}Related to user story A6
@@ -199,7 +199,7 @@ Collaboration:
 - SCRUM-87 (C4, W9) may change who sees which drafts: it changes the shared helper, and this route follows.
 - SCRUM-32 (D3) and SCRUM-98 (F1), both W9, add what a reviewer sees on an item: build on this read rather than adding another per-item fetch.
 - PR #48 (Yi) also edits api_surfaces.md: text conflict only.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vy,Mid-semester Break,,2.0,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,06/Oct/26 10:12 PM
-Governance: Make the project's governance posture govern canonicalisation,SCRUM-118,10178,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,High,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,01/Oct/26 7:47 PM,13/Oct/26 11:17 PM,13/Oct/26 11:17 PM,,,0,"{noformat}Related to user story G2
+Governance: Make the project's governance posture govern canonicalisation,SCRUM-118,10178,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,High,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,01/Oct/26 7:47 PM,14/Oct/26 8:01 PM,14/Oct/26 7:54 PM,,,0,"{noformat}Related to user story G2
 
 BACKEND ONLY. W10. Split from SCRUM-107 on 2026-10-01: G2's remainder from the client's answers R2-7 and R2-8, folded into G2's criteria on 2026-09-24. SCRUM-107 (E5, W11) builds on this a week later.
 
@@ -450,7 +450,7 @@ Updated 2026-10-01. W11, the last sprint. Related issues: 14 (export tests not r
 
 Added 2026-10-01 (coverage of H5): H5's closing check has no other ticket — the export figures agree with the task screen once H1–H4 have reshaped the export path. The figures on the export list (item count, completed count) are checked against the task screen and the project overview (SCRUM-89) with one test, using is_task_item_export_eligible as the single rule.
 {noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000la:,"W10 Gate releases, prove them",,2.0,,,,,10045,SCRUM-17,Dataset Release & Export,To Do,22/Sep/26 12:15 AM
-Dispute: Make the escalation posture configurable and enforced,SCRUM-107,10135,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:15 AM,13/Oct/26 11:17 PM,01/Oct/26 7:56 PM,,,0,"{noformat}Related to user story E5
+Dispute: Make the escalation posture configurable and enforced,SCRUM-107,10135,Task,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:15 AM,13/Oct/26 11:17 PM,14/Oct/26 7:57 PM,,,0,"{noformat}Related to user story E5
 
 BACKEND AND FRONTEND. W11, the last sprint. Rewritten 2026-10-01: the Expert Gate and the AI invariant moved to SCRUM-118 (G2, W10); this ticket builds on it.
 
