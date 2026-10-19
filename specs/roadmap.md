@@ -87,12 +87,13 @@ shape at the start of the week, and its authors review each other's PRs. When se
 database schema in one week, they agree one migration order on day one and each appends its step to
 `migrate_db_schema()` in that order — there is no Alembic to reconcile them afterwards.
 
-**Coverage.** All 59 stories are accounted for. Stories added later — B7, B8, D9 (2026-09-24) and A6
+**Coverage.** All 63 stories are accounted for *(corrected 2026-10-14: this said 59, the count before B7, B8, D9 and A6 were added; `mission.md` → By epic totals 63)*. Stories added later — B7, B8, D9 (2026-09-24) and A6
 (2026-10-04) — are planned where their tickets sit:
 - 5 were complete before W6 — A2, A3, A4, B1 and B3. The board still has To Do tickets for two of
   them — SCRUM-91 (B1, organisation scoping) and SCRUM-85 (B3, annotation vs judgement result shape);
-  review them at the W7 meeting and either close them or bring the gap into W11 as carry-over;
-- 48 are in the weekly plans W6–W11;
+  review them at the W7 meeting and either close them or bring the gap into W11 as carry-over
+  *(2026-10-14: SCRUM-85 is Done after PR #61; SCRUM-91 is In Progress in W9)*;
+- 52 are in the weekly plans W6–W11 — the 48 counted on 2026-09-18 plus B7, B8, D9 and A6;
 - 6 are set aside — A1, A5 and K1–K4 (see `mission.md` → Stories Set Aside). Those are not planned,
   grouped or counted here.
 
@@ -593,6 +594,19 @@ planned here for W11; not added to W10's load until the 14 Oct meeting confirms 
 
 **2026-10-14, board (export of 20:02):** **SCRUM-118 (group 8, G2) is Yi's.** SCRUM-107 (E5, W11 here) checked against `main`: a dispute already closes only by an independent adjudication under every posture, and the posture can be chosen on the project create form; what is left (the Expert Gate's confirmation screen, the item's gate state, posture-specific tests and one casebook case per posture) waits for SCRUM-118.
 
+**2026-10-14, checked against the board export of 20:02 and `main` (`5ef9202`):** SCRUM-121 (group 9) is marked "Discarded given time constraint" in its description, with no assignee and 0 points, so this plan's 2u for it no longer stands. SCRUM-123 is still In Review on the board though PR #67 has merged. SCRUM-105 (H3), 104 (H2), 108 (H6), 73 (I4), 45 (J4), 74 and 75 (I5) and 88 (J1) have no assignee. Every To Do ticket on the board sits in the W10 sprint, so once W10 is done the board holds no W11 work. H5's export-figure check and the SCRUM-94 review follow-ups (CI, compose secrets, explicit-ID locking) had no ticket; **SCRUM-125** (Hanchen, 2026-10-14) now carries them at the end of W10, 2 points.
+
+**2026-10-19, checked against the board export of 18:13 and `main` (`606e2a1`):**
+- **Merged in W10:** the W9 carry-over F1 (#70), H4 (#66), H1 (#65), J2 (#74) and F2 (#63). Groups 1, 2, 4 and 8.
+  SCRUM-124 (D3, E3, #78). SCRUM-107 (E5, #81), planned for W11.
+- **Not merged:** groups 5 (I3), 6 (J4) and 7 (F5) are in review. SCRUM-74 (I5, #79) and SCRUM-88 (J1, #75), both
+  from W11, are in review. SCRUM-108 (H6, #86) is a draft stacked on #85. SCRUM-75 (I5's findings record,
+  Kanishka) and SCRUM-125 (Parth) are in progress.
+- **The board:** W10 holds 25.5 points: 13 Done, 6.5 In Review and 6 In Progress. SCRUM-104, 105 and 107 are
+  already Done.
+- **Every development PostgreSQL database needs `init_data.py --reset`.**
+- **CI cannot run** (GitHub Actions billing, since 16 Oct). See `mission.md` → Risks.
+
 **Replanned 2026-10-01.** H2 and H3 are no longer at risk: F1 lands in W9, and H4 with it. I3 and I4 stay here
 although the board had them in W11 — evaluation is a primary deliverable, and their inputs (D7, C4, the
 break's harness) are in place by now. F5 moves here from W11 because W11 is the last sprint and I5 there checks
@@ -601,15 +615,15 @@ ahead of E5, so the two can have different owners without editing the same path 
 
 | Group | Ticket | Story | Load | Work |
 | --- | --- | --- | --- | --- |
-| **1** | SCRUM-105 | H3 | 2u | Refuse a release with unreviewed items, incomplete provenance (F1), superseded versions (H4) or disputed items (E1's release exclusion), before it exists, naming the items and why. Replaces SCRUM-66 |
-| **2** | SCRUM-104 | H2 | 2u | Manifest: counts, versions, producer, per-item provenance pointers. The client's minimum (R2-5): release id/version, included items, the resolution selected per item, and task, guideline and policy versions. Written only after H3's gate passes. Replaces SCRUM-65 |
-| **3** | SCRUM-103 | E6 | 2u | Board: Jingwei. Real cases on the dispute and arbitration screens and the adjudicator queue (SCRUM-52, break); build or delete the three `notFound()` routes; the expert's Accept, Return and Reject on the arbitration view, on SCRUM-99's backend |
-| **4** | SCRUM-73 | I4 | 3u | Board: Jingwei (2026-10-09). **Board W11 → W10.** Accept, modify and override rates and time per item, by C4 mode; the blind-then-reveal protocol — a stored pre-reveal judgement, the suggestion withheld by the API until it exists, then reveal, keep or revise — to measure anchoring and automation bias (R1-2) |
-| **5** | SCRUM-71, 72 | I2, I3 | 3.5u | ✅ **SCRUM-71 delivered in W9: PR #71 merged 2026-10-14** (`f6f8eb0`), approved by Hanchen; 57 cases, 48 running; ids are a plain sequence. SCRUM-72 (I3, Jingwei) remains. **Board W11 → W10.** Casebook to 40 cases across the brief's adversarial categories (2u); reviewer agreement by an established coefficient, not raw match, on D7's second reviews, with AI suggestion quality against the gold fixtures (1.5u) |
-| **6** | SCRUM-45 | J4 | 1.5u | Board: Jingwei. Update a project, archive it as read-only — enforced on every write route — and record each change. Respects B4's lifecycle (PR #41) and H1's immutable releases (W9) |
-| **7** | SCRUM-106, SCRUM-40 | F5, F4 | 2.5u | ✅ **SCRUM-40 delivered in W9: PR #68 merged 2026-10-13**, approved by Parth; Done on the board. SCRUM-106 (Yi) remains. SCRUM-106 (1.5u), **board W11 → W10:** an item's whole timeline on one screen, from F1's events (W9), with supersession as F3 (break) and H4 (W9) record it. Final before I5 checks provenance in W11. **SCRUM-40 (1u), moved from W9 on 2026-10-05:** `actor_kind` from what actually happened, using the actor kinds F1 sets in W9 (issue 21), and a human-decisions-only filter — the actor the timeline shows. One owner for both, picked at the W10 meeting. **Board, 2026-10-09:** SCRUM-106 is Yi's and SCRUM-40 Jingwei's, so the group is split across two owners |
-| **8** | SCRUM-118 | G2 | 2u | **New, split from SCRUM-107 on 2026-10-01.** The Expert Gate — where `expert_gate_required` is set, an item is held after its approvals until an independent expert confirms it (R2-8) — and the invariant that no item canonicalises on AI output alone (R2-7), both in the backend. The flags exist on the project policy and in `resolve_for_task` but nothing enforces them. Uses SCRUM-52/99's independence helper |
-| **9** | SCRUM-121 | A6 | 2u | **Added 2026-10-06**, board: Hanchen. A6's criteria 3 and 4, which SCRUM-119 (PR #54) left out. `GET /tasks/{id}/task-items` and `/setup` return stored statuses and never write, with a route test that fails on any write: today every read repairs send-back statuses, 235 statements and 176 ms on a 200-item task against 6 and 11 ms without, and that repair is what flipped a reopened item (SCRUM-120). The repair moves into the writes that cause it, or is deleted if SCRUM-99 drops `expert_send_back`. The project page stops calling `getTaskSetup` once per task to count the backlog (245 → 109 ms measured) |
+| **1** | SCRUM-105 | H3 | 2u | ✅ **PR #83 merged 2026-10-19** (`28a26d0`), Michael, approved by Hanchen; ADR 020's three choices are the team's design. Refuse a release with unreviewed items, incomplete provenance (F1), superseded versions (H4) or disputed items (E1's release exclusion), before it exists, naming the items and why. Replaces SCRUM-66 |
+| **2** | SCRUM-104 | H2 | 2u | ✅ **PR #84 merged 2026-10-19** (`606e2a1`), Michael, approved by Hanchen, after #83. Manifest: counts, versions, producer, per-item provenance pointers. The client's minimum (R2-5): release id/version, included items, the resolution selected per item, and task, guideline and policy versions. Written only after H3's gate passes. Replaces SCRUM-65 |
+| **3** | SCRUM-103 | E6 | 2u | ✅ **Delivered in W9: PR #64 merged 2026-10-12.** Board: Jingwei. Real cases on the dispute and arbitration screens and the adjudicator queue (SCRUM-52, break); build or delete the three `notFound()` routes; the expert's Accept, Return and Reject on the arbitration view, on SCRUM-99's backend |
+| **4** | SCRUM-73 | I4 | 3u | ✅ **PR #73 merged 2026-10-16** (`6b29810`), Jingwei, approved by Hanchen; the guideline and policy version on each stage (client issue #72) follows in #77. Board: Jingwei (2026-10-09); unassigned since 2026-10-14. **Board W11 → W10.** **Clarified by the client in GitHub issue #72 (2026-10-14), built in full rather than parked (Hanchen, 2026-10-14):** the protocol runs on judgement tasks; `evaluation_protocol` (`none`, `blind_then_reveal`) is a setting separate from the production mode, never a third `annotation_mode`; each judgement keeps its pre-reveal judgement, the AI suggestion, its post-reveal judgement and whether the answer changed, with time, model, guideline and policy versions per stage, none overwriting another; the measures add whether a change improved or reduced correctness against gold and the time change between stages. As planned: Accept, modify and override rates and time per item, by C4 mode; the blind-then-reveal protocol — a stored pre-reveal judgement, the suggestion withheld by the API until it exists, then reveal, keep or revise — to measure anchoring and automation bias (R1-2) |
+| **5** | SCRUM-71, 72 | I2, I3 | 3.5u | 🟡 **SCRUM-72: PR #77 in review** (changes requested by Hanchen 18 Oct; fixes pushed 18 Oct, the #72 follow-up `0096d6e` on 19 Oct; DeepSeek Flash measured beside llama3). ✅ **SCRUM-71 delivered in W9: PR #71 merged 2026-10-14** (`f6f8eb0`), approved by Hanchen; 57 cases, 48 running; ids are a plain sequence. SCRUM-72 (I3, Jingwei) remains. **Board W11 → W10.** Casebook to 40 cases across the brief's adversarial categories (2u); reviewer agreement by an established coefficient, not raw match, on D7's second reviews, with AI suggestion quality against the gold fixtures (1.5u) |
+| **6** | SCRUM-45 | J4 | 1.5u | 🟡 **PR #80 in review** (Jingwei; reviewer Tim). Board: Jingwei. Update a project, archive it as read-only — enforced on every write route — and record each change. Respects B4's lifecycle (PR #41) and H1's immutable releases (W9) |
+| **7** | SCRUM-106, SCRUM-40 | F5, F4 | 2.5u | 🟡 **SCRUM-106: PR #85 in review** (Yi, opened 19 Oct): the item's history as a graph on the Finalized page. ✅ **SCRUM-40 delivered in W9: PR #68 merged 2026-10-13**, approved by Parth; Done on the board. SCRUM-106 (Yi) remains. SCRUM-106 (1.5u), **board W11 → W10:** an item's whole timeline on one screen, from F1's events (W9), with supersession as F3 (break) and H4 (W9) record it. Final before I5 checks provenance in W11. **SCRUM-40 (1u), moved from W9 on 2026-10-05:** `actor_kind` from what actually happened, using the actor kinds F1 sets in W9 (issue 21), and a human-decisions-only filter — the actor the timeline shows. One owner for both, picked at the W10 meeting. **Board, 2026-10-09:** SCRUM-106 is Yi's and SCRUM-40 Jingwei's, so the group is split across two owners |
+| **8** | SCRUM-118 | G2 | 2u | ✅ **PR #76 merged 2026-10-16** (`f88793c`), Yi, approved by Hanchen; the confirmation screen and the item's gate state moved in from SCRUM-107 (3 points). **New, split from SCRUM-107 on 2026-10-01.** The Expert Gate — where `expert_gate_required` is set, an item is held after its approvals until an independent expert confirms it (R2-8) — and the invariant that no item canonicalises on AI output alone (R2-7), both in the backend. The flags exist on the project policy and in `resolve_for_task` but nothing enforces them. Uses SCRUM-52/99's independence helper |
+| **9** | SCRUM-121 | A6 | 2u | — **Dropped for time** (ticket marked "Discarded given time constraint", 0 points, 2026-10-14). **Added 2026-10-06**, board: Hanchen. A6's criteria 3 and 4, which SCRUM-119 (PR #54) left out. `GET /tasks/{id}/task-items` and `/setup` return stored statuses and never write, with a route test that fails on any write: today every read repairs send-back statuses, 235 statements and 176 ms on a 200-item task against 6 and 11 ms without, and that repair is what flipped a reopened item (SCRUM-120). The repair moves into the writes that cause it, or is deleted if SCRUM-99 drops `expert_send_back`. The project page stops calling `getTaskSetup` once per task to count the backlog (245 → 109 ms measured) |
 
 **Why this order.** Everything here consumes W9 and the break: H3 and H2 need F1, F2 and H4; E6 needs the
 break's adjudicator queue and the disputes SCRUM-101 opens; I4 needs C4 and F3; I3 needs D7 and I1's
@@ -644,7 +658,7 @@ repeatable runs; F5 needs F1. One chain runs inside the week — H3 → H2 — s
 **The last sprint** (decided 2026-10-01): build work ends on 28 Oct, and the days to 1 Nov carry no
 sprint. So W11 also holds the integrity check that used to be W12's, and there is no week after it for
 carry-over. What W9–W10 leaves comes first at the W10 meeting, then P0, P1, P2. Groups are formed at that
-meeting. The board holds 7u; H5's 0.5u check has no ticket.
+meeting. The board holds 7u; H5's 0.5u check is in SCRUM-125 (W10) since 2026-10-14.
 
 | Story | Ticket | Priority | Est. load | Why here |
 | --- | --- | --- | --- | --- |

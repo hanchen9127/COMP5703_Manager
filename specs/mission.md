@@ -22,7 +22,7 @@ one of them.
 | Pillar | What it means | Where the platform stands (2026-09-13) |
 | --- | --- | --- |
 | **Govern** | Organisations, projects, roles, capability-based permissions, versioned guidelines | Capability checks exist for governed actions; roles are organisation-wide only; no guideline versioning |
-| **Assist** | AI suggestions behind a replaceable, typed model interface; human-only and AI-first modes, with blind-then-reveal as an evaluation protocol (client answer, 2026-09-21) | OpenAI-compatible multi-provider client merged; AI failure is now explicit; no queue; two modes, and the blind-then-reveal protocol is not built |
+| **Assist** | AI suggestions behind a replaceable, typed model interface; human-only and AI-first modes, with blind-then-reveal as an evaluation protocol for judgement tasks (client answer, 2026-09-21; clarified in GitHub issue #72, 2026-10-14: production mode and evaluation protocol are separate settings, and the pre-reveal judgement, AI suggestion and post-reveal judgement are kept as distinct stages) | OpenAI-compatible multi-provider client merged; AI failure is now explicit; no queue; two modes; the blind-then-reveal protocol is not built — SCRUM-73 (W10) builds it in full, decided 2026-10-14 rather than parking it as the client allowed |
 | **Record** | Source and guideline version, annotation attempts, and what the human did with the AI's suggestion — captured as it happens | Generic activity log only; reviewer corrections are not persisted |
 | **Adjudicate** | Review, disagreement and adjudication, keeping annotator label, reviewer decision and canonical judgement distinct | Draft ownership and approval self-checks in place; a fix for overwritable finalised results is in review; no work queue of any kind — and by the client's decision of 2026-09-17, no assignment either; dispute send-back merged. **Client answer R2-1 (2026-09-24):** an expert's adjudication is final — Accept, Return to the open workflow, or Reject — and an item may be resolved as ambiguous |
 | **Release** | Immutable releases with manifests, gated *before* the release exists | Export is a status computed on the fly; no artefact, manifest or gate |
@@ -110,7 +110,7 @@ roadmap coverage. They stay `dropped` in `story_src.csv`. Only Hanchen reopens t
 The brief still lists findings, decision records, a technical report and a demonstration among its
 expected outcomes, so these appear under [Risks](#risks).
 
-## Progress Snapshot — W9 (2026-10-14)
+## Progress Snapshot — W10 (2026-10-19)
 
 **Basis.** Two views are kept apart (decided 2026-09-14):
 - **By epic follows `shared/story_src.csv`**, Hanchen's local, client-facing copy of the team's
@@ -129,15 +129,52 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 | A — Trustworthy Foundations | 6 | A2, A3, A4 | A6 | — | A1, A5 |
 | B — Setting Up Work | 8 | B1, B2, B3, B4, B5, B6, B7, B8 | — | — | — |
 | C — AI-Assisted First Pass | 5 | C1, C2, C3, C4, C5 | — | — | — |
-| D — Review & Cross-Validation | 9 | D1, D2, D4, D5, D6, D7, D8, D9 | D3 | — | — |
-| E — Disagreement & Dispute | 6 | E1, E2, E3, E4, E6 | — | E5 | — |
-| F — Provenance & History | 5 | F3, F4 | F1, F2 | F5 | — |
-| G — Roles, Permissions & Organisations | 5 | G1, G3, G4, G5 | G2 | — | — |
-| H — Release & Export | 6 | H5 | H1, H4 | H2, H3, H6 | — |
-| I — Evaluation | 5 | I1, I2 | — | I3, I4, I5 | — |
-| J — Organisations & Dashboard | 4 | J3 | J2 | J1, J4 | — |
+| D — Review & Cross-Validation | 9 | D1, D2, D3, D4, D5, D6, D7, D8, D9 | — | — | — |
+| E — Disagreement & Dispute | 6 | E1, E2, E3, E4, E5, E6 | — | — | — |
+| F — Provenance & History | 5 | F1, F2, F3, F4 | F5 | — | — |
+| G — Roles, Permissions & Organisations | 5 | G1, G2, G3, G4, G5 | — | — | — |
+| H — Release & Export | 6 | H1, H2, H3, H4, H5 | H6 | — | — |
+| I — Evaluation | 5 | I1, I2, I4 | I3, I5 | — | — |
+| J — Organisations & Dashboard | 4 | J2, J3 | J1, J4 | — | — |
 | K — Evidence & Handover | 4 | — | — | — | K1, K2, K3, K4 |
-| **Total** | **63** | **39** | **8** | **10** | **6** |
+| **Total** | **63** | **50** | **7** | **0** | **6** |
+
+**Synced on 2026-10-19** (board export of 18:13). **Eleven stories became complete**, and none is left unstarted:
+- **16 Oct:**
+  - F1, SCRUM-98, PR #70 (`c8d9f13`);
+  - I4, SCRUM-73, PR #73 (`6b29810`), blind-then-reveal as client issue #72 asks;
+  - H4, SCRUM-37, PR #66 (`9744b90`);
+  - G2, SCRUM-118, PR #76 (`f88793c`), the Expert Gate;
+  - J2, SCRUM-89, PR #74 (`4ab7c91`).
+- **18 Oct:**
+  - H1, SCRUM-102, PR #65 (`7f261d6`);
+  - D3, SCRUM-124, PR #78 (`a58e5da`), where an expert accepts a reviewer's correction.
+- **19 Oct:**
+  - F2, SCRUM-53, PR #63 (`eab648e`);
+  - E5, SCRUM-107, PR #81 (`1191dc7`);
+  - H3, SCRUM-105, PR #83 (`28a26d0`), the release gate;
+  - H2, SCRUM-104, PR #84 (`606e2a1`), the manifest.
+
+  Hanchen approved #83 and #84 and merged them, after merging the current `main` into each locally and running
+  the suite and the casebook, because CI cannot run.
+
+**In progress:**
+- F5 (SCRUM-106, PR #85) and H6 (SCRUM-108, PR #86, draft), both Yi's;
+- I3 (#77), J1 (#75), J4 (#80) and I5's integrity checks (#79), all Jingwei's, in review;
+- I5's findings record (SCRUM-75, Kanishka);
+- A6, whose SCRUM-121 was dropped for time.
+
+**Notes:**
+- **ADR 020's three choices are the team's design** (Hanchen, 2026-10-19), not a client answer:
+  - an answer under a superseded guideline or policy version gives a warning, not a refusal;
+  - work from before F1 is exempt from the provenance check;
+  - a finalised item with no authoritative answer is refused until it is reopened.
+- **Every development PostgreSQL database needs `init_data.py --reset`**, because #63 and #84 add tables and
+  columns.
+- **On the board, SCRUM-73 now names stories A1 and H5 as well as I4**, so their ticket lists gained SCRUM-73.
+  Check this with Jingwei. SCRUM-125 (Parth) also names A1 and H5, which is why H5's board status reads in
+  progress.
+- **PRs #65 and #78** are merged but still await their review record in the tracker.
 
 **Synced again on 2026-10-14** (board export of 20:02). **SCRUM-122 (E2) is Done:** PR #69 merged at 08:48 UTC (`5ef9202`), approved by Hanchen after five review rounds; every development database needs `init_data.py --reset`. **SCRUM-118 (G2, the Expert Gate) is now Yi's.** SCRUM-107 (E5, Yi) is To Do: on `main` a dispute already closes only by an independent adjudication under every posture, and the posture can be chosen when creating a project, but nothing enforces `expert_gate_required` yet, so its confirmation screen and the item's "waiting at the gate" state wait for SCRUM-118. No change to the epic table.
 
@@ -221,7 +258,7 @@ answers). Merged before the sync: #52 (D8, SCRUM-117) on 2026-10-05; #39 (I1, SC
 
 | # | Defect | Severity | Story | Status on `main` |
 | --- | --- | --- | --- | --- |
-| 1 | Live API key hardcoded in source | Medium | A4 | ✅ Removed from code *(verified)*; provider rotation unconfirmed |
+| 1 | Live API key hardcoded in source | Medium | A4 | ✅ Closed — removed from code *(verified; every provider key in `config.py` defaults to `None`)*. The Gemini key is treated as revoked at the provider (Hanchen's decision, 2026-10-14); SCRUM-55 replaced the Gemini call, so the key is no longer used |
 | 2 | Finalised annotation silently overwritten | **Critical** | D5 | ✅ Fixed *(verified 2026-09-20)* — PR #19 merged (`29d9bba`). The guard refuses draft create, update and submit on a `canonicalized` item; refused in the running app on a stale page, and `ANSWER-B-sneaky` reached neither the drafts nor the annotations table |
 | 3 | Reviewer shown the wrong annotator's work | High | D4 | ✅ Fixed *(verified 2026-09-26)* — PR #34 merged (`7c84ce9`): a review names the submission it acts on, and is refused (`409`) on an item with several when none is named; the review read names whose submission it shows and returns that submission's own review; the web panel sends the submission it shows. Which version a release carries is H4's rule (R2-2) |
 | 4 | Finalised item exports conflicting answers | **Critical** | H4 | Open |
@@ -238,9 +275,9 @@ answers). Merged before the sync: #52 (D8, SCRUM-117) on 2026-10-05; #39 (I1, SC
 | 16 | Dataset registration not transactional | High | B5 | ✅ Fixed *(verified 2026-10-14 on `5ef9202`: casebook 52/52 running cases pass)* — PR #11 (2026-09-16); closed by EV-047 and a unit test that injects a mid-write failure (PR #71) |
 | 17 | Invitations completely broken | High | G5 | ✅ Fixed *(verified 2026-09-18)* — PR #16 merged (`8f1a7a0`); the invitation lifecycle is restored and completed in `bfa239e` and `041ffca` |
 | 18 | Pending-invitation listing unreachable | High | G5 | ✅ Fixed *(verified 2026-09-18)* — PR #16 moved the listing to its own router at `/invitations`; `members.py` no longer registers `GET ""` under `/organizations`, so nothing shadows it |
-| 19 | Completion and export disagree on "done" | High | B6 | Open |
+| 19 | Completion and export disagree on "done" | High | B6 | ✅ Fixed *(code checked 2026-10-14 on `5ef9202`)* — SCRUM-43: `complete_task` refuses until every item passes `is_task_item_export_eligible`, the same predicate the export package counts (`task_service.py`, `project_exports_service.py`). H5's check that the export figures match the task screens remains: SCRUM-125 (W10, added 2026-10-14) |
 | 20 | AI failures produce fake annotations | High | C3 | ✅ Fixed *(verified 2026-10-14 on `5ef9202`: casebook 52/52 running cases pass)* — fabrication removed; closed by EV-002 (PR #71): a failed run leaves the person's answer as the item's only one |
-| 21, 22 | Audit actor wrong; duplicated escalation entries | Medium | F4 | Open — verify #22 |
+| 21, 22 | Audit actor wrong; duplicated escalation entries | Medium | F4 | ✅ Fixed *(code checked 2026-10-14 on `5ef9202`; tests not re-run)* — #22 by SCRUM-41 (PR #57, 2026-10-06), pinned by `test_history_without_repeats.py`; #21 by SCRUM-40 (PR #68, 2026-10-13): history reads each entry's stored `actor_kind` and filters to people (`task_audit_log_query.py`), pinned by `test_history_actor_kinds.py` |
 | 23, 24 | `.env` ignored; `init_data.py --reset` broken | Medium / High | A3 | ✅ Closed |
 | 25, 26 | Vacuous frontend test; misleading backend mock | Low | A2 | ✅ Closed |
 | 27 | Impossible `"approved"` status in export rule | Low | B6 | Fixed on `main` *(verified 2026-10-01)* — `EXPORT_ELIGIBLE_TASK_ITEM_STATUSES` holds only `canonicalized`; closure check with SCRUM-105 (H3, W10) |
@@ -248,7 +285,7 @@ answers). Merged before the sync: #52 (D8, SCRUM-117) on 2026-10-05; #39 (I1, SC
 | 29 | Intake 409 reported as 500 | Medium | B5 | ✅ Fixed *(verified 2026-10-14 on `5ef9202`: casebook 52/52 running cases pass)* — PR #9 (2026-09-14); closed by EV-048 (PR #71) |
 | 30 | Task or project with items can never be deleted | Medium | B4 | ✅ Fixed *(verified 2026-10-01)* — PR #41 merged: no cascade; a task holding items, or a project holding tasks, is refused with a message naming why (`task_service.py`, `project_service.py`), never a `500`. Archiving (J4, SCRUM-45, W10) is the way to retire such a project |
 
-**Six Critical defects: 3 fixed (2, 6, 8), 1 fix merged with its closure check pending (7), 2 open (4, 5).**
+**Six Critical defects: 5 fixed (2, 5, 6, 7, 8), 1 open (4 — SCRUM-37, PR #66, in review with changes requested).** *(Corrected 2026-10-14: #5 and #7 were verified on `5ef9202` the same day.)* Every other numbered defect is closed on `main`.
 
 PR numbers here and in `roadmap.md` refer to `USYD-CS-Capstone/hej`. `main`'s history also carries
 merge commits from the inherited Arc Intelligence repository numbered #12–#72; those are different
@@ -263,12 +300,13 @@ pull requests.
 | ~~**One client decision still blocks P0 work.**~~ **Closed 2026-09-24:** the client's Round 2 answered F1 (R2-2: one authoritative output plus the complete history), F2, F3 and F5, so no P0 work waits on the client; D4, F3 and H4 lose their ⏳. *Kept for the record:* B4, D3 and E3 were all answered between 2026-09-15 and 2026-09-17. What remained was follow-up **F1**: with every author keeping their own version, which version does a release carry? | F1 gates D4 (SCRUM-27), F3 (SCRUM-38) and H4 (SCRUM-37) — 6u of P0 work across W8–W10 — and I4 behind them. The separable halves can still be built: per-author versions, keeping each actor's output distinct, and review addressing a named submission. Only "which one is authoritative" waits. Question 6, project-level access isolation, also remains open but blocks nothing scheduled. | Hanchen — ask F1 at the next client meeting, with F2, F3 and F5. Every blocked group in `roadmap.md` names a fallback, so a late answer does not leave a group idle |
 | **There is no work queue of any kind (D8).** By the client's decision of 2026-09-17 there is also **no assignment**: a task owner does not hand items to named accounts. Work is self-served from role-checked queues, and the per-task annotator count limits how many people may submit on an item. | D7's sampling, E1, the E2 return-to-queue and I3 all need a queue to put work into. Independence — a reviewer never seeing their own work, a second review never returning to the first reviewer — now has to be a property of the queue query, because there is no assignee to encode it. RQ-607 ("annotators only see the minimum they need") is reinterpreted, not met by assignment. | SCRUM-48, the queue API, in W7 and SCRUM-93, the screens, in W8 — both Kanishka; the role-checked reviewer and adjudicator queues (SCRUM-52) in W9. The rescope reached Kanishka on 2026-09-17, mid-ticket. **2026-09-26:** the queue API is in review — PR #33 with Hanchen's fixes in PR #35 — and not yet on `main`. The review queue decides per submission: it never offers an item to someone who annotated it, and never offers a submission's second approval to its first approver. D7's sampling builds on that query. **2026-10-07: every D8 ticket is on `main`** — the queue API (#33, #35), the panel and the review chooser (#43, #44), resubmission rules (#52), the available-work list (#49), and the second-review and adjudicator queues (#53) |
 | ~~**Evaluation is a primary deliverable and is at zero.**~~ **Mitigated 2026-10-14:** the casebook holds 60 cases on `main`, 52 running (PRs #51, #62, #71, #69); every adversarial category has a case and 4 of 9 run; all 16 protections SCRUM-71 owes are covered. What remains is measurement: I3 and I4 in W10. | 40–60 cases cannot be written in one week; each story should contribute its own cases as it lands. | The mid-semester break sprint (1–7 Oct) has no feature work and builds the harness and casebook (SCRUM-68 to 70); its scenario tests are the first cases, and every group adds cases for its own tickets |
-| **Release is the largest build gap.** H1–H6 depend on F1, F2, F3 and D4. | A slip in provenance or the canonical decision cascades into release. | The release groups, W9–W10: SCRUM-102 (H1, PR #65) and SCRUM-37 (H4, PR #66) in review on 2026-10-14; SCRUM-105 (H3) and 104 (H2) in W10; SCRUM-108 (H6) in W11. SCRUM-64 to 66 were replaced by 102, 104 and 105 on 2026-09-22 |
+| **Release is the largest build gap.** H1–H6 depend on F1, F2, F3 and D4. | A slip in provenance or the canonical decision cascades into release. | The release groups, W9–W10: SCRUM-102 (H1, PR #65) and SCRUM-37 (H4, PR #66) in review on 2026-10-14; SCRUM-105 (H3) and 104 (H2) in W10; SCRUM-108 (H6) in W11. SCRUM-64 to 66 were replaced by 102, 104 and 105 on 2026-09-22. **2026-10-19: mostly closed.** H1, H2, H3 and H4 are on `main` (#65, #84, #83, #66), so a release is gated, frozen and comes with a manifest that can be checked independently. H6's screens (SCRUM-108, Yi) are a draft, PR #86 |
+| **CI cannot run (since 2026-10-16).** GitHub Actions is blocked repo-wide by billing, so no PR gets the SQLite and PostgreSQL runs SCRUM-94 set up. | A merge that breaks the other database, or that only breaks together with another merge, reaches `main` unseen. That risk is highest in W11, when most open PRs merge. | Every author merges `main` into their branch and runs the backend suite and the casebook locally before review, and says so in the PR. Reviewers run PostgreSQL through the compose `backend` container. Hanchen did this for #83 and #84. The billing block is an account matter, outside the code; SCRUM-125 (Parth) carries the CI workflow's own follow-ups |
 | **Governance gaps found in review (2026-09-13).** Project-scoped roles are defined but never honoured, so G3's "access to one project" cannot exist; an admin can escalate and self-finalise their own item. | G3 cannot close as the story reads; D1 criterion 3 is unmet. | D1's two dispute guards in the break — SCRUM-116 (routing) and SCRUM-99 (deciding), which absorbed SCRUM-86 on 2026-09-30. **2026-10-07:** both guards are on `main`, the deciding one from SCRUM-52 (PR #53) — see issue 7. D2's remaining subtasks (SCRUM-109) merged as PR #60 on 2026-10-13; product decision on project-scoped roles through Hanchen |
 | **Parallel branches edit the same files.** B6 and SCRUM-48's API both change `task_service.py`. `DraftService.submit_draft` gains three refusals from three tickets — a finalised item (SCRUM-28), atomic submission (SCRUM-26) and the per-task submission limit (SCRUM-48) — and their order decides which message a user sees. In W8 and W9 several groups change the schema. | Late merges conflict and regress each other, and refusals landed in the wrong order give the wrong reason. | Hanchen and Kanishka agree the order of the `submit_draft` refusals and who merges first. **Settled in PR #35 (2026-09-26):** a finalised item, then a draft that is not pending — both before any write — then, with the item row locked, the AI-assisted first pass and the human limit; recorded in `api_surfaces.md`. Weeks with several schema changes agree one migration path on day one — which path depends on SCRUM-94's decision (see below) |
 | **The break stacks the review path, and one of its tickets waits on unstarted work (2026-09-30).** SCRUM-116 and SCRUM-110 (Jingwei), SCRUM-99 (Yi), SCRUM-109 (Parth, carried over) and PR #41 (Dishank) all change `submit_task_item_review_action`, the escalation routes or the item-status computation in the same week. SCRUM-101 (E1, Yi) opens its dispute from SCRUM-51's disagreement flag, and SCRUM-51 (Parth) was not started in W8. | Late merges regress each other's refusals; SCRUM-101 has nothing to build on, in a week meant for scenario testing. | Agree the merge order on the break's first day — SCRUM-116 before SCRUM-110, SCRUM-110's reopen function before SCRUM-99's Return. **Decided 2026-10-02:** SCRUM-101 moved to W9 beside SCRUM-51's sampling; SCRUM-51 owns the disagreement comparison as one function SCRUM-101 calls (`../sandbox/Break/jira/jira-scrum-101-to-W9.md`). SCRUM-116 and 110 merged (PRs #45, #46) |
 | **The database changes under everyone this week (SCRUM-94).** Parth moves the platform onto PostgreSQL while keeping SQLite, in W7's last days, days before W8's four schema changes. Its scope grew on 2026-09-18: the 10 test files that touch a database all hard-code in-memory SQLite, so CI could not reach Postgres until they are moved onto a shared fixture. | If the first merge slips past the weekend, it waits for the W9 boundary and W8's schema changes land on SQLite alone, to be redone after. Until the tests reach Postgres, nothing verifies it — including SCRUM-2's worker, which its author cannot run on Postgres locally. | Parth, on SCRUM-94 alone this week (SCRUM-51 moved to W8). Two merges: `database.py`, the fixture, CI and the schema-change decision before W8; moving the old tests early in W8. Everyone merges `main` and reruns the suite the day the first lands |
-| **Records can mark a story complete ahead of its code.** D2 is marked complete while its subtasks 2 and 4 remain, and the board shows SCRUM-54 Done while no `AnnotationAssistant` interface exists on any branch. `story_src.csv` follows the tracker by decision. *Not* a case of this: a Contribution Log row logged for an unmerged PR. The tracker logs a PR when it is opened and leaves *Review OK?* blank until review passes (recorded 2026-09-18) — PRs #19–22 on 2026-09-18 were exactly that, and earlier reports that read them as "logged as merged" were wrong. | The tracker's Client Report is built from these records and can overstate progress; `user-stories.html` inherits the same gaps whenever `story_src.csv` is synced. | `tracking-sync` counts a story complete only when its row's *Review OK?* is `OK` — this kept D5, whose row is still pending review, out of the client view on 2026-09-18 — and flags only a reviewed row git shows unmerged. Beyond that, Hanchen reconciles tracker, board and `main` at each weekly sync, with the report as the checkpoint before the client view changes |
+| **Records can mark a story complete ahead of its code.** D2 is marked complete while its subtasks 2 and 4 remain, and the board shows SCRUM-54 Done while no `AnnotationAssistant` interface exists on any branch *(2026-10-14: the typed model interface does exist on `main`, under another name — the `JsonCompletionClient` protocol in `app/integrations/analyzers/base.py`, which every provider and analyzer goes through; whether that satisfies SCRUM-54 is a records check, not a code gap)*. `story_src.csv` follows the tracker by decision. *Not* a case of this: a Contribution Log row logged for an unmerged PR. The tracker logs a PR when it is opened and leaves *Review OK?* blank until review passes (recorded 2026-09-18) — PRs #19–22 on 2026-09-18 were exactly that, and earlier reports that read them as "logged as merged" were wrong. | The tracker's Client Report is built from these records and can overstate progress; `user-stories.html` inherits the same gaps whenever `story_src.csv` is synced. | `tracking-sync` counts a story complete only when its row's *Review OK?* is `OK` — this kept D5, whose row is still pending review, out of the client view on 2026-09-18 — and flags only a reviewed row git shows unmerged. Beyond that, Hanchen reconciles tracker, board and `main` at each weekly sync, with the report as the checkpoint before the client view changes |
 
 ## How We Work
 

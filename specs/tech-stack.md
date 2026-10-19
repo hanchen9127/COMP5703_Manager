@@ -49,30 +49,45 @@ Authoritative detail lives in `hej/docs/design/system/architecture_overview.md`,
 
 ## Data
 
-- **SQLite** (`apps/hej-api/hej_dev.db`) for local development, selected by `DATABASE_URL`. The design
-  calls only for "a relational database"; production hosting is not decided.
+- **PostgreSQL is the default everywhere** since SCRUM-94 (PR #24, 2026-09-20): the URL is built from
+  `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` in `apps/hej-api/.env`, and with neither those
+  nor a `DATABASE_URL` startup stops with an error. **SQLite** (`apps/hej-api/hej_dev.db`) is still
+  supported, selected explicitly with `DATABASE_URL=sqlite:///./hej_dev.db`, which always wins. The design
+  calls only for "a relational database"; production hosting is not decided. *(Updated 2026-10-14; this
+  line said SQLite was the local default.)*
 - **Schema management:** `Base.metadata.create_all` at startup, plus an additive `migrate_db_schema()`
-  for existing SQLite databases. There is no Alembic.
+  that runs only on SQLite (`core/database.py`): PostgreSQL development databases are disposable and are
+  reset after a model change. There is no Alembic.
 - **Seeding:** `apps/hej-api/init_data.py --reset` (re-runnable) creates demo organisations and the
   admin, reviewer and annotator accounts.
 - **The dev database is shared across checkouts.** Never run `--reset` from an older commit — it
   rebuilds tables with that commit's schema.
-- **Background job runner:** part of the design (batch AI import, export generation, disagreement
-  scans), not implemented. The queue technology is decided in story C2.
+- **Background job runner:** built for the AI first pass only (C2, SCRUM-1 and 2): `app/worker.py`
+  (`python -m app.worker`) polls the job tables and claims one item at a time under a lease — Option B,
+  confirmed at review of PR #20. `HEJ_AI_EXECUTION_MODE` selects `inline` (default) or `worker`. Export
+  generation and disagreement scans do not use it. *(Updated 2026-10-14; this line said it was not
+  implemented.)*
 
 ## Testing
 
 - **Backend: pytest**, unittest-style classes allowed. Authorization and ownership tests use a **real
-  in-memory SQLite database** (`StaticPool`) with real users and roles rather than mocks. Add a
+  database** with real users and roles rather than mocks: the shared `empty_engine` fixture in
+  `tests/conftest.py` takes the engine from `DATABASE_URL` — in-memory SQLite by default, or a random,
+  per-test schema on PostgreSQL. Add a
   route-level `TestClient` test when behaviour depends on routing.
 - **Web: Vitest 3** with **jsdom** and **Testing Library** (react, jest-dom, user-event).
 - **Static checks:** `tsc --noEmit`; **ESLint 9** via `@workspace/eslint-config`; **Prettier** with the
   Tailwind plugin.
 - **One command before every PR** is `npm run check`, which runs `test:api`, `test:web`,
   `typecheck:web` and `lint:web`.
-- **Evaluation harness** (I1, I2) is planned: scenario-level runs over a 40–60 case casebook, reusing
-  the gold fixtures from the client's `labeling_ai_assistnat_mvp` project (SCRUM-6). That project is not
-  in `hej` and not available locally yet; its location is to be confirmed.
+- **CI** (`.github/workflows/backend-tests.yml`, SCRUM-94) runs the backend suite on SQLite and on a
+  PostgreSQL 18 service, plus the casebook coverage listing, on every push and pull request. **The web
+  checks are not in CI**: `test:web`, `typecheck:web` and `lint:web` run only when a member runs
+  `npm run check` locally. SCRUM-125 (W10) adds a web job.
+- **Evaluation harness** (I1, I2) is built in `apps/hej-api/evaluation/` (SCRUM-68, 69, 70 and 71):
+  scenario-level runs over the casebook (`cases/`), gold fixtures (`gold/`), a stored `baseline.json`
+  for comparing runs, and reports; run with `uv run python -m evaluation`. On 2026-10-14 the casebook
+  holds 60 cases, 52 of them running. *(Updated 2026-10-14; this line said the harness was planned.)*
 
 ## Tooling
 
@@ -165,7 +180,7 @@ From `hej/AGENTS.md`:
 | Path | Role |
 | --- | --- |
 | `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` — the big picture for each story, written with the `feature-spec` skill |
-| `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 29 defects) and its fix plan (`fix-plan.md`), the client Q&A (`client-question.md`, with the client's own Round 1 and 2 answers exported in `client-qa.md`), and the course's progress submissions (`CS57_Group_Progress.pdf`, `CS57_Status_Checking_1.pdf`, `CS57_Status_Checking_2.pdf`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
+| `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 30 defects) and its fix plan (`fix-plan.md`), the client Q&A (`client-question.md`, with the client's own Round 1 and 2 answers exported in `client-qa.md`), and the course's progress submissions (`CS57_Group_Progress.pdf`, `CS57_Status_Checking_1.pdf`, `CS57_Status_Checking_2.pdf`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
 | `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots of the team's online Google Sheet and the Jira board, fetched by `tracking-sync download` or downloaded by hand, and possibly behind the live versions. `Jira.csv` is never edited, only replaced whole by a fresh export; `tracking-sync` refreshes the tracker's snapshot tabs and may append log rows, which Hanchen copies back into the online sheet (see *Tracking data*). `story_src.csv` is the backlog data behind `user-stories.html`, the client view: only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
 | `sandbox/` | Hanchen's personal files supporting work on his own branches — never pushed to the team's `hej` repository. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
 | `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`). `reviews/plans/` keeps the early plans and commit drafts that lived in `docs/plans/` until 2026-10-14 |
