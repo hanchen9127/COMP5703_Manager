@@ -607,6 +607,33 @@ planned here for W11; not added to W10's load until the 14 Oct meeting confirms 
 - **Every development PostgreSQL database needs `init_data.py --reset`.**
 - **CI cannot run** (GitHub Actions billing, since 16 Oct). See `mission.md` → Risks.
 
+**2026-10-19, later:**
+- **Merged:** #77 (SCRUM-72, I3; `8c0b87c`) and #85 (SCRUM-106, F5; `e95a3a7`), both approved by Hanchen.
+- **SCRUM-126 added** (Jingwei, W10 sprint, 3 points, epic SCRUM-14; stories G2 criterion 3 and E5). It is the
+  team's design (Jingwei's plan D1–D12, accepted by Hanchen). On `main`, every posture sends a reviewers' split to
+  an adjudicator, so dual sign-off and arbitration-ready behaved alike. The client's R2-8 says the guarantee is what
+  tells them apart. The ticket:
+  - **who settles:** a split held under `manual_review` (Standard's sample, dual sign-off) may be **settled** by an
+    independent reviewer (holds APPROVE; took no part in the item), who accepts, returns or rejects it, with a
+    reason;
+  - **where it is refused:** while `adjudication_mandatory_on_dispute` (arbitration-ready) or `expert_gate_required`
+    is in force, so those still go to an expert;
+  - **escalation:** a reviewer's Escalate always opens a dispute at once and is never settled;
+  - **what it adds:**
+    - the rule reads the policy's values, not its preset name;
+    - a new append-only `disagreement_settlements` table and a `disagreement_settled` event;
+    - a new cause `settlement_accept`;
+    - a new preset `project_policy_dual_signoff_v2` (`manual_review`) beside v1;
+    - ADR 022;
+  - **database reset:** `reconciliation_acceptance_evidence`'s CHECK changes, so every development database, SQLite
+    included, needs `init_data.py --reset`;
+  - **schedule:** built 19 Oct, to merge 20 Oct, before the 21 Oct client meeting.
+- **Follows from it:**
+  - #79 (SCRUM-74) teaches its checks settlements when it next takes in `main`;
+  - the item timeline (#85, merged) needs the `disagreement_settled` label, now on SCRUM-126;
+  - SCRUM-121, if it starts, branches from `main` after SCRUM-126 merges, because both change the review-state
+    computation.
+
 **Replanned 2026-10-01.** H2 and H3 are no longer at risk: F1 lands in W9, and H4 with it. I3 and I4 stay here
 although the board had them in W11 — evaluation is a primary deliverable, and their inputs (D7, C4, the
 break's harness) are in place by now. F5 moves here from W11 because W11 is the last sprint and I5 there checks
@@ -621,7 +648,7 @@ ahead of E5, so the two can have different owners without editing the same path 
 | **4** | SCRUM-73 | I4 | 3u | ✅ **PR #73 merged 2026-10-16** (`6b29810`), Jingwei, approved by Hanchen; the guideline and policy version on each stage (client issue #72) follows in #77. Board: Jingwei (2026-10-09); unassigned since 2026-10-14. **Board W11 → W10.** **Clarified by the client in GitHub issue #72 (2026-10-14), built in full rather than parked (Hanchen, 2026-10-14):** the protocol runs on judgement tasks; `evaluation_protocol` (`none`, `blind_then_reveal`) is a setting separate from the production mode, never a third `annotation_mode`; each judgement keeps its pre-reveal judgement, the AI suggestion, its post-reveal judgement and whether the answer changed, with time, model, guideline and policy versions per stage, none overwriting another; the measures add whether a change improved or reduced correctness against gold and the time change between stages. As planned: Accept, modify and override rates and time per item, by C4 mode; the blind-then-reveal protocol — a stored pre-reveal judgement, the suggestion withheld by the API until it exists, then reveal, keep or revise — to measure anchoring and automation bias (R1-2) |
 | **5** | SCRUM-71, 72 | I2, I3 | 3.5u | 🟡 **SCRUM-72: PR #77 in review** (changes requested by Hanchen 18 Oct; fixes pushed 18 Oct, the #72 follow-up `0096d6e` on 19 Oct; DeepSeek Flash measured beside llama3). ✅ **SCRUM-71 delivered in W9: PR #71 merged 2026-10-14** (`f6f8eb0`), approved by Hanchen; 57 cases, 48 running; ids are a plain sequence. SCRUM-72 (I3, Jingwei) remains. **Board W11 → W10.** Casebook to 40 cases across the brief's adversarial categories (2u); reviewer agreement by an established coefficient, not raw match, on D7's second reviews, with AI suggestion quality against the gold fixtures (1.5u) |
 | **6** | SCRUM-45 | J4 | 1.5u | 🟡 **PR #80 in review** (Jingwei; reviewer Tim). Board: Jingwei. Update a project, archive it as read-only — enforced on every write route — and record each change. Respects B4's lifecycle (PR #41) and H1's immutable releases (W9) |
-| **7** | SCRUM-106, SCRUM-40 | F5, F4 | 2.5u | 🟡 **SCRUM-106: PR #85 in review** (Yi, opened 19 Oct): the item's history as a graph on the Finalized page. ✅ **SCRUM-40 delivered in W9: PR #68 merged 2026-10-13**, approved by Parth; Done on the board. SCRUM-106 (Yi) remains. SCRUM-106 (1.5u), **board W11 → W10:** an item's whole timeline on one screen, from F1's events (W9), with supersession as F3 (break) and H4 (W9) record it. Final before I5 checks provenance in W11. **SCRUM-40 (1u), moved from W9 on 2026-10-05:** `actor_kind` from what actually happened, using the actor kinds F1 sets in W9 (issue 21), and a human-decisions-only filter — the actor the timeline shows. One owner for both, picked at the W10 meeting. **Board, 2026-10-09:** SCRUM-106 is Yi's and SCRUM-40 Jingwei's, so the group is split across two owners |
+| **7** | SCRUM-106, SCRUM-40 | F5, F4 | 2.5u | 🟡 **SCRUM-106: PR #85 approved by Hanchen** (Yi, 19 Oct): the item's history as a graph on the Finalized page. **F5 narrowed, a team decision (Hanchen, 2026-10-19):** finalised items only, for task owners and admins, and not on the review screen, so a blind review stays blind (D7); story F5 rewritten in `story_src.csv`. ✅ **SCRUM-40 delivered in W9: PR #68 merged 2026-10-13**, approved by Parth; Done on the board. SCRUM-106 (Yi) remains. SCRUM-106 (1.5u), **board W11 → W10:** an item's whole timeline on one screen, from F1's events (W9), with supersession as F3 (break) and H4 (W9) record it. Final before I5 checks provenance in W11. **SCRUM-40 (1u), moved from W9 on 2026-10-05:** `actor_kind` from what actually happened, using the actor kinds F1 sets in W9 (issue 21), and a human-decisions-only filter — the actor the timeline shows. One owner for both, picked at the W10 meeting. **Board, 2026-10-09:** SCRUM-106 is Yi's and SCRUM-40 Jingwei's, so the group is split across two owners |
 | **8** | SCRUM-118 | G2 | 2u | ✅ **PR #76 merged 2026-10-16** (`f88793c`), Yi, approved by Hanchen; the confirmation screen and the item's gate state moved in from SCRUM-107 (3 points). **New, split from SCRUM-107 on 2026-10-01.** The Expert Gate — where `expert_gate_required` is set, an item is held after its approvals until an independent expert confirms it (R2-8) — and the invariant that no item canonicalises on AI output alone (R2-7), both in the backend. The flags exist on the project policy and in `resolve_for_task` but nothing enforces them. Uses SCRUM-52/99's independence helper |
 | **9** | SCRUM-121 | A6 | 2u | — **Dropped for time** (ticket marked "Discarded given time constraint", 0 points, 2026-10-14). **Added 2026-10-06**, board: Hanchen. A6's criteria 3 and 4, which SCRUM-119 (PR #54) left out. `GET /tasks/{id}/task-items` and `/setup` return stored statuses and never write, with a route test that fails on any write: today every read repairs send-back statuses, 235 statements and 176 ms on a 200-item task against 6 and 11 ms without, and that repair is what flipped a reopened item (SCRUM-120). The repair moves into the writes that cause it, or is deleted if SCRUM-99 drops `expert_send_back`. The project page stops calling `getTaskSetup` once per task to count the backlog (245 → 109 ms measured) |
 

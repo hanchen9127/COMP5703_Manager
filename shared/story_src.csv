@@ -5,7 +5,7 @@ A1,A,P0,Lead,Changes are reviewed before they reach the platform,"As a project m
 2. Add a PR template carrying the story id, the defect it closes, and how it was verified.
 3. Add a CI workflow running backend pytest plus frontend typecheck and tests on every pull request.
 4. Agree a branch naming convention (story/D3-reviewer-corrections) and write it into docs/team-discipline/dev-workflow.md.
-5. Set a review rota so no pull request sits waiting on one person.",,dropped,,"SCRUM-73, SCRUM-125",shipped
+5. Set a review rota so no pull request sits waiting on one person.",,dropped,,"SCRUM-125",shipped
 A2,A,P0,SC,I can trust that a fix in one place hasn't broken another,"As a client, I want the platform's automated checks to genuinely pass before anything ships, because otherwise a change to the review screen can silently break annotation and nobody finds out until the demo.","1. The web application's checks and test suite pass cleanly, so a broken change is caught before merge rather than after.
 2. Tests that claim to check something actually check it — a test named for image-annotation loading must fail if that loading breaks.
 3. Test setup does not imply behaviour the platform doesn't have.","**Issues 12 & 13** (frontend fails typecheck; test suite failing) — this story's definition of done is a green frontend build and suite, so both are resolved by the work itself rather than tracked separately.
@@ -30,7 +30,7 @@ A4,A,P0,SC,Platform credentials aren't sitting in shared code,"As an organisatio
 2. Remove the key default from gemini_api_key in app/core/config.py:15 so a missing key fails loudly (issue 1).
 3. Confirm the key is read from the environment only, and that the app starts with a clear error when it is absent.
 4. Add the key names to .env.example with placeholder values and a note on where the real key lives.
-5. Sequence after A3 — configuration has to load before a key can be supplied any other way.",1,done,Yi Geng,SCRUM-84,shipped
+5. Sequence after A3 — configuration has to load before a key can be supplied any other way.",1,done,Yi Geng,"SCRUM-84, SCRUM-125",shipped
 A5,A,P0,SC,A status means the same thing wherever I see it,"As a project manager, I want a status, role or result to mean one thing across every screen, the API and the export, because the same item currently has different state names in different places and I can't tell whether two screens disagree because of a bug or because they're using different words for the same thing.","1. One agreed set of task states and one agreed set of item states, used by the screens, the API and the export alike.
 2. Where our design documents and the running code currently disagree, the difference is resolved deliberately and the documents updated to match what was built.
 3. A state a user can see is a state the workflow can actually reach.
@@ -282,7 +282,7 @@ E5,E,P1,BE,Escalation matches the assurance my project needs,"As a project manag
 **Client answer R2-8 (2026-09-24)** — Arbitration-ready is a guarantee, not a likelihood: “if a dispute occurs, it must reach independent adjudication”, stored as an explicit rule. This story makes that rule selectable and visible; G2 enforces it.","1. Make the escalation posture selectable when configuring a project or task.
 2. Where an expert gate is required, block completion until an expert has decided.
 3. Show the posture in force on the project.
-4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,done,Yi Geng,SCRUM-107,shipped
+4. The gate values already exist on OrganizationPolicyDB and are never enforced — the enforcement itself is G2.",,done,Yi Geng,"SCRUM-107, SCRUM-126",shipped
 E6,E,P0,FE,The dispute and arbitration screens show my real cases,"As an expert, I want the dispute and arbitration screens to show the actual disputed items from my projects, because they currently display sample data — so everything Epic E builds underneath is invisible to the person who has to act on it.","1. The project dispute list, the individual dispute view and the arbitration view all show real cases from the backend, scoped to what I'm allowed to see.
 2. The task-level dispute and finalised views show that task's real items.
 3. Actions taken on these screens change real state, and the change is visible on refresh.
@@ -321,11 +321,11 @@ F4,F,P1,BE,History tells me who really did what,"As a project manager, I want th
 2. Stop escalation entries repeating their own summary as a change (issue 22).
 3. Let an item's history be filtered to human decisions only.
 4. Test that a system-generated entry is never attributed to a person.","21,22",done,Jingwei Lin,"SCRUM-40, SCRUM-41",shipped
-F5,F,P1,FE,I can see an item's whole story on one screen,"As a reviewer, I want to see an item's full timeline before I make a decision, because deciding without knowing that two people already disagreed about it is how bad decisions get made.","1. The item view shows its history in order: annotation, reviews, disputes, adjudication.
-2. Each entry shows who, when and what changed.
-3. I can reach the item's history from the review screen without losing my place.",No open defects — net-new; depends on **F1**.,"1. Show the item's timeline in order: annotation, reviews, disputes, adjudication.
-2. Show who, when and what changed on each entry.
-3. Reach the item's history from the review screen without losing your place.
+F5,F,P1,FE,I can see an item's whole story on one screen,"As a project owner, I want to see a finalised item's whole production history on one screen, because a released result must be traceable back through every step that produced it and who decided each one.","1. A finalised item's history shows in order, from its source to its resolution: each answer and its versions, reviews, corrections, disputes and reconciliation, round by round after a reopen.
+2. Each entry shows who (a person, an AI model or the platform), when and what changed.
+3. Task owners and admins open it from the task's Finalized page. Reviewers do not see it while they decide, so a blind review stays blind (D7).",No open defects — net-new; depends on **F1**.,"1. Show a finalised item's history in order, from its source to its resolution, round by round.
+2. Show who, when and what changed on each entry, naming an AI model's provider, name and version.
+3. Open it from the Finalized page for task owners and admins, and keep it out of the review screen (team decision, 2026-10-19, PR #85).
 4. Sequence after F1 — the timeline has nothing to read until provenance events are being written.",,working,Yi Geng,SCRUM-106,shipped
 G1,G,P0,BE,My role determines what I can do,"As an organisation administrator, I want a person's role to determine which actions they can take, because at the moment being a member of the organisation is enough to do almost anything, which makes the roles I assign decorative.","1. Approving, disputing, adjudicating and releasing each require the appropriate role.
 2. A user without the required role is refused with a clear message rather than silently allowed.
@@ -348,7 +348,7 @@ G2,G,P1,BE,My project's governance posture actually governs,"As a project manage
 5. The three postures are recorded and never applied — docs/terminology calls them ""signals, not separate workflow engines"".
 6. Add the expert-gate and adjudication-mandatory fields to the policy and B2's ResolvedPolicy; default cross-review to 0% under expert gate.
 7. Extend D1's self-approval guard to expert confirmation and adjudication.
-8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,done,"Jingwei Lin, Yi Geng","SCRUM-50, SCRUM-107, SCRUM-118",shipped
+8. Refuse canonicalisation from an AI-authored result that no human has reviewed, with a test.",,done,"Jingwei Lin, Yi Geng","SCRUM-50, SCRUM-107, SCRUM-118, SCRUM-126",shipped
 G3,G,P0,BE,My work stays inside my project,"As an organisation administrator, I want a person with access to one project to be unable to change anything in another, because access to a single low-risk project currently lets someone modify tasks and items in projects they were never given access to.","1. Changing or deleting a task fails unless it genuinely belongs to the project it was requested under.
 2. The same applies to changing an item within a task.
 3. Attempts across a boundary are refused, not silently applied.","**Issue 9** (cross-project/cross-org write bypass) — a duplicated route means the check that would catch this is never reached. The story's criteria can only pass once the live path performs the ownership check, which also removes the shadowed duplicate.","1. Delete the shadowing duplicate PUT and DELETE /projects/{id}/tasks/{id} at projects.py:176 and :213 (issue 9).
@@ -401,7 +401,7 @@ H5,H,P1,BE,Export figures agree with the rest of the platform,"As a project mana
 **Issue 14** (backend export tests fail to even run) — criterion 3 requires working export tests, which means implementing the missing helper the existing test file already specifies; until then export behaviour is entirely unverified.","1. Use the same completion rule as the task itself, unified in B6.
 2. Make sure a task marked complete never produces an export reporting zero completed items (issue 19), and drop the impossible ""approved"" status while unifying the rule (issue 27).
 3. Confirm tests/test_task_exports.py runs — all three helpers it imports now exist, so issue 14 looks closed; verify it.
-4. Add tests covering export eligibility so this cannot silently regress.","14,19,27",done,Dishank Aswal,"SCRUM-43, SCRUM-73, SCRUM-125",shipped
+4. Add tests covering export eligibility so this cannot silently regress.","14,19,27",done,Dishank Aswal,"SCRUM-43, SCRUM-125",shipped
 H6,H,P0,FE,"The export, policy and history screens show real data","As a project manager, I want the export, policy and history screens to show my project's actual releases, actual policy and actual activity, because a screen showing sample data is worse than no screen — it tells me something confidently and it isn't true.","1. The project export list and individual export view show real releases produced by H1.
 2. The project policy screen shows the policy actually in force, as set in B2, and the governance posture from G2.
 3. The task history and setup screens show that task's real activity and real configuration.
@@ -435,7 +435,7 @@ I3,I,P1,GOV,I can tell whether reviewers actually agree,"As a quality lead, I wa
 2. Report per task and comparably across tasks.
 3. Report AI suggestion quality and confidence calibration alongside human agreement.
 4. Measure accuracy against the gold annotations in the fixture sets, apart from agreement.
-5. Depends on D7's cross-validation routing for reviewer agreement, and on D8's per-task annotator count for agreement between annotators.",,working,Jingwei Lin,SCRUM-72,shipped
+5. Depends on D7's cross-validation routing for reviewer agreement, and on D8's per-task annotator count for agreement between annotators.",,done,Jingwei Lin,SCRUM-72,shipped
 I4,I,P1,GOV,I can see what AI assistance does to human judgement,"As a quality lead, I want to measure what AI assistance does to human judgement — how often people accept, modify or override AI suggestions, how long they take, how much review their work then needs, and whether a wrong suggestion pulls them away from what they would have decided alone — because the client's question is what AI assistance actually does to human judgement, not whether it feels faster.","1. Acceptance, modification and override rates are reported per task.
 2. Time per item and review burden (review rounds, returns and reviews per finalised item) are reported alongside them.
 3. A task can run the blind-then-reveal protocol: the annotator records an independent judgement without seeing the AI suggestion; that judgement is kept; then the suggestion is revealed and they may keep or revise their answer. Both judgements survive.

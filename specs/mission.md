@@ -134,10 +134,10 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 | F — Provenance & History | 5 | F1, F2, F3, F4 | F5 | — | — |
 | G — Roles, Permissions & Organisations | 5 | G1, G2, G3, G4, G5 | — | — | — |
 | H — Release & Export | 6 | H1, H2, H3, H4, H5 | H6 | — | — |
-| I — Evaluation | 5 | I1, I2, I4 | I3, I5 | — | — |
+| I — Evaluation | 5 | I1, I2, I3, I4 | I5 | — | — |
 | J — Organisations & Dashboard | 4 | J2, J3 | J1, J4 | — | — |
 | K — Evidence & Handover | 4 | — | — | — | K1, K2, K3, K4 |
-| **Total** | **63** | **50** | **7** | **0** | **6** |
+| **Total** | **63** | **51** | **6** | **0** | **6** |
 
 **Synced on 2026-10-19** (board export of 18:13). **Eleven stories became complete**, and none is left unstarted:
 - **16 Oct:**
@@ -175,6 +175,19 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
   Check this with Jingwei. SCRUM-125 (Parth) also names A1 and H5, which is why H5's board status reads in
   progress.
 - **PRs #65 and #78** are merged but still await their review record in the tracker.
+- **Later on 19 Oct:**
+  - #77 (I3) and #85 (F5) merged. F5 was narrowed by team decision to finalised items, for task owners and
+    admins, with its story rewritten in `story_src.csv`.
+  - **SCRUM-126** (Jingwei; G2 criterion 3, E5) was added to make the postures differ as R2-8 asks. A reviewers'
+    split held under Standard or dual sign-off may be settled by an independent reviewer. Arbitration-ready and
+    the Expert Gate still go to an expert, and an escalation is never settled. It is the team's design, ADR 022.
+    It reopens G2 and E5 in the records until it merges, planned for 20 Oct.
+  - **Synced again** (board export after 20:02). I3 is complete. G2 and E5 gained SCRUM-126, and A4 gained
+    SCRUM-125. G2 and E5 stay complete in `story_src.csv`, which never downgrades a `done` automatically. The
+    board shows them in progress until SCRUM-126 is Done.
+  - **SCRUM-73's description was restored.** On 2026-10-14 at 23:38, SCRUM-125's text had been pasted over it by
+    mistake, and that is why A1 and H5 picked up SCRUM-73. It was restored from the issue's history on 19 Oct, and
+    the two wrong links were removed from `story_src.csv`.
 
 **Synced again on 2026-10-14** (board export of 20:02). **SCRUM-122 (E2) is Done:** PR #69 merged at 08:48 UTC (`5ef9202`), approved by Hanchen after five review rounds; every development database needs `init_data.py --reset`. **SCRUM-118 (G2, the Expert Gate) is now Yi's.** SCRUM-107 (E5, Yi) is To Do: on `main` a dispute already closes only by an independent adjudication under every posture, and the posture can be chosen when creating a project, but nothing enforces `expert_gate_required` yet, so its confirmation screen and the item's "waiting at the gate" state wait for SCRUM-118. No change to the epic table.
 

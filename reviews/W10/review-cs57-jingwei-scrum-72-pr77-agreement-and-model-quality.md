@@ -3,6 +3,87 @@
 **Posted 2026-10-18 12:51 UTC as Request changes** on `56cac38` (everything from "Verdict" down, unchanged). Read from GitHub first: a draft ("Draft until Sun 18 Oct"), no reviews or comments, review requested from Hanchen. CI is blocked repo-wide by GitHub Actions billing, so every result below comes from local runs.
 <https://github.com/USYD-CS-Capstone/hej/pull/77>
 
+---
+
+# Round 2 — 2026-10-19 at `0096d6e`
+
+**Posted 2026-10-19 as Approve** on `0096d6e` (from "Round 2 verdict" to the end of "Merge notes", unchanged).
+Read from GitHub first: open, ready, `MERGEABLE`, review re-requested from Hanchen. Jingwei
+replied on 18 Oct (13:57 UTC) point by point and again on 19 Oct (03:01 UTC) when marking it ready. Since round 1:
+- one commit per finding;
+- a replay bug she found herself;
+- a second model, DeepSeek Flash;
+- client issue #72's gap 1a (`0096d6e`);
+- `main` merged in up to #63.
+
+`main` has since taken #81, #83 and #84 (17 commits ahead of the branch).
+
+## Round 2 verdict: approve
+
+Both round-1 findings and all three small points are fixed as asked, each with a test that fails without the fix.
+The additions are sound:
+- the replay fix;
+- DeepSeek, whose recording keeps no client text;
+- the per-stage versions, which reuse #63's own `versions_in_force`.
+
+Merge it before #79.
+
+## Round 2 checks
+
+| Check | Result |
+| --- | --- |
+| Worktree `hej-review-77` at `0096d6e`, with `main` (`606e2a1`) merged in locally, no conflicts | ✅ |
+| SQLite, full suite, on that merge | ✅ 2,257 passed, 19 skipped, 209 subtests |
+| Casebook `--baseline --exact`, on that merge | ✅ 67/67 passed, 5 skipped, 72 unchanged |
+| PostgreSQL, full suite, on that merge (compose `backend` container) | ✅ 2,269 passed, 7 skipped, 209 subtests |
+| Revert check: the alpha fix (`1205c8e`) and the per-stated-value table (`7b7cc31`) removed | ✅ their three new tests fail; all pass with the fixes back |
+| DeepSeek recordings | ✅ No text from the client's package. Every rationale is the redaction marker, and the one failed record keeps no error text. The longest string field is 63 characters. The header pins `DeepSeek-V4.1-Flash-1017`, and each line names `served_model` |
+
+## Round 1 findings, rechecked
+
+| Finding | Fix | Result |
+| --- | --- | --- |
+| 1. Calibration rests on one bin | `7b7cc31` | ✅ Five bins kept, and beside them a row per stated value with its own ECE (at most 10 values). ADR 019 now reads "average confidence matches accuracy (0.85 vs 0.845, five-bin ECE 0.008), but by stated value ECE 0.043" |
+| 2. Alpha counts a context-given answer | `1205c8e` | ✅ A first submission with `derived_from_annotation_id` set is left out. That also leaves out a reviewer's correction, which is right. The probe (A spam, B ham, C given A's) is the test |
+| S1. Docstring said "until their work is done" | `11ad186` | ✅ "never" |
+| S2. Unstated confidence `null` only on two shapes | `8129218` | ✅ Extended to spans, boxes, audio and video segments and keyframes, with a test each. ADR 019 notes an out-of-range value is now `null` |
+| S3. `model_version` on each line vs the header's digest | `36a3ced` | ✅ The line field is `served_model`; only that key changed in the committed recordings |
+
+## New since round 1
+
+- **Replay bug (`0034199`).** The scripted AI answered the first item whose text appeared in the prompt. The client's
+  Civil Comments repeats one comment as two records, so one record got the other's reply. Now the longest matching
+  text wins, and items with the same text are answered in turn. After the fix, Civil Comments matches the
+  per-stated-value table from round 1 exactly. Good catch.
+- **DeepSeek Flash.**
+  - `0f0aadc`: the catalog's `deepseek-chat`, retired by DeepSeek, becomes `deepseek-flash`. The base URL now
+    has no `/v1`.
+  - `a7e82c6`: `record --model-version` pins the version of a hosted model.
+  - `509b2df`: the two recordings.
+  - `e01d130`: the findings in ADR 019.
+
+  Accepted in this PR. It measures quality the same way and makes the findings a comparison.
+- **#72 gap 1a (`0096d6e`).** `protocol_rounds` and `ai_suggestions` gain `guideline_version`,
+  `source_version_ref` and `policy_version`:
+  - set from #63's `versions_in_force` when the blind verdict is given and when the suggestion is generated;
+  - returned on the round and suggestion reads;
+  - added to existing SQLite databases by `migrate_db_schema()`.
+
+  ADR 016's known gap is closed.
+
+## Merge notes
+
+- **Before #79.** The two still conflict in `evaluation/README.md`, `evaluation/__main__.py` and
+  `harness/scenario.py`, and #79's `check_roles` maps this PR's three event kinds.
+- **Database:** development PostgreSQL databases need `init_data.py --reset` for the six new columns. SQLite
+  migrates on start.
+- **Client issue #72:** once this merges, every point in Hunter's list is in `main`, so the reply on #72 can go
+  out (planned by 24 Oct).
+
+---
+
+# Round 1 — 2026-10-18 at `56cac38`
+
 ## Verdict: request changes (two small fixes), then approve
 
 The design is sound and well argued in ADR 019:
