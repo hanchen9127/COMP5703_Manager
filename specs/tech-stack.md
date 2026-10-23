@@ -134,6 +134,27 @@ From the backlog:
 - **Branch naming:** personal branches `CS57-<Name>`, with an optional topic suffix such as
   `CS57-Hanchen-ai-integration`.
 - **Pull requests** go into `main`. There is no `develop` branch, despite `dev-workflow.md`.
+- **PR title** (decided 2026-10-23): `type(scope): description (stories, tickets)`, following Conventional
+  Commits. For example, `feat(api): refuse a release that fails its pre-release checks (H3, SCRUM-105)`.
+  - **type:** `feat`, `fix`, `docs`, `test`, `refactor` or `perf` (`chore` and `ci` where apt). Never a
+    compound such as `feat/fix`.
+  - **scope:** the code areas changed:
+    - `api`: `apps/hej-api` code and tests;
+    - `web`: `apps/hej-web` and `packages/`;
+    - `evaluation`: the harness, its cases and its tests;
+    - `seed`: `init_data.py`, the seed scripts and their tests;
+    - `db`: PostgreSQL support and Compose;
+    - `ci`: `.github/`;
+    - `docs`: docs only.
+
+    Several areas are comma-separated with no space (`api,web`). An area counts when it holds a real share of
+    the change, about 15% of the changed lines or more. A docs-only PR is `docs:` with no scope. No `(API)` /
+    `(WEB)` suffix: the scope says it.
+  - **description:** lower case, saying what the PR does. No Jira prefix such as "Review:".
+  - **refs:** every story the PR implements, then every ticket, in the closing parentheses.
+  - A merge commit keeps the title the PR had when it merged, so set the title before merging. The 83 merged
+    PRs were renamed to this format on 2026-10-23 (`../sandbox/W11/pr-titles/pr-title-unification.md`); their
+    merge commits keep the old titles.
 - **Syncing:** merge `main` into your branch; do not rebase shared branches.
 - **Testing older code:** never use `reset --hard` over unpushed commits. Use
   `git switch --detach <commit>` or a worktree instead.
@@ -351,7 +372,14 @@ board and the tracker.
     day, is *Lists* row 65 (story ID, epic, priority, role, title, ticket SCRUM-119, work bundle *Annotation page
     & judgement*, board status), as inline strings before the existing Z65; the log's story dropdown and all 1,775
     lookup ranges now end at row 65. *Jira Statistics*, *Dashboard* and *Client Report* again unchanged, by the
-    same choice. Checked against a copy taken first: only *Lists* row 65 and those range ends changed;
+    same choice. Checked against a copy taken first: only *Lists* row 65 and those range ends changed. **Fifth hand
+    change, 2026-10-22** (asked for by Hanchen): 48 empty Log cells in rows 69, 70, 73, 75, 77, 80–84 and 86–91 were
+    filled, as inline strings in the styles of row 85. *Defects closed* got `-` where the PR closes no listed defect;
+    #83's issues 19 and 27 were already logged by PR #26. Rows 86–91 (PRs #89–#94) got their missing ticket, link, work
+    type, area, story, *What changed* and *Story complete?*. That is `No` for each one: four are unmerged, and #90 and
+    #94 follow stories (H2, D3) that earlier PRs completed. As before, *Reviewed by*, *Notes / evidence* and the
+    formula columns (*Week*, *Review OK?*, title, epic, priority) were left alone. Checked against a copy taken first:
+    only those cells changed;
   - the workbook's *Jira Statistics* filter range, and recalculation on open.
 
   *Start Here*, *Dashboard* and *Client Report* are never written. Text goes in as inline strings, so the

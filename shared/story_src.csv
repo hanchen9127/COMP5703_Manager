@@ -5,7 +5,7 @@ A1,A,P0,Lead,Changes are reviewed before they reach the platform,"As a project m
 2. Add a PR template carrying the story id, the defect it closes, and how it was verified.
 3. Add a CI workflow running backend pytest plus frontend typecheck and tests on every pull request.
 4. Agree a branch naming convention (story/D3-reviewer-corrections) and write it into docs/team-discipline/dev-workflow.md.
-5. Set a review rota so no pull request sits waiting on one person.",,dropped,,"SCRUM-125",shipped
+5. Set a review rota so no pull request sits waiting on one person.",,dropped,,SCRUM-125,shipped
 A2,A,P0,SC,I can trust that a fix in one place hasn't broken another,"As a client, I want the platform's automated checks to genuinely pass before anything ships, because otherwise a change to the review screen can silently break annotation and nobody finds out until the demo.","1. The web application's checks and test suite pass cleanly, so a broken change is caught before merge rather than after.
 2. Tests that claim to check something actually check it — a test named for image-annotation loading must fail if that loading breaks.
 3. Test setup does not imply behaviour the platform doesn't have.","**Issues 12 & 13** (frontend fails typecheck; test suite failing) — this story's definition of done is a green frontend build and suite, so both are resolved by the work itself rather than tracked separately.
@@ -23,7 +23,7 @@ A3,A,P0,SC,I can get a working copy of the platform running by myself,"As a team
 2. Drop tables in foreign-key-safe order so --reset works repeatedly against an already-seeded database instead of half-dropping the schema (issue 24).
 3. Add env_file to model_config in app/core/config.py:19 so a .env file is actually read (issue 23).
 4. Correct apps/hej-api/.env.example from the DAP_ prefix to HEJ_, which is what Settings expects (issue 23).
-5. Write the setup path in the README and have a second person follow it from a clean clone to seeded Admin, Reviewer and Annotator accounts.","23,24",done,"Yi Geng, Michael Max, Jingwei Lin","SCRUM-81, SCRUM-123",shipped
+5. Write the setup path in the README and have a second person follow it from a clean clone to seeded Admin, Reviewer and Annotator accounts.","23,24",done,"Yi Geng, Michael Max, Jingwei Lin","SCRUM-81, SCRUM-123, SCRUM-130",shipped
 A4,A,P0,SC,Platform credentials aren't sitting in shared code,"As an organisation administrator, I want the platform's service credentials kept out of the shared codebase, because a key that ships inside every copy of the code is a key I can't control, revoke or attribute.","1. No live credential is readable in the source code.
 2. Credentials are supplied per environment and can be rotated without a code change.
 3. The exposed key is rotated at the provider, not merely removed from the code.","**Issue 1** (live API key hardcoded in committed source) — this story's first criterion removes it, and the rotation criterion covers the part a code fix alone can't: the key is already public in every existing clone. Depends on **A3**, since configuration must actually load before a key can be supplied any other way.","1. Rotate the committed Gemini key at the provider — it is public in every existing clone and fork (issue 1).
@@ -179,7 +179,7 @@ D3,D,P0,BE/FE,My correction is saved and can become the answer,"As a reviewer, w
 3. Keep corrections out of submission counts, review states and review targets, so a correction never holds its item open.
 4. Show the correction to the corrected answer's author, the item's experts (arbitrators) and the project manager (task owner), and to a reviewer only once they have decided on that answer; never to the item's other annotators.
 5. Make the correction a candidate an independent expert (arbitrator) can accept in a dispute; the Accept itself is E3's (SCRUM-99) and the authoritative rule H4's (SCRUM-37).
-6. Keep the original annotation visible in history — corrected, not erased (with F3).",5,done,"Jingwei Lin, Dishank Aswal","SCRUM-32, SCRUM-49, SCRUM-124",shipped
+6. Keep the original annotation visible in history — corrected, not erased (with F3).",5,done,"Jingwei Lin, Dishank Aswal","SCRUM-32, SCRUM-49, SCRUM-124, SCRUM-129",shipped
 D4,D,P0,BE,I know I'm reviewing the right person's work,"As a reviewer, I want certainty that the annotation in front of me belongs to the annotator it says it does, because on a double-annotated item the platform currently can't reliably tell, and I could approve or reject the wrong person's submission without any sign anything went wrong.","1. Opening an item for review always shows a specific, identified annotator's submission.
 2. On an item annotated by two people, both submissions are individually addressable — I never get an arbitrary one of the two.
 3. My decision is recorded against the submission I actually looked at.","**Issue 3** (reviewers can get shown the wrong annotator's work) — the “which annotation is current” pick is effectively random on multi-annotator items. This story requires a defined answer, which is the fix; issues.md notes the choice between one canonical annotation per item and per-annotator submissions is a product decision to settle with the client first.
@@ -326,14 +326,14 @@ F5,F,P1,FE,I can see an item's whole story on one screen,"As a project manager (
 3. Project managers (task owners) and admins open it from the task's Finalized page. Reviewers do not see it while they decide, so a blind review stays blind (D7).",No open defects — net-new; depends on **F1**.,"1. Show a finalised item's history in order, from its source to its resolution, round by round.
 2. Show who, when and what changed on each entry, naming an AI model's provider, name and version.
 3. Open it from the Finalized page for project managers (task owners) and admins, and keep it out of the review screen (team decision, 2026-10-19, PR #85).
-4. Sequence after F1 — the timeline has nothing to read until provenance events are being written.",,working,Yi Geng,SCRUM-106,shipped
+4. Sequence after F1 — the timeline has nothing to read until provenance events are being written.",,done,Yi Geng,SCRUM-106,shipped
 G1,G,P0,BE,My role determines what I can do,"As an organisation administrator, I want a person's role to determine which actions they can take, because at the moment being a member of the organisation is enough to do almost anything, which makes the roles I assign decorative.","1. Approving, disputing, adjudicating and releasing each require the appropriate role.
 2. A user without the required role is refused with a clear message rather than silently allowed.
 3. Adding a new role later doesn't require reworking the workflow.",**Issue 7** (annotators can approve their own work) — **D1** blocks self-review specifically; this story generalises the same enforcement across every governed action so the gap doesn't simply reappear on the next endpoint.,"1. Add a capability check that reads RoleAssignmentDB.role_key — app/core/permissions.py verifies tenancy only, and nothing anywhere checks a role before an action.
 2. Require the appropriate capability for approving, disputing, adjudicating and releasing, so issue 7 cannot reappear on the next endpoint.
 3. Refuse without it, with a message that says what was needed, rather than allowing it silently.
 4. Keep the model extensible so adding a role later does not mean reworking the workflow.
-5. Coordinate with G3 — both stories change the same permission layer.",7,done,Jingwei Lin,"SCRUM-44, SCRUM-52",shipped
+5. Coordinate with G3 — both stories change the same permission layer.",7,done,"Jingwei Lin, Yi Geng","SCRUM-44, SCRUM-52, SCRUM-127",shipped
 G2,G,P1,BE,My project's governance posture actually governs,"As a project manager (task owner), I want choosing dual sign-off, expert gate or arbitration-ready to genuinely change what the workflow requires, because otherwise I've selected a label that reassures me and enforces nothing.","1. Dual sign-off requires the configured number of approvals from different reviewers before an item can finalise.
 2. Expert gate prevents completion until an expert (arbitrator) has approved.
 3. Arbitration-ready guarantees unresolved disagreement reaches arbitration rather than quietly defaulting.
@@ -401,7 +401,7 @@ H5,H,P1,BE,Export figures agree with the rest of the platform,"As a project mana
 **Issue 14** (backend export tests fail to even run) — criterion 3 requires working export tests, which means implementing the missing helper the existing test file already specifies; until then export behaviour is entirely unverified.","1. Use the same completion rule as the task itself, unified in B6.
 2. Make sure a task marked complete never produces an export reporting zero completed items (issue 19), and drop the impossible ""approved"" status while unifying the rule (issue 27).
 3. Confirm tests/test_task_exports.py runs — all three helpers it imports now exist, so issue 14 looks closed; verify it.
-4. Add tests covering export eligibility so this cannot silently regress.","14,19,27",done,Dishank Aswal,"SCRUM-43, SCRUM-125",shipped
+4. Add tests covering export eligibility so this cannot silently regress.","14,19,27",done,"Dishank Aswal, Parth","SCRUM-43, SCRUM-125",shipped
 H6,H,P0,FE,"The export, policy and history screens show real data","As a project manager (task owner), I want the export, policy and history screens to show my project's actual releases, actual policy and actual activity, because a screen showing sample data is worse than no screen — it tells me something confidently and it isn't true.","1. The project export list and individual export view show real releases produced by H1.
 2. The project policy screen shows the policy actually in force, as set in B2, and the governance posture from G2.
 3. The task history and setup screens show that task's real activity and real configuration.
@@ -410,7 +410,7 @@ Completes the second agreed objective alongside **E6** and **D8**. Depends on **
 2. Show the policy actually in force, as set in B2, and the governance posture from G2.
 3. Verify rather than rebuild — the task history and setup screens already read that task's real activity.
 4. Reconcile the figures on these screens with the task screen and the dashboard.
-5. Depends on H1 and H2; there are no real releases to display until they exist.",,working,Yi Geng,SCRUM-108,shipped
+5. Depends on H1 and H2; there are no real releases to display until they exist.",,done,Yi Geng,SCRUM-108,shipped
 I1,I,P0,GOV,I can re-run the whole workflow against known cases,"As a quality lead, I want to run a scripted scenario through the entire workflow and check the outcome against what should have happened, because testing individual pieces tells me nothing about whether the workflow holds together.","1. A scenario can run end-to-end — annotation, review, cross-validation, dispute, final judgement — without manual clicking.
 2. Each scenario states its expected outcome and reports pass or fail.
 3. Results are comparable across runs, so a regression is visible.",No open defects — net-new; nothing of this kind exists.,"1. Build a harness that drives a scenario end to end without manual clicking.
@@ -459,7 +459,7 @@ I5,I,P1,GOV,I can prove the platform's records hold up,"As a quality lead, I wan
 J1,J,P2,BE,My organisation has a stable identity,"As an organisation administrator, I want my organisation to have a unique identifier and address, because the client's one concrete requirement in this area is being able to refer to an organisation unambiguously.","1. Each organisation has a unique identifier and URL that don't change.
 2. An organisation can hold multiple accounts and use cases.",No open defects — net-new.,"1. Give each organisation a unique identifier and URL that do not change.
 2. Let one organisation hold multiple accounts and use cases.
-3. Keep it small — this is the client's one concrete requirement in this area.",,working,Jingwei Lin,SCRUM-88,shipped
+3. Keep it small — this is the client's one concrete requirement in this area.",,done,Jingwei Lin,SCRUM-88,shipped
 J2,J,P2,FE,I can see how my project is going at a glance,"As a project manager (task owner), I want a simple overview of project status and progress, because I want a starting point — not an analytics product.","1. Shows project status, item counts by state and basic workflow statistics.
 2. Figures agree with the task and export screens (see B6).
 3. Deliberately limited in scope — the client asked that time not be spent making this comprehensive.",No open defects — net-new.,"1. Show project status and item counts by state.
@@ -475,7 +475,7 @@ J4,J,P2,BE/FE,I can maintain a project after creating it,"As a project manager (
 2. I can archive a completed project; archived projects are read-only but still viewable.
 3. Changes are recorded in the project's history.","No open defects — net-new. Client's own list: rename, update, update policy, update team settings, update storage location, archive.","1. Rename a project and update its description, policy, team and storage settings.
 2. Archive a completed project; archived projects stay viewable but read-only.
-3. Record every change in the project's history.",,working,Jingwei Lin,SCRUM-45,shipped
+3. Record every change in the project's history.",,done,Jingwei Lin,SCRUM-45,shipped
 K1,K,P1,Lead,A reader can understand the system without us in the room,"As a client, I want a technical report covering the architecture, the evaluation results, the limitations and the known failure cases, because I have to maintain this platform after the team disperses.","1. Covers architecture, the evaluation results from Epic I, limitations, and failure cases we know about and did not fix.
 2. States what was consciously deferred and why — including which defects were left unfixed, with justification.
 3. Written progressively across the project, not assembled in the final week.","No open defects — but the deferred-defect record is what closes out issues.md honestly; any of the 29 not fixed by a story above needs an explicit, argued decision rather than silence.","1. Draft the architecture section as the workflow lands, not in the final week.

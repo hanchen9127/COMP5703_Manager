@@ -1,0 +1,31 @@
+1. [P2] SQLite can accept unfinished work after the project is archived
+
+Location: [archived_projects.py, lines 85–88](https://github.com/USYD-CS-Capstone/hej/blob/b9b05e7f3f97c92c2c5ae1276d8dbacaa6797017/apps/hej-api/app/api/archived_projects.py#L85-L88), together with `ProjectService.archive_project`.
+
+The guard relies on `FOR KEY SHARE` to keep its status check valid through the write. SQLite ignores that clause. Serializing the eventual writes does not serialize the earlier reads. Using the real application router, a file-backed SQLite database, and independent request connections, I paused task creation immediately after the guard, archived the empty project, then resumed creation. Archive returned **200**, task creation returned **201**, and the database contained an **archived project with a draft task**. The same schedule on PostgreSQL correctly refused the archive with 409.
+
+The SQLite path needs coordination or a conditional write that keeps the archived-state decision valid through mutation. Add a file-backed, independent-connection regression test; skipping the PostgreSQL race tests on SQLite leaves this invariant untested.
+
+### 2. [P2] Overlapping SQLite updates record an incorrect previous value
+
+Location: [project_service.py, lines 227–234](https://github.com/USYD-CS-Capstone/hej/blob/b9b05e7f3f97c92c2c5ae1276d8dbacaa6797017/apps/hej-api/app/services/project_service.py#L227-L234).
+
+The new audit entry is computed from `current`, but the metadata update has no comparison against that snapshot on SQLite. I paused a rename to Alpha after the read, completed a rename to Beta, then resumed Alpha. Both requests returned 200. History recorded **Original → Beta** followed by **Original → Alpha**, although Alpha actually replaced Beta. This undermines the central requirement that history preserve what each edit replaced. PostgreSQL produced a correct chain because its row lock serialized the reads.
+
+Use a conditional update/version check with retry or conflict handling, or serialize the read and write on SQLite. An audit insertion and update committing together is necessary but does not make a stale before-value correct.
+
+### 3. [P2] Concurrent PostgreSQL deletes deadlock on the guard's shared lock
+
+Location: [archived_projects.py, lines 86–87](https://github.com/USYD-CS-Capstone/hej/blob/b9b05e7f3f97c92c2c5ae1276d8dbacaa6797017/apps/hej-api/app/api/archived_projects.py#L86-L87).
+
+Every ordinary write, including project deletion, first takes `FOR KEY SHARE`. Two deletes can both pass the guard, then each needs stronger locks while deleting the project and its policy. With two real DELETE requests synchronized after the guard, PostgreSQL detected a deadlock and the responses were **500 and 204**. The server log identifies the cycle between `DELETE FROM projects` and `DELETE FROM project_policies`. The same full-router test against current main returned **204 and 204**.
+
+Choose a lock mode/order for deletion that avoids shared-lock upgrades, and retain an independent-connection PostgreSQL regression test. This is a new failure in an existing endpoint.
+
+### 4. [P2] A removed member's stale token reveals archived-project state
+
+Location: [archived_projects.py, lines 91–93](https://github.com/USYD-CS-Capstone/hej/blob/b9b05e7f3f97c92c2c5ae1276d8dbacaa6797017/apps/hej-api/app/api/archived_projects.py#L91-L93).
+
+The guard decides whether to disclose the archived status from the token's cached organization contexts, before the route performs its live membership check. I logged in normally, removed the user's membership in the database, and reused that token against an archived project. GET correctly returned **403**, but PUT returned **409 with the archived-project explanation** on both databases. On current main, that PUT returned 403. The write was refused, but the removed user could still learn project existence/state contrary to the stated outsider behavior.
+
+Verify live organization access before disclosing status. Add a full-router test using a real token issued before membership removal.

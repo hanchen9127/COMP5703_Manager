@@ -1,0 +1,10 @@
+test(SCRUM-91): wait for the new organisation's policy before checking a switch keeps the chosen one
+
+The two switch tests asserted inside waitFor, which passed on the first
+render after the switch, before the new organisation's default arrived.
+With `policyChosenRef.current = false` put back in the organisation
+handler, all 17 tests still passed.
+
+They now wait until the lookup has settled (waitForOrganizationPolicy),
+then assert. With the fix: 17 passed. With the reset put back: both
+switch tests fail.

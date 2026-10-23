@@ -101,3 +101,32 @@ Run on a local merge with `main` at `17469db`, without committing (detached work
 
   It also renames the two integrity tests named after the old capabilities, and regenerates `baseline.json`.
 - **SCRUM-75 (I5's findings record, Kanishka)** can cite these checks and the casebook cases EV-116 to EV-123.
+
+## Re-review at `3f9a0cb` (2026-10-20)
+
+Jingwei pushed three commits after the Request changes, and explained them in a comment at 12:33 UTC:
+- **`b5f3d45`** fixes must-fix 1;
+- **`c638a9e`** fixes the manifest nit;
+- **`3f9a0cb`** merges `main` at #75 and #90.
+
+| Point | At `3f9a0cb` |
+| --- | --- |
+| Must fix 1: a settler who later answers the item | ✅ `reviewed_or_decided_before` counts `disagreement_settled` (matches `item_judge_ids_by_item`). Its message reads "reviewed, settled or decided". A prove test sits beside the reviewer's: LATE settles, then answers |
+| Nit: a tampered manifest crashes the check | ✅ `rebuild_release` reads the manifest's JSON, release id and task, each item's id, answer, resolution and line, and `release_manifest.verify`, all under one guard. `ValueError`, `KeyError` or `TypeError` there becomes one finding on the release, e.g. "its manifest can't be read: it has no 'items'". `_released_answers` does the same for each artefact line, with a finding of item `None` and the line skipped. Four prove tests: not JSON, missing `items`, a JSON array, an artefact line that isn't JSON |
+| Nit: mark the PR ready | ❌ GitHub still shows a draft at re-review time, although the comment says it is marked ready |
+
+**The merge commit** (`3f9a0cb`) is clean. `git show --remerge-diff` is empty, and `main` (`17469db`) is fully contained.
+
+**One observation, not a change request:** `release_manifest.verify` (platform code) sits inside the guard, so a
+genuine `KeyError` inside it would read as an unreadable manifest. That is acceptable, because `verify` consumes
+the manifest and a tampered one is exactly what would make it raise. The platform's line recipe
+(`_release_line`), which reads the database's rows, stays outside the guard, as the comment says.
+
+**Verification at `3f9a0cb`** (detached worktree `D:\COMP5703_Capstone\hej-review-79`):
+- Backend, full, SQLite: `2450 passed, 16 skipped, 209 subtests passed`. That is 2,445 plus the five new tests.
+- Casebook `--baseline evaluation/baseline.json --exact`: `85/85 passed, 1 skipped` (EV-018),
+  `86 cases: 86 unchanged. No regression.`
+- PostgreSQL: not run here. Jingwei reports 2,423 passed, 3 skipped on it.
+
+**Verdict: approve.** Posted 2026-10-20 12:51 UTC as Approve on `3f9a0cb`. It asks Jingwei to mark the PR ready for
+review, since it is still a draft.

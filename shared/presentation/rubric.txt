@@ -1,0 +1,195 @@
+Deliverables and Submission Details
+This is a group presentation slides and and interactive oral assignment.
+
+Attention 1: Please submit this assessment by only one group member per group.
+
+Attention 2: AI Statement is required for this assessment ^_^
+
+You are going to have a group presentation this semester, which is going to be divided into two parts:
+
+Part 1: groups submit their group presentation slides here before the due date (i.e., 8.00am Monday of week 13).
+
+Part 2:  In week 13, groups must give a live presentation (15-20 minutes), followed by a 20-minute interactive oral defence of their project with the markers/tutors.
+
+Your group will be contacted by your marker on week 12 to announce the specific date and time of this live session.
+Each group member will be randomly selected by your marker to answer a question during the interactive oral session. Therefore, each member MUST be familiar with the whole project very well in order to answer the questions, even though the other group members are allowed to add to the answers later.
+Mandatory Requirements on slides:
+
+presentation slides can only contain 15 - 16 pages (exclude title page and information page), including
+Motivation/objective of the work
+Related work / background study
+Outlining of own approach/method/algorithm
+Main results of own project
+Discussion/evaluation of own work
+Conclusion and reflection of own work
+[Attention please]  In the information page of the slides, please follow the template to list the group member name and their role(s)/responsibilities in the project.
+presentation  cannot be longer than 20 minutes (recommended: 15 - 20 minutes). 
+each group member MUST present at least two slide (around 2-3 minutes) of the content during the presentation
+except main slides, you are allowed to submit an extra slides including any point you think is useful for your markers to get a better understanding of your project.
+Please complete and submit the AI statementDownload statement together with your presentation slides for proper acknowledging and referencing the use of AI as required by University.
+It is due on Monday of Week 13, no later than 8.00 am in the morning. 
+
+Submit your presentation slides electronically here in Canvas.
+
+The presentation template can be downloaded hereDownload here
+
+Please use the file format when submitting your file e.g. CSXX-X_Group_Slides.ppt/pdf and CSXX-X_Group_
+
+Late submission
+In accordance with University policy, these penalties apply when written work is submitted after 11:59pm on the due date:
+
+Deduction of 5% of the maximum mark for each calendar day after the due date.
+After ten calendar days late, a mark of zero will be awarded.
+Digital tools and generative AI in assessments
+You are permitted to use generative AI tools for learning purposes, as long as you follow all University policies including:
+
+Academic Integrity Policy 2022 (pdf, 376KB)
+Acceptable Use of ICT Resources Policy 2019 (pdf, 258KB)
+Student Charter 2020 (pdf, 221KB).
+The AI in Education Canvas site contains a number of productive ways that students are using AI to improve their learning.  
+
+Acknowledging and referencing the use of AI
+You will need to include a statement in your submitted work explaining:
+
+that you have used AI tools in completing the work
+what automated writing or generative AI tools you have used
+how you have used them.
+The unapproved use of automated writing tools or generative AI, or failing to acknowledge them, in assessable work is currently considered to be a breach of academic integrity, and penalties may apply.
+
+For more in-depth information about generative AI use, you should check the AI in Education Canvas site. It includes additional guidance on how to acknowledge and reference the use of generative AI.
+
+ 
+
+Attention Please: Failure to attend the Interactive Oral session will result in a fail for this unit immediately.
+
+Academic Integrity
+You are required to take part in your education in an honest and ethical manner. Failure to comply with assessment rules and University policies could result in you being investigated and penalised by the University for an academic integrity breach.
+
+We use Turnitin to help detect potential academic integrity breaches. In some cases, your instructor will permit multiple attempts for the assessment and will allow you to view the Turnitin report immediately, which you can use to help revise your submission and then resubmit. For help understanding the report, visit the Turnitin guide for students.
+
+Compliance statement
+In submitting this work, I (or we, in the case of a group submission) acknowledge that:
+
+I have read and understood the Academic Integrity Policy, and where relevant, the Research Code of Conduct, and that this assessment submission complies.
+I have complied with all rules and referencing requirements set for this assessment task, including correctly acknowledging the use of any generative AI tools or assistance from others such as copyediting or proofreading.
+The work has not previously been submitted in part or in full for assessment in another unit unless permission has been given by the unit of study coordinator.
+Engaging another person to complete part or all of the submitted work will, if detected, lead to proceedings for potential student misconduct under the University of Sydney (Student Discipline) Rule.
+You should keep copies of your assignment submission, drafts, AI outputs and research materials for one year.
+
+Group Presentation
+Criteria	Ratings	Points
+Presentation Structure and Visual Design
+view longer description
+
+Full Marks
+All required key content sections are clearly present, logically ordered, and well-explained. Slides are professionally designed, clean, readable, visually balanced, and stylistically consistent. Fonts and colours used on slides appropriately. Slides are not overcrowded. No excessive use of colour and animation.
+15 pts
+
+Very Good
+Minor structural or formatting issues, but overall are good. Most content sections are included with logical flow. Slides are generally well-designed with minor issues in layout, text balance, or visual consistency.
+12 pts
+
+Good
+Some sections unclear or inconsistent; slides are adequate but could be improved. Some required sections are missing or underdeveloped. Structure is somewhat disjointed. Slide design is functional but may be text-heavy, cluttered, or inconsistent in style.
+9 pts
+
+Satisfactory
+Major content or formatting problems; hard to follow at times. Does not follow the assessment requirement displayed on canvas page. Major sections are missing or unclear. Presentation lacks cohesion. Slides are hard to read due to poor formatting, inconsistent fonts, or distracting elements.
+6 pts
+
+No Marks
+Slides are not submitted, or the content and structure are severely lacking and do not reflect the assignment requirements.
+0 pts
+/15 pts
+Demonstrated Project Understanding and Insight
+view longer description
+
+Full Marks
+Clear, confident, and insightful explanation of all key aspects of the project. Technical components are well-contextualised and explained with strong depth. Shows clear ownership, rationale behind decisions, and ability to connect ideas meaningfully.
+30 pts
+
+Very Good
+Mostly clear and accurate explanation with reasonable depth and contextual understanding. Some minor gaps in rationale, but project decisions and methods are generally well communicated.
+24 pts
+
+Good
+Adequate understanding shown, but explanations may be shallow, overly descriptive, or rely too much on scripted text or slides. Context and justification are present but not consistently strong.
+18 pts
+
+Satisfactory
+Basic or vague explanation of key concepts. Technical content may be glossed over or incorrectly described. Limited understanding, voice or insight into project work.
+12 pts
+
+No Marks
+No meaningful explanation or evidence of understanding. Content may appear superficial narration, or disconnected from the presenter’s actual contributions.
+0 pts
+/30 pts
+Live Q&A Performance
+view longer description
+
+Full Marks
+The team responds confidently, clearly, and accurately to all questions. Answers show deep insight and strong involvement from all members. Follow-up or technical questions are handled well.
+30 pts
+
+Very Good
+Most questions are answered clearly and correctly. Minor lapses in confidence or clarity. All members participate, showing good understanding and contribution.
+24 pts
+
+Good
+Responses are generally correct but may lack detail or depth. Some members are less active or rely on others to fill in gaps. Insight is uneven across the team.
+18 pts
+
+Satisfactory
+Answers are vague, generic, or superficial. Limited participation from some members. Responses suggest only partial understanding or involvement.
+12 pts
+
+No Mark
+The team is unable to respond meaningfully to questions. Responses show a lack of understanding or members are not actively engaged.
+0 pts
+/30 pts
+Timing and Pacing
+view longer description
+
+Full Marks
+Presentation is well-paced and fits within the expected time limit. Content is evenly distributed that all major topics are well covered, with no section rushed or prolonged. Timing feels natural and well-distributed across group members.
+12 pts
+
+Very Good
+Presentation is within the time range with only minor pacing issues. Most topics receive appropriate attention, with some slight imbalance in timing or delivery between sections or speakers.
+9 pts
+
+Good
+Presentation is slightly over the time limit. Some content is rushed or overly detailed. Time distribution across topics or speakers is uneven but not severely disruptive.
+6 pts
+
+Satisfactory
+Noticeable time management issues. Several key areas are rushed or underdeveloped, or the presentation drags. One or more group members dominate or are underrepresented.
+3 pts
+
+No Marks
+Presentation is significantly over time. Poor pacing throughout, major sections are missing or glossed over, or group participation is extremely unbalanced.
+0 pts
+/12 pts
+Audience Engagement and Communication Style
+view longer description
+
+Full Marks
+Delivery is confident, clear, and highly engaging throughout. Presenters speak naturally, maintain strong eye contact with the camera, and use visuals effectively to support communication. Tone, pacing, and storytelling enhance clarity and maintain attention. Not directly reading from the slides.
+13 pts
+
+Very Good
+Generally confident and clear delivery. Some minor reading or pacing issues, but presenters maintain engagement and use visuals well overall. Tone and communication are mostly effective.
+10 pts
+
+Good
+Delivery is somewhat engaging but includes frequent reading or flat tone. Limited variation in vocal delivery or inconsistent use of visuals. Audience attention may fluctuate.
+7 pts
+
+Satisfactory
+Presentation feels scripted or read aloud. Monotone or unclear delivery. Visuals may be underutilized or poorly timed. Limited audience attraction.
+4 pts
+
+No Marks
+No meaningful effort to engage audience. Delivery is unclear, inaudible, or fully read from slides. Communication style detracts from understanding.
+0 pts
+/13 pts
