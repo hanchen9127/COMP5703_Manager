@@ -1,0 +1,37 @@
+refactor(api): remove the send-back repair the reads no longer run (A6, SCRUM-121)
+
+The previous commit stopped the task-item reads from repairing expert
+send-back statuses. Nothing else ran the repair, so it goes:
+list_task_items_with_send_back_resolution and its alias,
+reconcile_resubmitted_send_back_items, repair_expert_send_back_for_task,
+collect_expert_send_back_item_ids, apply_expert_send_back_to_items,
+ensure_expert_send_back_status, _update_item_status_if_unchanged,
+_refresh_item_statuses_from_db, and the helpers only they used.
+
+decide_escalation set the item to expert_send_back and committed, then
+called ensure_expert_send_back_status to set it again; that call goes.
+current_expert_send_back_at keeps only the path the replacement guard
+uses: predecessor is now required. Its item-wide path served the
+repair's display.
+
+What stays is the Return evidence the writes read:
+current_expert_send_back_at_by_submission, for item_status_after_accept,
+the replacement guard and the annotate queue. It writes nothing.
+
+Tests:
+- test_task_item_status_resolution.py tested only the deleted functions
+  and goes.
+- test_independent_second_review.py: five tests of the repair racing the
+  writes go (overlapping reconciliation, no-op timestamp, lock refresh,
+  token handling, multi-item order). The legacy Return aggregate test
+  keeps its submissions and reads and checks that the reads wrote
+  nothing, without the reconcile it called. Two tests ask
+  current_expert_send_back_at about the predecessor being replaced;
+  with that, a Return decided before the answer was submitted grants
+  nothing, as the 409 in the same test shows.
+- test_task_item_reopen.py: the history-only send-back test asked the
+  deleted collector and goes; its section comment and helpers no longer
+  speak of a repair.
+
+The suite drops by exactly the 15 deleted cases. The casebook passes
+unchanged.

@@ -1,0 +1,32 @@
+test(api): no route can rewrite a stored review (SCRUM-134)
+
+Defect 8 ("a legacy review API rewrites approval history") was covered
+by the unit tests of the four 410 stubs. Commit "remove the retired
+review mutation routes" deleted them with the stubs, so the casebook's
+coverage note pointed at tests that no longer exist, and nothing would
+fail if a review edit or delete came back.
+
+New: test_review_history_is_append_only.py reads the application's own
+route table (app.routes), so any route added later is checked too.
+- test_no_route_writes_to_the_stored_reviews: no POST, PUT, PATCH or
+  DELETE on a path containing /reviews, and the review-actions POST,
+  which appends a review, is registered.
+- test_review_history_stays_readable: GET
+  /annotations/{annotation_id}/reviews and GET /reviews/{review_id} are
+  registered.
+Re-adding PATCH /reviews/{review_id}, POST
+/annotations/{annotation_id}/reviews or POST /reviews/{review_id}/submit
+fails the first case each time.
+
+REQUIRED_COVERAGE's defect 8 note in scenario.py now reads "unit tests:
+no route edits or deletes a stored review (#6, #102)". The evaluation
+README's sample output and evaluation-findings.md's quote of it match.
+The "unit tests:" prefix stays, so test_evaluation_runner.py holds. The
+casebook passes unchanged, and list --coverage counts 16 of 16 owed
+protections covered.
+
+Files:
+apps/hej-api/evaluation/README.md
+apps/hej-api/evaluation/harness/scenario.py
+apps/hej-api/tests/test_review_history_is_append_only.py
+docs/evaluation-findings.md

@@ -1,0 +1,53 @@
+Using CPython 3.14.7
+Creating virtual environment at: .venv
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 41 packages in 1.98s
+ambiguous_item            1  (1 runnable)
+annotator_disagreement    3  (3 runnable)
+confidently_wrong_ai      3  (3 runnable)
+guideline_changed         1  (1 runnable)
+missing_provenance        5  (5 runnable)
+reviewer_disagreement     8  (8 runnable)
+source_changed            1  (0 runnable)
+superseded_in_release     1  (1 runnable)
+unreviewed_in_release     1  (1 runnable)
+9 of 9 adversarial categories covered
+8 of 9 have a case that runs
+
+What the cases protect (SCRUM-71):
+defect 2    EV-041  (1 of 1 runnable)
+defect 4    EV-068, EV-069  (2 of 2 runnable)
+defect 5    EV-070  (1 of 1 runnable)
+defect 6    EV-027  (1 of 1 runnable)
+defect 7    EV-001, EV-021, EV-022, EV-023, EV-063, EV-115, EV-124  (7 of 7 runnable)
+defect 8    covered by unit tests: the legacy review routes were retired (#6)
+defect 10   EV-046  (1 of 1 runnable)
+defect 15   EV-040, EV-061  (2 of 2 runnable)
+defect 16   EV-047  (1 of 1 runnable)
+defect 20   EV-002, EV-107  (2 of 2 runnable)
+defect 29   EV-048  (1 of 1 runnable)
+SCRUM-85    EV-050, EV-051, EV-052, EV-054  (4 of 4 runnable)
+SCRUM-116   EV-030, EV-120  (2 of 2 runnable)
+SCRUM-117   EV-031  (1 of 1 runnable)
+SCRUM-120   EV-043  (1 of 1 runnable)
+I1.1        EV-026, EV-091  (2 of 2 runnable)
+SCRUM-37    EV-069  (1 of 1 runnable)
+SCRUM-53    EV-014  (1 of 1 runnable)
+SCRUM-73    EV-105, EV-106, EV-107, EV-108, EV-109, EV-110, EV-111  (7 of 7 runnable)
+SCRUM-74    EV-015, EV-116, EV-117, EV-118, EV-119, EV-120, EV-121, EV-122, EV-123  (9 of 9 runnable)
+SCRUM-87    EV-080  (1 of 1 runnable)
+SCRUM-98    EV-015, EV-118  (2 of 2 runnable)
+SCRUM-101   EV-013  (1 of 1 runnable)
+SCRUM-102   EV-017  (1 of 1 runnable)
+SCRUM-103   EV-040  (1 of 1 runnable)
+SCRUM-104   EV-122  (1 of 1 runnable)
+SCRUM-105   EV-015, EV-016  (2 of 2 runnable)
+SCRUM-107   EV-124, EV-127  (2 of 2 runnable)
+SCRUM-110   EV-042, EV-044  (2 of 2 runnable)
+SCRUM-118   EV-112, EV-113, EV-114, EV-115, EV-128  (5 of 5 runnable)
+SCRUM-122   EV-011, EV-102, EV-103, EV-104  (4 of 4 runnable)
+SCRUM-126   EV-125, EV-126, EV-127, EV-128, EV-129, EV-130  (6 of 6 runnable)
+SCRUM-127   EV-131, EV-132  (2 of 2 runnable)
+16 of 16 owed protections covered

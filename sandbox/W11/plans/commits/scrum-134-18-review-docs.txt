@@ -1,0 +1,85 @@
+docs: the reconciliation Return, the dispute lock order and every reset case (SCRUM-134)
+
+The review of #102 found doc points the earlier commits got wrong or left
+loose. No code behaviour changes: the only Python change is a test
+module's docstring.
+
+workflow_states.md:
+- The diagram had lost a live transition. The earlier change made
+  FINALIZED -> READY owner-only, which is right, but the "expert's
+  Return" it dropped was the item reconciliation's return, which still
+  reopens the item (ADR 017: "return reopens the item").
+  resolve_item_reconciliation refuses unless the item is reviewed and
+  calls reopen_task_item with cause reconciliation_return, which
+  supersedes the round and sets the item to pending. The item waits in
+  reviewed for an expert's decision, the diagram's IN_ARBITRATION
+  ("expert authority engaged"), so the new line is IN_ARBITRATION ->
+  READY. The owner-only FINALIZED -> READY line stays.
+- The owner-reopen note gains one sentence: the reconciliation Return
+  does reopen the item, before it is finalised, from reviewed to READY,
+  superseding its round as the owner's reopen does.
+
+ADR 011: decision 3 says the decision takes the item lock and then runs
+the conflict helper before any write. For the annotation dispute that is
+not yet so: decide_annotation_dispute runs adjudication_conflict_item_ids
+before any lock, and resolve_annotation_dispute then locks the dispute
+row and, after checking the decision, the task item. The only test of
+the lock order exercised the removed decide_escalation. The 2026-10-25
+Amended by note says this plainly as a known gap that no test pins.
+
+README.md: the reset paragraph named only expert_send_back and the
+dropped table. It now says any database written before #102 must be
+reset with --reset, and lists what it may hold that the code no longer
+reads, each with its effect: expert_send_back (that task's item reads
+and the organisation's item-status counts fail); the pre-B4 task
+statuses ready, in_review and disputed (TaskStatus has none of them, so
+reads of that task fail); reviews with no verdict (the round skips them,
+so an unfinished item's submission is offered for review again);
+submissions without a sample row (read as unsampled); and the
+task_item_escalations table, which reset_db drops.
+apps/hej-api/README.md's disposable-database section points to it.
+
+backend-governance-guards.md: the limitation and the future-work item
+that asked for dedicated review/escalation routes now describe the
+current state: review decisions go through the review-actions route,
+escalation is its escalate verdict, which opens an annotation dispute,
+and the dispute routes decide it. Its dataset intake guard no longer
+lists the pre-B4 task status ready: DATASET_INTAKE_TASK_STATUSES holds
+draft only, and the refusal reads "...in draft status."
+
+api_surfaces.md: the adjudicate queue row said "opened/routed to
+dispute". It now names what the conflict helper counts: annotated,
+reviewed, settled, or opened an annotation dispute on, opening a held
+split into one included.
+
+test_review_history_is_append_only.py: the module docstring overstated
+the guard. It reads the route table's paths, so a route at another path
+that wrote a review would not be caught. It now says so, and that the
+review action is today the only code in the application that constructs
+a ReviewDB. The two tests pass.
+
+ADR 010: the Amended by line had grown to about 1,500 characters mixing
+two dates. It is now a short sub-list: ADR 018's formula, the
+2026-10-24 retirement of expert_send_back, the 2026-10-25 retirement of
+the item escalations, the 2026-10-25 verdict and sample guarantees, and
+the reset policy with what the body's mentions describe. All facts are
+kept. Decision 4's inline note is one line.
+
+ADR 013: the earlier change rewrote a Consequences sentence in place.
+The original, "Legacy item-escalation compatibility remains temporary
+and must not be used to infer annotation-level evidence.", is restored;
+the Amended by line now names that remark among the text that describes
+the earlier design, and decision 9's inline note stays.
+
+Review of PR #102 (Jingwei Lin), SCRUM-134.
+
+Files:
+README.md
+apps/hej-api/README.md
+apps/hej-api/tests/test_review_history_is_append_only.py
+docs/adr/adr010_independent_second_review.md
+docs/adr/adr011_adjudication_independence.md
+docs/adr/adr013_annotation_level_disputes.md
+docs/backend-governance-guards.md
+docs/design/backend/api_surfaces.md
+docs/design/product/workflow_states.md

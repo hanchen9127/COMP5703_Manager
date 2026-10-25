@@ -1,0 +1,71 @@
+fix(api): a reopen's reason and earlier answers reach only readers who may see the reopen (SCRUM-139)
+
+Commit 1 of this PR made the task history (GET /tasks/{task_id}/audit-logs)
+list an item_reopened entry's reason, cause and superseded_annotation_ids
+as changes, for every reader with task access. The item timeline
+(list_item_events) leaves a reopen out for a reader who is blind on the
+item or may not see an answer it superseded. A reconciliation Return
+reopens with the expert's justification as its reason, which may name a
+candidate's answer: in Yi's repro Dana, the author of one candidate,
+read "Charlie chose politics" in the History while Charlie's answer was
+still hidden from her. Found in Yi's review of #104.
+
+The rule is the timeline's, shared rather than copied:
+provenance_service.may_see_reopen(details, blind, visible) is true when
+the reader is not blind on the item and every superseded answer is among
+the annotations AnnotationService.visible_to_caller keeps.
+list_item_events now drops a reopen by it (no change in behaviour: its
+linked-annotation check already dropped a reopen with a hidden
+superseded answer). reopens_seen applies it to several reopens with the
+timeline's inputs, batched: one blind_submissions_by_item call over the
+reopened items, one annotation query, and one
+visible_records_by_item pass (the batched form visible_to_caller is one
+item's case of).
+
+task_audit_log_query.py: when the history is read for a user, each
+item_reopened entry the reader would not see on the timeline loses its
+reason and superseded_annotation_ids changes; its cause and status
+changes and its summary, which states only the cause, stay. No other
+operation's entry changes.
+
+task_history.py: TaskHistoryEventRead gains details_withheld (default
+false), true on such an entry, so the web can say the reason and the
+earlier answers are hidden rather than look broken.
+
+Tests, in test_task_item_reopen.py:
+- Prove (Yi's case):
+  test_a_reconciliation_returns_reason_reaches_only_readers_who_see_the_return:
+  after a reconciliation Return whose justification names both
+  candidates, Alice, whose answer it superseded and who may not see
+  Carol's, reads the entry with changes status and cause only and
+  details_withheld true; the owner and the reviewer Frank read the
+  reason, cause reconciliation_return and the superseded ids, with
+  details_withheld false.
+- Prove: test_an_owners_reopen_is_withheld_from_readers_who_do_not_see_it:
+  with two approvals required, Dana, a reviewer blind on round two while
+  she may see every superseded answer, and Bob, who may not see Alice's
+  round-one answer, both read the owner's reopen withheld; the owner
+  reads it whole.
+- Guard: both tests check, for every member of the fixture, that an
+  entry is withheld exactly when list_item_events leaves its reopen out
+  for that reader.
+- Guard: the owner's own reopen in
+  test_the_task_history_reads_a_reopens_reason_cause_and_superseded_answers
+  reads details_withheld false.
+With HEAD's task_audit_log_query.py put back (schema field kept), both
+Prove tests fail on the extra reason and superseded_annotation_ids
+changes; with HEAD's schema too, the owner's Guard fails as well (no
+details_withheld).
+
+api_surfaces.md: the reopen section says who gets the three fields, and
+that the others get the entry without the reason and the superseded ids,
+with details_withheld true.
+
+Review of PR #104 (Yi Geng), SCRUM-139.
+
+Files:
+apps/hej-api/app/schemas/task_history.py
+apps/hej-api/app/services/provenance_service.py
+apps/hej-api/app/services/task_audit_log_query.py
+apps/hej-api/tests/test_task_item_reopen.py
+docs/design/backend/api_surfaces.md

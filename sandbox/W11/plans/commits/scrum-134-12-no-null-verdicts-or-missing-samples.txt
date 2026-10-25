@@ -1,0 +1,135 @@
+refactor(api): reviews without a verdict and submissions without a sample are no longer read (SCRUM-134)
+
+Two legacy states had their own branches in the review reads: a review
+stored with no verdict (approved or needs_revision by its coarse status
+alone), and a submission with no cross_review_samples row. Nothing writes
+either any more. The only ReviewDB(...) in app is the review action's,
+which sets verdict from the request's required action (accept, reject,
+adjust, revise or escalate); the seeds write reviews through that route,
+and the casebook's forge_review tamper sets a verdict too (accept by
+default). Every way an answer reaches review stores its sample in the same
+transaction, which the new gate test below proves. A fresh seed holds no
+review with a NULL verdict and no submission without a sample row.
+
+independent_review_service.py:
+- evaluate_review_round loses the legacy approval (a NULL verdict with
+  status approved completing a single pass, legacy_approved_by) and the
+  "legacy unknown deciding status" (_DECIDING_STATUSES), which ended
+  the round as stopped. SubmissionReviewRound loses legacy_approved_by;
+  approved_by reads the ordinary accepts alone. The docstring no longer
+  describes either.
+- stopped was produced only there, so it goes where it was matched:
+  compare_submission_reviews, blind_item_statuses and
+  cross_review_report_and_pairs here, and submission_accept_outcome and
+  item_status_after_accept in review_policy_enforcement.py.
+- load_submission_review_facts reads a submission's sampling from its
+  stored row only. A missing row is read as not sampled; it no longer
+  works the sampling out from the policy in force for a current
+  unfinished answer.
+- submission_is_sampled goes as a whole, with its "Completed legacy work
+  is not reopened" fallback: nothing called it.
+
+submission_rules.py: the comments on SubmissionReviewState.approved_by
+and decided_since_submission, and approvers_of's docstring, no longer
+mention legacy NULL rows or an unknown decision.
+
+routes/review_actions.py: the comment on the review action's
+ensure_submission_sample call says what it does now. The call stays: it
+is idempotent and returns the submission's stored row.
+
+The other readers of a NULL verdict accept only a real one:
+- routes/tasks.py: the export's approvals under the canonical rule are
+  reviews with verdict accept, and the completing review's verdict is
+  read without a fallback. The legacy and normalized exports' review
+  verdict no longer falls back to review_status.
+- routes/annotations.py (the annotation's reviews and one review) and
+  routes/review_actions.py (the adjustment's review_verdict): verdict
+  no longer falls back to review_status.
+- evaluation_metrics.py: review burden counts redo verdicts only;
+  REDO_REVIEW_STATUSES goes.
+- evaluation/harness/integrity.py: the canonical-rule check finds the
+  accept by its verdict only.
+
+Why it is safe: with every review carrying a verdict and every
+submission carrying its sample, each removed branch and fallback was
+unreachable, and each changed read returns what it returned before.
+- The gate, test_submission_samples.py, runs every path that writes an
+  answer and checks its sample row: a person's draft through the draft
+  routes, the AI's first pass run inline at activation, the AI's first
+  pass run by the worker, a resubmission after a return, a reanswer
+  after a reopen, a person's rework of a returned AI answer and an
+  independent answer after an AI reject, and a new annotator's answer
+  after an expert's Return to a new annotator, with and without its
+  context. A reviewer's correction has no row, since it is not a
+  submission. A last guard reads the source: only create_version,
+  create_independent_replacement and the repository's create build an
+  AnnotationDB, and only the draft submission calls the repository's
+  create. Removing the sample write from create_version, from
+  create_independent_replacement or from the draft submission's first
+  answer fails three of these tests each.
+- The export: a fresh init_data.py --reset SQLite seed, exported before
+  and after the change, all 20 tasks in the default, legacy and
+  normalized_json formats, unfiltered and filtered by each author (132
+  calls: 66 exports and 66 identical 403 refusals). With the two export
+  timestamps masked, the JSON files are byte-identical. The full backend
+  suite run with a plugin that sends every export call, direct and
+  through the routes, to both the HEAD export_annotations and the new
+  one on the same session: 188 calls from 77 tests, 109 exports and 79
+  refusals, all identical.
+
+Tests:
+
+New: test_submission_samples.py, the gate above (11 cases).
+
+Deleted, because they tested only the removed states (5 cases):
+- test_independent_second_review.py:
+  test_a_canonicalized_legacy_submission_is_never_retroactively_sampled,
+  test_unrecognised_legacy_decision_does_not_allow_a_second_ordinary_review
+  (None and legacy_unknown),
+  test_unsampled_single_pass_legacy_approval_still_completes_its_submission
+  and
+  test_unstructured_legacy_approval_does_not_fill_an_independent_ordinary_slot.
+
+Rebuilt with stored samples, where the missing row was the point:
+- test_independent_second_review.py:
+  test_pre_review_report_matches_queue_sampling_without_writing (was
+  test_pre_review_seeded_report_...): the answer stores its sample, the
+  report and the queue read it, and reading writes no other row.
+  test_pre_review_report_uses_stored_unsampled_decisions_before_current_policy:
+  the later answer stores its own sample under the new policy, and the
+  earlier stored unsampled decision still holds.
+
+Given a real verdict or a stored sample, where the NULL verdict or the
+missing row was incidental:
+- test_independent_second_review.py:
+  test_comparison_uses_distinct_current_ordinary_reviewers_and_stable_order:
+  the answer stores its sample, and the review with no verdict goes.
+- test_provenance_review_workflow.py:
+  test_held_disagreement_is_hidden_from_annotators_and_blind_reviewers:
+  the pending peer answer stores its sample.
+- test_submission_rules.py:
+  test_approvers_count_each_person_once_and_only_approvals and
+  test_approvers_count_only_approvals_since_the_last_submission.
+- test_release_gate.py: _held_split's two reviews (accept and revise).
+- test_archived_project_is_read_only.py and
+  test_project_policy_updates.py: their fixture reviews (accept).
+
+The backend suite goes from 2482 to 2488 passed (11 added, 5 deleted),
+62 skipped. The casebook passes unchanged.
+
+Files:
+apps/hej-api/app/api/routes/annotations.py
+apps/hej-api/app/api/routes/review_actions.py
+apps/hej-api/app/api/routes/tasks.py
+apps/hej-api/app/services/evaluation_metrics.py
+apps/hej-api/app/services/independent_review_service.py
+apps/hej-api/app/services/review_policy_enforcement.py
+apps/hej-api/app/services/submission_rules.py
+apps/hej-api/evaluation/harness/integrity.py
+apps/hej-api/tests/test_archived_project_is_read_only.py
+apps/hej-api/tests/test_independent_second_review.py
+apps/hej-api/tests/test_project_policy_updates.py
+apps/hej-api/tests/test_provenance_review_workflow.py
+apps/hej-api/tests/test_release_gate.py
+apps/hej-api/tests/test_submission_rules.py
+apps/hej-api/tests/test_submission_samples.py

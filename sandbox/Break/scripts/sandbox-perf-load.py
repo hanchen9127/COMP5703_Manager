@@ -53,13 +53,14 @@ class Browser:
 FRONTEND = "main"  # main: origin/main df7c05a. dedupe: tabs reuse the shell's drafts. batch: one drafts-batch call.
 # main-now: origin/main 9f4ec6c (#52 adds the annotate queue to the shell's batch).
 # scrum119: SCRUM-119's branch: drafts read once, alongside the items; each tab refreshes with one call.
+# a6-main: origin/main ffc42abd's project page (the task pages as scrum119). scrum121: SCRUM-121's project page.
 
 
 def task_shell(b: Browser, task_id: str):
     """TaskWorkspaceClientShell: hydration + enrichment, started together."""
     enrichment = b.pool.submit(b.get, f"/tasks/{task_id}/setup")
     task = b.get(f"/tasks/{task_id}")
-    if FRONTEND == "scrum119":
+    if FRONTEND in ("scrum119", "a6-main", "scrum121"):
         items, _, _, _ = b.all([f"/tasks/{task_id}/task-items", f"/projects/{task['project_id']}",
                                 f"/tasks/{task_id}/work-queue/annotate?include_unavailable=true",
                                 f"/tasks/{task_id}/drafts"])
@@ -82,7 +83,7 @@ def tab_drafts(b: Browser, items, task_id: str = ""):
     """The Annotate and Review tabs' own second fetch, gone unless FRONTEND is main."""
     if FRONTEND in ("main", "main-now"):
         b.all([f"/task-items/{i['id']}/drafts" for i in items])
-    elif FRONTEND == "scrum119":
+    elif FRONTEND in ("scrum119", "a6-main", "scrum121"):
         b.get(f"/tasks/{task_id}/drafts")
 
 
@@ -102,11 +103,52 @@ def page_review(b, task_id):
 
 
 def page_project(b, project_id):
+    if FRONTEND in ("a6-main", "scrum121"):
+        # getProjectWorkspaceView on main ffc42abd (#97): the project's reads together, the overview counts
+        # after the project; then the organisation's detail; then one setup per task. SCRUM-121 adds the
+        # organisation's task-item-counts beside the overview counts and drops the setups.
+        policies = b.pool.submit(b.get, f"/projects/{project_id}/policies")
+        exports = b.pool.submit(b.get, f"/projects/{project_id}/exports")
+        project = b.get(f"/projects/{project_id}")
+        after_project = [f"/projects/{project_id}/overview/item-status-counts"]
+        if FRONTEND == "scrum121":
+            after_project.append(f"/organizations/{project['organization_id']}/task-item-counts")
+        b.all(after_project)
+        policies, _ = policies.result(), exports.result()
+        b.get(f"/organizations/{project['organization_id']}")
+        if FRONTEND == "a6-main":
+            b.all([f"/tasks/{t['task']['id']}/setup" for t in (policies or {}).get("tasks") or []])
+        return
     _, policies, _, _ = b.all([f"/projects/{project_id}", f"/projects/{project_id}/policies",
                                f"/projects/{project_id}/disputes", f"/projects/{project_id}/exports"])
     b.get("/organizations")
     tasks = (policies or {}).get("tasks") or []
     b.all([f"/tasks/{t['task']['id']}/setup" for t in tasks])
+
+
+def page_home(b, who):
+    """The Dashboard (`/`), as on main ffc42abd: getProjectsOverviewData, then loadCanonicalDecisionCount.
+
+    Organisations, then each one's projects, then each project's tasks, then each organisation's
+    task-item-counts (#97), then each overseen project's overview counts. FRONTEND pre97 replaces the
+    counts read with one setup per task, as before #97.
+    """
+    orgs = b.get("/organizations") or []
+    if FRONTEND == "org-batch":
+        # SCRUM-121 commits 6-7: per organisation, projects, tasks and counts together; then one
+        # item-status-counts read per overseen organisation.
+        b.all([f"/organizations/{o['id']}/{what}" for o in orgs for what in ("projects", "tasks", "task-item-counts")])
+        if who == "admin":
+            b.all([f"/organizations/{o['id']}/item-status-counts" for o in orgs])
+        return
+    projects = [p for group in b.all([f"/organizations/{o['id']}/projects" for o in orgs]) for p in (group or [])]
+    tasks = [t for group in b.all([f"/projects/{p['id']}/tasks" for p in projects]) for t in (group or [])]
+    if FRONTEND == "pre97":
+        b.all([f"/tasks/{t['id']}/setup" for t in tasks])
+    else:
+        b.all([f"/organizations/{o['id']}/task-item-counts" for o in orgs])
+    if who == "admin":  # only whoever oversees is asked (OVERSEE); ann1 is not
+        b.all([f"/projects/{p['id']}/overview/item-status-counts" for p in projects])
 
 
 def main() -> None:
@@ -116,7 +158,8 @@ def main() -> None:
     ap.add_argument("--reps", type=int, default=5)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--only", default="", help="comma-separated scenario names")
-    ap.add_argument("--frontend", choices=["main", "dedupe", "batch", "main-now", "scrum119"], default="main")
+    ap.add_argument("--frontend", choices=["main", "dedupe", "batch", "main-now", "scrum119", "a6-main", "scrum121", "pre97", "org-batch"],
+                    default="main")
     args = ap.parse_args()
     global FRONTEND
     FRONTEND = args.frontend
@@ -134,6 +177,8 @@ def main() -> None:
             scenarios.append((f"annotate-{size}-{user}", user, page_annotate, t[size]))
             scenarios.append((f"review-{size}-{user}", user, page_review, t[size]))
     scenarios.append(("project-8tasks-admin", "admin", page_project, t["project_id"]))
+    scenarios.append(("home-admin", "admin", page_home, "admin"))
+    scenarios.append(("home-ann1", "ann1", page_home, "ann1"))
     if args.only:
         wanted = set(args.only.split(","))
         scenarios = [s for s in scenarios if s[0] in wanted]

@@ -1,0 +1,23 @@
+docs(handover): a ticket map from each Jira ticket to its story and PR (SCRUM-133)
+
+The team that takes over will not have our Jira board, but the code,
+the docs and the history name its tickets. docs/handover/ticket-map.md
+gives each ticket its title, the stories it served and the merged pull
+requests that built it. Its header says where the stories and their
+criteria are defined (the backlog handed over with the project), that
+#N is a pull request on USYD-CS-Capstone/hej and not an arcintelligence
+merge of the same number, and the rule the rest of the sweep follows:
+a reference names the story and the PR, (H3, #83).
+
+It holds 102 tickets: the 83 named in the tree or in commit messages on
+main, the 15 named only in merged PR titles (GitHub's merge commits
+carry no title), SCRUM-121 (#98, still open) and the three sweep
+tickets. Only merged pull requests are named; #12 and #82 were closed.
+
+Four tickets were deleted from the board on 2026-09-22 and replaced:
+SCRUM-36, 39, 58 and 62. They keep the stories the board gave them, and
+a note names what replaced them.
+
+Checked against the PR list: every ticket the tree, the history and
+the merged PR titles name has one row; every PR named is merged and
+its title names the ticket; no other merged PR names it.

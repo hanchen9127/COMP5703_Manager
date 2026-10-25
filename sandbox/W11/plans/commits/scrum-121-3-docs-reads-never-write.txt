@@ -1,0 +1,13 @@
+docs: item status is written where it changes, never on read (A6, SCRUM-121)
+
+api_surfaces.md and workflow_states.md described the read-side Return
+repair: its item locks, its conditional updates and its final status
+refresh. They now say that the task-item, setup and content reads
+return stored statuses and write nothing, that the submission, review
+and dispute writes set them through item_status_after_accept, and that
+the list reads the status column with each row. The sentence on
+"Return reconciliation" using the aggregate went with the repair it
+described.
+
+The API README's test index named test_task_item_status_resolution,
+which the previous commit deleted; it names test_task_item_reads.

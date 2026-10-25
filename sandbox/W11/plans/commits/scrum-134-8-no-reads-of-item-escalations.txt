@@ -1,0 +1,185 @@
+refactor(api,evaluation): holds, gates, queues and independence stop reading item escalations (SCRUM-134)
+
+Holds, the release gate, the work queues and the independence rules read
+open and decided item escalations (TaskItemEscalationDB) beside the
+annotation disputes. Only route_escalation writes that table, and no
+route reaches it: both escalation routes answer 410. A fresh seed holds
+no rows. So every one of these reads returned nothing, and each now does
+what it did on an empty table.
+
+submission_rules.py:
+- open_escalation_item_ids goes, with every call site: the draft
+  submission guard (draft_service.py), the replacement guard and the
+  blind read (independent_review_service.py), the review decision guard
+  and item_status_after_accept (review_policy_enforcement.py), the
+  annotate and review queues (task_work_queue_service.py) and the settle
+  refusal (annotation_dispute_service.py).
+- blind_submissions_by_item and blind_item_statuses lose their
+  open_escalation_ids parameter, and the queues stop passing it.
+- adjudication_conflict_item_ids stops counting whoever routed an
+  escalation; opening a dispute still conflicts.
+- item_judge_ids_by_item stops unioning the escalations' deciders.
+
+release_gate.py: an open escalation no longer holds an item. The module
+docstring names the annotation dispute and the reconciliation only.
+
+task_work_queue_service.py: the adjudication queue offers items with an
+open annotation dispute; legacy_escalation_ids and the module comment
+about open escalation records go.
+
+task_workflow_service.py: _open_escalations counts the task's open
+annotation disputes. The open_escalations field keeps its name and the
+history panel its wording.
+
+annotation_dispute_service.py: the "open legacy escalation" settle
+refusal goes, and its docstring words.
+
+review_policy_enforcement.py: assert_may_decide loses the item-wide
+escalation hold; an answer in dispute is still refused, with its own
+message. item_status_after_accept loses its escalation check; a held
+round keeps the item disputed.
+
+evaluation/harness/integrity.py: I5 stops reading escalation rows and
+the escalation_routed and escalation_decided history rows. The roles
+check reads the event record alone, so submitted_before and
+judged_before compare event ids only; the provenance check no longer
+expects history rows for escalations, and the platform's rule marker
+needs a recorded accept. The finding wording is unchanged.
+
+Refusals that only an escalation row could trigger go: "This item is in
+dispute; resubmission waits for adjudication.", the review decision
+refusal "...refused until the dispute is resolved." and the settle
+refusal. Every refusal an annotation dispute triggers keeps its wording.
+
+The routes, route_escalation, decide_escalation, the schemas, the export
+and the model stay for later commits, and their own code still reads
+the table. So does assert_may_route_dispute.
+
+Tests:
+
+Deleted, because they proved only a hold or read against a seeded
+escalation row (12 cases):
+- test_release_gate.py: test_an_item_held_for_an_expert_refuses_the_release
+  [escalation]. The dispute case stays.
+- test_task_work_queues.py:
+  test_actual_open_escalation_holds_rework_and_unfilled_first_pass_slots
+  (2): the item-wide hold on the annotate queue.
+- test_item_completion.py: test_ordinary_review_cannot_finalise_a_disputed_item,
+  test_returning_a_submission_of_a_disputed_item_is_refused and
+  test_the_review_queue_skips_an_item_with_an_open_escalation_whatever_its_status:
+  the item-wide hold on review. An answer in dispute is still refused
+  (test_review_decision_refusals.py,
+  test_a_decided_submission_waits_for_its_resubmission[escalate]), and
+  another answer on the item stays reviewable
+  (test_another_submission_remains_reviewable_while_one_is_in_dispute).
+- test_independent_second_review.py:
+  test_open_escalation_keeps_sampled_second_review_out_of_ordinary_queue
+  and test_annotation_return_cannot_override_a_legacy_open_item_hold.
+- test_disagreement_settlement_reads.py:
+  test_a_split_no_longer_held_is_neither_settled_nor_offered
+  [open legacy escalation].
+- test_evaluation_integrity_provenance.py:
+  test_an_old_escalation_without_its_history_is_found.
+- test_evaluation_integrity_roles.py:
+  test_an_old_escalation_decided_by_whoever_routed_it_is_found.
+- test_adjudication_independence.py: the routing target of the held-split
+  test, so its two cases become one.
+
+Rebuilt through the live flow (an escalating review that opens an
+annotation dispute, the dispute decision route or service, a reopen):
+- test_adjudication_independence.py, which now opens disputes as the
+  review action does and decides them through
+  POST /tasks/{id}/annotation-disputes/{id}/decision:
+  - test_involved_caller_is_neither_offered_nor_allowed_to_decide,
+    test_involvement_survives_a_reopened_and_superseded_round,
+    test_any_recorded_review_conflicts_even_before_latest_submission,
+    test_review_of_machine_candidate_still_conflicts: whoever answered,
+    reviewed or corrected the item, in any round, is neither offered the
+    dispute nor allowed to decide it, and a refusal writes nothing.
+  - test_independent_capable_caller_is_offered_and_decides: an
+    independent expert or administrator is offered the item, decides
+    Accept (canonicalized) or Return (returned), and the item leaves the
+    queue.
+  - test_no_adjudicate_capability_is_403_for_queue_and_decision,
+    test_inactive_task_has_no_adjudication_work_or_decision: the queue
+    and the decision refuse without ADJUDICATE, and on a task not
+    accepting work.
+  - test_machine_role_does_not_create_human_authorship_conflict,
+    test_involvement_on_another_item_does_not_exclude_this_dispute,
+    test_nonreview_participation_alone_is_not_an_independence_conflict
+    (an earlier dispute decided by the expert, or a pending draft):
+    these leave the expert eligible.
+  - test_a_dispute_opened_from_a_held_split_uses_the_same_independence
+    (was test_automatic_style_dispute_uses_same_independence_as_routed_dispute):
+    the split's reviewers may not decide the platform's dispute; the
+    expert may.
+  - test_no_open_dispute_is_neither_offered_nor_decidable (was
+    test_no_open_escalation_...): no dispute is 404, a resolved one 409.
+  - test_adjudication_queue_batches_independence_queries: the queue
+    costs the same for 6 disputed items as for 60.
+  - test_opening_a_dispute_without_review_is_a_durable_adjudication_conflict
+    (was test_routing_without_review_...): whoever opened a dispute on
+    the item, now, earlier or before a reopen, may not decide it.
+  - test_other_opener_and_ownerless_ai_candidate_leave_an_independent_expert_eligible.
+  Two tests still call decide_escalation on an escalation row, for the
+  helper itself, and go with it in a later commit:
+  test_an_expert_return_stores_returned_not_a_second_status and the
+  PostgreSQL-only test_adjudication_waits_for_item_lock_and_reads_committed_participation.
+- test_release_gate.py:
+  test_the_refusal_names_every_failing_item_with_every_reason holds the
+  item with an open annotation dispute; the refusal still lists disputed
+  and superseded on one item and unreviewed on the other.
+- test_task_work_queues.py, through _add_dispute (Bob escalates Alice's
+  answer, which opens a dispute):
+  - test_open_dispute_is_offered_for_adjudication,
+    test_resolved_dispute_is_not_offered_for_adjudication,
+    test_finished_item_is_not_offered_for_adjudication,
+    test_adjudication_queue_is_empty_for_a_paused_task,
+    test_queue_routes_return_rows_for_real_items.
+  - test_coarse_disputed_status_alone_does_not_hide_pending_submission
+    (was ..._without_escalation_...): its live half stays, a stale
+    disputed status does not hide a submission from review.
+  - test_disputed_item_without_open_dispute_is_not_offered_for_adjudication:
+    renamed only.
+- test_annotation_independence_privacy.py:
+  test_grouped_single_item_and_direct_reads_preserve_correction_privacy
+  [disputed] (was [routed]): once another reviewer's escalation opens a
+  dispute on the answer, the peer correction is visible to Charlie.
+- test_task_item_reopen.py:
+  test_an_earlier_adjudicator_does_not_annotate_the_reopened_item: Adam
+  decided round 1's annotation dispute, so he may not annotate round 2.
+- test_task_item_reads.py: each item's Return history is a dispute
+  Return. The item list still costs the same for 40 items as for 10,
+  and neither read writes.
+- test_evaluation_integrity_roles.py:
+  test_a_dispute_by_someone_who_answered_the_item_is_found (was
+  test_a_dispute_or_a_route_by_...): the dispute half stays.
+- test_project_disputes.py: test_another_projects_cases_are_not_listed
+  (was ..._and_legacy_escalations_...): only this project's cases are
+  listed.
+
+The suite drops by exactly the 12 cases named above, from 2535 to 2523
+passed. The casebook passes unchanged.
+
+Files:
+apps/hej-api/app/services/annotation_dispute_service.py
+apps/hej-api/app/services/draft_service.py
+apps/hej-api/app/services/independent_review_service.py
+apps/hej-api/app/services/release_gate.py
+apps/hej-api/app/services/review_policy_enforcement.py
+apps/hej-api/app/services/submission_rules.py
+apps/hej-api/app/services/task_work_queue_service.py
+apps/hej-api/app/services/task_workflow_service.py
+apps/hej-api/evaluation/harness/integrity.py
+apps/hej-api/tests/test_adjudication_independence.py
+apps/hej-api/tests/test_annotation_independence_privacy.py
+apps/hej-api/tests/test_disagreement_settlement_reads.py
+apps/hej-api/tests/test_evaluation_integrity_provenance.py
+apps/hej-api/tests/test_evaluation_integrity_roles.py
+apps/hej-api/tests/test_independent_second_review.py
+apps/hej-api/tests/test_item_completion.py
+apps/hej-api/tests/test_project_disputes.py
+apps/hej-api/tests/test_release_gate.py
+apps/hej-api/tests/test_task_item_reads.py
+apps/hej-api/tests/test_task_item_reopen.py
+apps/hej-api/tests/test_task_work_queues.py

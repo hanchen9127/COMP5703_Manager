@@ -1,0 +1,24 @@
+refactor(evaluation): each case covers the criterion it protects, not a ticket (SCRUM-133)
+
+The casebook's covers named 56 Jira tickets in 49 cases. Each now
+names the story criterion the case protects, read from its purpose
+and steps against the story's criteria, or the story where no single
+criterion fits (EV-054 under B3; EV-111 under I4; EV-116 under I5;
+EV-126, EV-129 and EV-130 under G2). A case covers what it tests, so
+a few name another story than their ticket's: EV-017 the release's one
+current answer (H4.2), EV-040 the Return to the author (E2.2), EV-120
+the self-review refusal (D1.1).
+
+The owed protections keep their meaning under criteria: #61's answer
+shape is B3.2, the decided-submission fix D8.3, resubmitting only
+returned work D8.8, and a reopen that stays open D9.2. They name I2,
+which owes them, and the listing's header follows. Every case is still
+listed, and 16 of 16 owed protections are covered. Tickets that served
+one criterion now share a row (E2.2, G2.2, G2.3, H4.2), and one
+ticket's cases spread over the criteria they test.
+
+covers no longer accepts SCRUM-N, and the listing no longer sorts
+tickets. The README and the tests follow: a ticket in covers is
+refused.
+
+Evaluation tests: 428 passed; casebook 87/87, 1 skipped, unchanged.

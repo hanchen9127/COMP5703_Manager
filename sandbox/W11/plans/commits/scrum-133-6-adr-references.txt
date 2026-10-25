@@ -1,0 +1,18 @@
+docs(adr): the ADRs name stories and PRs (SCRUM-133)
+
+Every Jira ticket in the ADRs now reads as the story and the pull
+request that built it, from docs/handover/ticket-map.md: 155
+references in 24 files. "Accepted when the SCRUM-N pull request
+merges" names the pull request, and each header's Ticket field is a
+PR field. A ticket with several stories names the one its line is
+about.
+
+Where a ticket was a noun in the sentence ("SCRUM-110 changes it",
+"SCRUM-52's adjudicator queue"), the sentence names the story or the
+PR instead. Tickets deleted from the board name their story; the epic
+SCRUM-80 is the evaluation harness and casebook, I2 to I5.
+
+ADR 004's "the SCRUM-36 pull request" meant pull request #36 (B8), not
+the ticket SCRUM-36, and now says so.
+
+ADR 014 is left for later: #98 edits it.

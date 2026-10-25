@@ -1,26 +1,166 @@
 ﻿Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Project type,Project lead,Project lead id,Project description,Priority,Resolution,Assignee,Assignee Id,Reporter,Reporter Id,Creator,Creator Id,Created,Updated,Last Viewed,Resolved,Due date,Votes,Description,Environment,Watchers,Watchers,Watchers Id,Watchers Id,Original estimate,Remaining Estimate,Time Spent,Work Ratio,Σ Original Estimate,Σ Remaining Estimate,Σ Time Spent,Security Level,Custom field (Development),Custom field (Issue color),Custom field (Rank),Sprint,Custom field (Start date),Custom field (Story point estimate),Custom field (Team),Custom field (Vulnerability),Custom field (Vulnerability),Comment,Parent,Parent key,Parent summary,Status category,Status category changed
-"Seed: One project per governance model, on real AG News and Civil Comments records",SCRUM-130,10222,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,21/Oct/26 11:17 PM,22/Oct/26 1:13 AM,21/Oct/26 11:17 PM,,,0,"{noformat}Related to user story A3
+Bug: A reopen's history entry loses its reason and the answers it superseded,SCRUM-139,10231,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,25/Oct/26 11:43 PM,26/Oct/26 12:11 AM,26/Oct/26 4:03 AM,26/Oct/26 12:11 AM,,0,"{noformat}Story D9. Found in the review of PR #102 (Yi); already on main before it.
 
-BACKEND (seed). W11. Added 2026-10-21 (Hanchen).
+BACKEND + WEB + DOCS. Added 2026-10-25 (Hanchen).
 
-init_data.py's two base projects (""Image Annotation Project"", ""Text Classification Project"", steps 3–6) hold no usable data: their items point at s3://data-bucket/... and postgres://feedback_db/..., the Bridge Demo images do not exist, and their tasks define no labels. And no seeded project uses the Expert Gate or the Arbitration-ready posture, though SCRUM-118 and SCRUM-107 are Done. Replace the base projects with four projects, one per governance model, each on real records. The test projects A–F (step 7–8) stay exactly as they are.
+The History tab shows a reopen with its reason, its cause and the answers it superseded, read from the history entry's changes. The history read keeps only a fixed list of change fields, which holds none of the three. So every reopen reads ""0 earlier answers kept as superseded versions"" with no way to open them, shows no reason, and an expert's reconciliation Return reads as the owner's reopen. The stored records are correct; only the history read drops them.
 
-# Four projects in Acme, each created from the current preset, through the routes as step 7 does: Standard (project_policy_standard_v1), Dual sign-off (project_policy_dual_signoff_v2), Expert-gated (project_policy_expert_gate_v2), Arbitration-ready (project_policy_arbitration_ready_v2). Each shows as its preset, not ""Custom policy"".
-# Real data only: the records in evaluation/gold/ag_news.jsonl and civil_comments.jsonl (28 each, Group A's delivery, unchanged). Each project has a classification task on AG News; the Dual sign-off and Arbitration-ready projects also have a judgement task on Civil Comments. At least 8 items per task. Keep each record's external_item_ref (ag_news:train:NNNN), so an item can be traced to its gold record.
-# Labels match the data and are defined: AG News World / Sports / Business / Sci/Tech; Civil Comments abusive / not_abusive, as the evaluation scores it. The work panel offers exactly these.
-# Every item opens in the work panel with its full text from the repository (a fixture file, as the A–F items do); nothing points at an external store.
-# Everything starts untouched, except: one item in the Expert-gated project waits at the gate for an expert's confirmation, and one item in the Arbitration-ready project is in an open dispute. Stage both through the routes, as step 8 does.
-# Remove the base projects and steps 4–6's annotations, drafts and predictions made on them. Anything those steps showed that the new projects do not (a prediction, a saved draft) moves to the new projects or is dropped, with a line in the PR saying which.
-# Tests: test_project_policy_configuration's seed test asserts the four presets instead of proj_1_1/proj_1_2; test_development_seed's two tests that read steps 4–6 follow the move; a new test proves every seeded item opens with its text and every task's labels are defined. The 49 seed and preset tests otherwise pass unchanged.
-# Docs in the same change: hej/README's seed paragraph names the four projects beside the test projects (it also says ""five Test: projects""; there are six), apps/hej-api/README.md ""Seeded test projects"" says what to try in each, and docs/fe-be-local-integration-runbook.md drops its proj_1_1 / task_proj_1_1_1 examples.
+# The item_reopened history entry carries reason, cause and superseded_annotation_ids, and no other operation's entry changes.
+# Its summary names a reconciliation Return as such; the web's reopen detail does too.
+# The reopen cause adjudication_return, which no code writes (a dispute Return does not reopen the item, #48), goes from the API, the web and the docs.
+# Tests: the task history read of a real reopen carries the three fields (fails on main); a reconciliation Return's entry names its cause.
+
+Done when a reopened item's History entry shows its reason, the right cause and its superseded answers with the Show button, end to end through the API; the backend suite, the casebook and the web checks pass.
+
+Out of scope: the item timeline (it reads the provenance events, which are correct), and the history entry of any other operation.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xlzv,W11 Finish and hand over,,1.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,26/Oct/26 12:11 AM
+Handover & Quality Ensurance,SCRUM-138,10230,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,24/Oct/26 11:25 PM,24/Oct/26 11:31 PM,24/Oct/26 11:31 PM,,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},yellow,0|i000px:,,,,,,,,,,,To Do,24/Oct/26 11:25 PM
+Handover3: Name stories and PRs instead of Jira tickets in the web,SCRUM-136,10228,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,24/Oct/26 12:04 AM,26/Oct/26 12:10 AM,25/Oct/26 11:56 PM,26/Oct/26 12:10 AM,,0,"{noformat}Related to user story K1
+
+it makes every story's references readable without our Jira board. Part 3 of 3; SCRUM-133 holds the map and the rules, and the backend has its own ticket.
+
+WEB. W11. Added 2026-10-23 (Hanchen). Start when SCRUM-133 has merged docs/handover/ticket-map.md and #97 has merged (or closed); count again then. On main at efb5900 this part holds 202 references in 98 files.
+
+# Scope: apps/hej-web and packages: comments, JSDoc, and test names (Vitest describe / it / test).
+# Apply SCRUM-133's rule: SCRUM-N becomes its story and PR, e.g. (H3, #83). Several PRs are each named; a ticket with no PR names its story; a ticket with no story is rewritten to say what it means; where the line already names the story, only the ticket goes. The map gives each ticket's story and PRs.
+# Text a user reads names no ticket and no PR. If a rendered string holds one, it says what it means without an id.
+# A ticket found here that the map does not list yet (one added by #97, for example) gets its row in docs/handover/ticket-map.md in this PR.
+
+Done when `git grep -E 'SCRUM-[0-9]+' -- apps/hej-web packages` on main finds nothing, and test:web, typecheck:web and lint:web pass. If it merges last of the three, `git grep -E 'SCRUM-[0-9]+'` on main also finds only docs/handover/ticket-map.md.
+
+Collaboration:
+- SCRUM-133 (map and casebook): merges first.
+- SCRUM-128 (#97, Jingwei): merges first; this change then touches its files after it.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xlzi,W11 Finish and hand over,,1.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,26/Oct/26 12:10 AM
+Handover2: Name stories and PRs instead of Jira tickets in the backend,SCRUM-135,10227,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,24/Oct/26 12:03 AM,26/Oct/26 12:10 AM,25/Oct/26 12:34 AM,26/Oct/26 12:10 AM,,0,"{noformat}Related to user story K1
+
+it makes every story's references readable without our Jira board. Part 2 of 3; SCRUM-133 (#100) holds the map and the rules, and the web has its own ticket.
+
+BACKEND + DOCS. W11. Added 2026-10-23 (Hanchen); scope updated 2026-10-24. Start when SCRUM-133 (#100) and #98 have merged (or closed); count again then. On main at 835b9d33 this part holds about 780 references in 166 files.
+
+# Scope: apps/hej-api except evaluation/ and tests/test_evaluation_*.py, which SCRUM-133 takes (so: app, the other tests, the seed and init scripts, the API README), and docs/design/backend/api_surfaces.md and docs/design/product/workflow_states.md, which #98 edits.
+# Apply SCRUM-133's rule, written in the header of docs/handover/ticket-map.md: SCRUM-N becomes its story and PR, e.g. (H3, #83). Several PRs are each named; a ticket with several stories names the one its line is about; a ticket with no PR names its story; a ticket with no story is rewritten to say what it means; where the line already names the story, only the ticket goes. The map gives each ticket's story and PRs. The informal ""Scrum 20"" in tests/test_project_policy_read_contract.py follows the same rule. A plan's numbered decision beside a story id says ""decision Dn"".
+# Text a user reads names no ticket and no PR: release_gate.py's refusal (SCRUM-37) and the schemas/review_actions.py field description (SCRUM-32) say what they mean without an id. Update any test that matches those strings.
+# A ticket found here that the map does not list yet (one added by #98, for example) gets its row in docs/handover/ticket-map.md in this PR.
+
+Done when `git grep -E 'SCRUM-[0-9]+' -- apps/hej-api ':!apps/hej-api/evaluation' ':!apps/hej-api/tests/test_evaluation_*.py' docs/design/backend/api_surfaces.md docs/design/product/workflow_states.md` on main finds nothing; the full backend suite passes on SQLite and PostgreSQL; and the casebook passes unchanged. If it merges last of the three, `git grep -E 'SCRUM-[0-9]+'` on main also finds only docs/handover/ticket-map.md and the refusal test's ""SCRUM-120"" in apps/hej-api/tests/test_evaluation_scenario.py, which proves covers refuses a ticket.
+
+Collaboration:
+- SCRUM-133 (#100, map and casebook): merges first.
+- SCRUM-121 (#98, Hanchen): merges first; this change then touches its files after it.
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xlz,W11 Finish and hand over,,1.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,26/Oct/26 12:10 AM
+Cleanup: Retire the legacy item escalations and the states they left ,SCRUM-134,10226,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,23/Oct/26 10:43 PM,25/Oct/26 11:19 PM,25/Oct/26 11:17 PM,25/Oct/26 11:19 PM,,0,"{code:sql}Related to user story A5
+
+cleanup after the two-level disputes (PR #48) and A6 (PR #98). PR #102.
+
+BACKEND + WEB + EVALUATION + DOCS. Widened on 2026-10-25 (Hanchen) after the review of PR #102: it first retired only the expert_send_back status, which left the flow that produced it.
+
+Since PR #48 a reviewer's escalation opens an annotation dispute, and an expert decides that dispute. The older item-level escalation (TaskItemEscalationDB) had no route that reached it, and a fresh seed held none of its rows, yet holds, the release gate, the queues, independence, the export and casebook check I5 still read it. Retire it and every legacy state it left, so the code and the design describe one way to escalate. No workflow or story behaviour changes.
+
+# The expert_send_back item status goes: an expert's Return stores returned. The web drops it from the status type, the mappings and the project overview.
+# The item-level escalation flow goes as a whole: the task_item_escalations table and TaskItemEscalationDB; route_escalation, decide_escalation and their two 410 routes; GET /tasks/{id}/escalations and its detail; the Escalation* schemas; the escalation_routed and escalation_decided history wording; and every read of the table. reset_db drops the table before drop_all, so an older database can still be reset.
+# An expert's Return is read only from the dispute's decision. task_item_status_resolution.py (current_expert_return_at and the legacy Return evidence) goes.
+# Reviews with no verdict (legacy_approved_by, the stopped outcome, the verdict-or-status fallbacks) and submissions with no sample row (submission_is_sampled) are no longer read. A gate test first proves every submission path writes a sample row.
+# The pre-B4 task status backfill (migrate_legacy_task_statuses) and the four retired review mutation routes go.
+# Web: the unused escalation client and the approve/reject/escalate item helpers for routes the API never had.
+# Visible API differences, each decided: the escalation list and detail answer 404; the 410 stubs answer 404 or 405; the export's always-null finalization key and the adjustment read's always-null routed_at and routed_by are removed; task history keeps its open_escalations count, which counts open annotation disputes.
+# Tests: a test that checked only a removed state goes; a test that used the old flow to set up a live rule is rebuilt through the dispute flow. Each commit lists both groups.
+# Docs: workflow_states.md, api_surfaces.md, db_schema_blueprint.md and the READMEs describe the dispute flow only. ADR 010, 011, 013 and 014 keep their decisions and gain a dated note.
+
+Done when git grep for TaskItemEscalationDB, task_item_escalations, route_escalation, decide_escalation, escalation_routed, escalation_decided, current_expert_return_at, legacy_approved_by, migrate_legacy_task_statuses and LEGACY_REVIEW_MUTATION finds only the ADR notes, the README's reset paragraph and the drop in reset_db; the backend suite passes on SQLite and PostgreSQL; test:web, typecheck:web and lint:web pass; the casebook passes unchanged; and a fresh seed holds none of the legacy data.
+
+Out of scope: the live reviewer escalation (it opens an annotation dispute), the export's format=legacy, the ""legacy"" annotation type, and the SQLite schema helper in database.py.
+
+Collaboration:
+- SCRUM-99 (E3): the two-level disputes this finishes.
+- SCRUM-74 (I5): its integrity checks stop reading escalations; the casebook result is unchanged.{noformat}{code}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xlzr,W11 Finish and hand over,,2.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,25/Oct/26 11:19 PM
+Handover1: Name stories and PRs instead of Jira tickets in docs,SCRUM-133,10225,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,23/Oct/26 6:55 PM,25/Oct/26 12:34 AM,25/Oct/26 12:34 AM,24/Oct/26 11:22 PM,,0,"{noformat}Related to user story K1
+
+it makes every story's references readable without our Jira board. Part 1 of 3: this ticket sets the rules and the map; the backend and the web each have their own ticket, which start after this one.
+
+BACKEND (casebook) + DOCS. W11. Added 2026-10-23 (Hanchen), narrowed the same day; scope and rules updated 2026-10-24. PR #100 (draft). On main at 835b9d33 this part held about 720 references in 141 files.
+
+The team that takes over will most likely not get our Jira board, and will keep using the story ids (A1–K4 and on). Replace each Jira ticket with the story and the PR that built it.
+
+# One new file, docs/handover/ticket-map.md: one row per SCRUM ticket ever named in the repository, commit messages and merged PR titles included (102 on 835b9d33): ticket, title, story, PR(s). Its header says the story ids and their criteria (H3.2) are defined in the backlog handed over with the project (user-stories.html and story_src.csv), and that #N means a pull request on USYD-CS-Capstone/hej; main's history also holds arcintelligence PR merges with the same numbers. The other two tickets add any ticket they find that it lacks.
+# The rule, for all three tickets: SCRUM-N becomes its story and PR, e.g. (H3, #83). A ticket with several PRs names each (#84, #90). A ticket with several stories names the one its line is about. A ticket with no PR names its story alone; SCRUM-36, 39, 58 and 62, deleted from the board on 2026-09-22, keep the stories the board gave them. A ticket with no story (SCRUM-80, 128) is rewritten to say what it means. Where the line already names the story (""SCRUM-45, J4 criterion 2""), only the ticket goes (""#80, J4 criterion 2""). The informal ""Scrum 20"" and ""Scrum 50"" follow the same rule. Text a user reads names no ticket and no PR; developer text (CLI help, harness errors, skip reasons, the baseline note) may use the story id.
+# A plan's numbered decision that reads as a story says it is a decision: (I3, #77, D8) becomes (I3, #77, decision D8), or #73's decision D12 where no PR is near.
+# Casebook: COVERS accepts a story (H3) and a story criterion (H3.2), A to K, and no longer SCRUM-N. Each covers entry becomes the criterion its case protects, or the story where no single criterion fits. REQUIRED_COVERAGE's SCRUM-85, 116, 117 and 120 become their criteria. Update evaluation/README.md, `evaluation list --coverage` and the evaluation tests with them. baseline.json keeps every verdict; only its note changes.
+# The evaluation tests (apps/hej-api/tests/test_evaluation_*.py) are in this ticket, moved from SCRUM-135 on 2026-10-24: they test the casebook, and #98 touches none of them.
+# Docs: ADRs, docs/design (except api_surfaces.md and workflow_states.md, which the backend ticket takes), evaluation-findings.md, docs/terminology, docs/implementation, the runbook, the root README and the backend-tests workflow comment follow the rule. ADR files keep their names and numbers. ADR 014 follows after #98 merges, since #98 edits it.
+
+Done when `git grep -E 'SCRUM-[0-9]+' -- apps/hej-api/evaluation 'apps/hej-api/tests/test_evaluation_*.py' docs .github README.md ':!docs/design/backend/api_surfaces.md' ':!docs/design/product/workflow_states.md'` on main finds only docs/handover/ticket-map.md and the refusal test's ""SCRUM-120"" in test_evaluation_scenario.py, which proves covers refuses a ticket; `python -m evaluation run --baseline evaluation/baseline.json --exact` reports every verdict unchanged; `evaluation list --coverage` lists the same cases as before, with every owed protection covered (two tickets that served one criterion may share a row); and the backend suite passes. If it merges last of the three, `git grep -E 'SCRUM-[0-9]+'` on main also finds only those two.
+
+Collaboration:
+- SCRUM-75 (I5, Kanishka): evaluation-findings.md is her record; the sweep changes its references only, in a commit of its own.
+- SCRUM-121 (#98, Hanchen): merges first for ADR 014.
+- The backend and web tickets: start after this merges.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xly,W11 Finish and hand over,,1.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,24/Oct/26 11:22 PM
+"AI-Provider: Confidence belongs to the model — ask for it per part, show it per part, and stop asking people for it",SCRUM-132,10224,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,22/Oct/26 9:01 PM,24/Oct/26 11:36 PM,24/Oct/26 3:52 AM,24/Oct/26 4:20 PM,,0,"{noformat}Related to user story C1
+
+FULL STACK. W11. Added 2026-10-22 (found while tracing the seeded-answer bug). PR #99. Changed 2026-10-24 by the review of PR #99: structured results state no platform score, judgement-class image tasks are covered, and a reviewer's verdict correction drops the confidence it copied.
+
+On an annotation task, confidence is the model's statement about its own output. Three things disagree with that on main fd35571:
+
+1. The output schemas and the AI adapter disagree on where confidence lives. Classification and structured results ask for a top-level score, which the adapter reads. image_bbox asks for a top-level score, which the adapter drops: it reads each box's instead. text_spans, audio_segments, video_segments and video_tracking ask for none, while the adapter reads one per entity, segment or keyframe, so a part's confidence exists only when a model adds it unasked. The schema format cannot mark a nested field optional: optional_fields is top-level only, the prompt tells the model nested objects are required structure, and the validator requires every nested field.
+2. The screen shows the first part's confidence as the whole answer's. firstResultConfidence takes the top-level value, or else the first span's, box's or segment's, and shows it in the AI-assisted list's Confidence column, the AI candidate preview and the review panel's AI evidence note. The other parts' values appear only in raw JSON; a video track's are never read.
+3. People are asked for a confidence on annotation surfaces. The classification editor's ""Confidence (0 to 1)"", and the video segment's and keyframe's fields, let an annotator or reviewer type one; nothing but the export reads it. A person who starts from an AI draft keeps the AI's confidence in their own submission.
+
+# Schemas (v1 presets, backend and web, edited in place): score is a required field whose value may be null (""your confidence from 0 to 1, or null if you cannot judge""), at the level the model judges: classification at the top level; text_spans on each entity; image_bbox on each box (image_bbox is a judgement-class surface), its top-level score removed; audio_segments and video_segments on each segment; video_tracking on each track. structured_result states no platform score: its fields are the task's own (decided 2026-10-24). A missing key fails the run as any other missing field does; null is a stated ""cannot judge"". Required-but-nullable is used because the validator cannot express an optional field inside a nested object, not because a value is mandatory.
+# Adapter: reads score or confidence at those levels and stores confidence; a null stays empty, never 0. video_tracking reads a track's instead of each keyframe's.
+# Display: on an AI submission each span's, box's, segment's and track's confidence is shown read-only beside it. The answer-level confidence (list column, candidate preview, AI evidence note) is shown only where the model stated one for the whole answer: on classification and judgement surfaces, decided by the surface, not the task class. On surfaces with per-part confidence, judgement-class image tasks included, the AI-assisted list has no Confidence column. No aggregate (minimum, mean) is computed.
+# People: the web no longer offers a confidence field on an annotation result (classification, video segment, video keyframe), and the hint ""Select a classification label and record confidence and rationale."" changes. The API removes confidence, top-level and per part, from a person's annotation result on draft save, submission and correction, including one started from an AI draft. On judgement-class image tasks, a box's confidence is removed too; only the verdict's own top-level confidence is kept.
+# Unchanged: judgement. The judgement schema's optional score, the judgement adapter, and a person's own confidence under blind-then-reveal (SCRUM-73), which the evaluation compares before and after the reveal. Except: a reviewer's verdict correction drops the confidence of the answer it corrects, AI or person, since that number was stated for a different verdict (decided 2026-10-24). A correction is never a blind-then-reveal stage, and the evaluation reads the round's final answer, never a correction. Not covered: annotations.confidence, the integer column.
+# Tests: the presets' score fields, and none on structured_result; the adapter keeps per-part values and leaves a null empty; a person's annotation result is stored without confidence and a judgement keeps it; on a judgement image task, a person's and a reviewer's boxes are stored without confidence; a reviewer's verdict correction is stored without a confidence; the list, preview and evidence note show no answer-level confidence for a per-part surface, judgement-class image tasks included.
+
+Collaboration:
+- SCRUM-73 (blind-then-reveal) and SCRUM-71/74 (evaluation): the blind and final judgements keep the person's confidence; two follow-ups are raised in the PR for their owner.
+- SCRUM-128 (UI declutter): edits the same work panel file; merged (#97), and #99 is level with it.
+- New ticket (judgement image task offers a person only a verdict): found in the same review, not in this ticket.
+{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000ks:xj,W11 Finish and hand over,,1.5,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,24/Oct/26 4:20 PM
+"Bug: seeded classification answers show no class in the work panel, and a correction of one is refused",SCRUM-131,10223,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,22/Oct/26 8:59 PM,24/Oct/26 11:36 PM,22/Oct/26 9:07 PM,23/Oct/26 9:16 PM,,0,"{noformat}Related to user story A3
+
+BACKEND (seed). W11. Added 2026-10-22 (found while walking through the test projects).
+
+In the test projects, a classification answer the seed made opens empty in the work panel, and a reviewer cannot correct it. Reproduced on main f3dfdc1 with its seed, ""Test: Single review"", task ""2 submissions per item: classification"": the review tab's Final annotation payload shows no selected class; choosing ""sport"" and returning it fails with 422 ""Label '{ ""kind"": ""classification"", ""version"": 1, ""label"": ""sport"", ""labels"": [ ""sport"" ] }' is not one of this task's labels: politics, business, sport, science, culture.""
+
+Cause: seed_test_projects._label() stores a bare {""label"": x}. Every other writer stores the canonical result: the AI adapter writes {kind: ""classification"", version: 1, label, labels, ...}, and the work panel saves that object as its output and output text. The web reads an answer from kind, output_text, output or annotation_output (submissionFieldsFromDraftData), so a bare label shows nothing, in the review tab, the Annotate tab (a1-04's saved draft, a1-06 returned) and the version history. The class editor then sends the whole canonical object as the correction, and the backend's branch for a bare-label answer (review_corrections.correction_content) writes that whole text into label, which the label check refuses. a1-07, staged through _panel_label(), stores output as the plain string ""sport"", which the editor cannot read either.
+
+No web path sends a bare label: every annotation and correction from the work panel is the whole object. Only callers outside the web do (the seed, the casebook, backend tests), and they do not open the work panel.
+
+# The seed stores classification answers in the canonical shape, {kind: ""classification"", version: 1, label, labels: [label]}, as the AI adapter does. Every test project keeps every case: each item's name and staged state are unchanged.
+# a1-07's answer takes the same shape, and its correction is sent as the whole object, as the work panel sends it.
+# Test: every seeded classification answer, draft and correction reads back its label the way the work panel reads it, so a bare shape cannot return unnoticed.
+# After merge, development databases are reset (init_data.py --reset).
+
+Not in this ticket: the backend still accepts a bare {label} from an API client (the casebook and the tests rely on it), and the work panel shows such an answer empty. Making the backend give every result its task's kind and version is a hardening left for later.
+
+Collaboration:
+- SCRUM-130 (Yi): its four new projects already seed answers in this shape; this ticket's PR is stacked on SCRUM-130's PR.
+- SCRUM-123 (Jingwei, Done): the test projects and _Stager this changes.
+- SCRUM-71 (I2): the casebook compares only the top-level fields a case states, so it is unaffected.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000ks:xlx,W11 Finish and hand over,,0.5,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,23/Oct/26 9:16 PM
+"Seed: One project per governance model, on real AG News and Civil Comments records",SCRUM-130,10222,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,21/Oct/26 11:17 PM,24/Oct/26 11:36 PM,24/Oct/26 11:27 PM,23/Oct/26 8:08 PM,,0,"{noformat}Related to user story A3
+
+BACKEND (seed). W11. Added 2026-10-21 (Hanchen). Revised 2026-10-22 to what the PR delivers.
+
+init_data.py's two base projects (""Image Annotation Project"", ""Text Classification Project"", steps 3–6) held no usable data: their items pointed at s3://data-bucket/... and postgres://feedback_db/..., the Bridge Demo images did not exist, and their tasks defined no labels. And no seeded project used the Expert Gate or the Arbitration-ready posture, though SCRUM-118 and SCRUM-107 are Done. The base projects are replaced with four projects, one per governance model, each on real records. The test projects A–F keep every case.
+
+# Four projects in Acme, each created from the current preset through the routes, as the task owner (Kevin): ""Test: Standard review"" (project_policy_standard_v1), ""Test: Dual sign-off"" (project_policy_dual_signoff_v2), ""Test: Expert-gated review"" (project_policy_expert_gate_v2), ""Test: Arbitration-ready review"" (project_policy_arbitration_ready_v2). Each stores its preset's reference, so it shows as the preset, not ""Custom policy"".
+# Real data only: the records in evaluation/gold/ag_news.jsonl and civil_comments.jsonl (28 each), copied unchanged into a fixture folder; the gold files are not edited. Each project has a classification task on AG News; Dual sign-off and Arbitration-ready also have a judgement task on Civil Comments. 7 records per task, none used twice (28 records over four AG News tasks, 14 over two Civil Comments tasks), every topic or verdict in each task. Each record keeps its external_item_ref (ag_news:train:NNNN).
+# Labels match the data and are defined, as the evaluation scores them: AG News World / Sports / Business / Sci/Tech; Civil Comments abusive / not_abusive. Task wording and definitions are the evaluation's own.
+# Every item opens in the work panel with its full text from the repository; nothing points at an external store.
+# Everything starts untouched, except, both on the AG News task: one item in the Expert-gated project waits at the gate for an expert's confirmation, and one in the Arbitration-ready project is in an open dispute. Staged through the routes, with answers in the canonical classification shape.
+# Old steps 3–6 removed, with their annotations, drafts, predictions and sample constants. Nothing moved: the test projects already stage every state they showed, and predictions appear on no screen. The seed's steps are renumbered 3 (governance projects), 4 (test projects), 5 (staging).
+# Tests: a new test file proves each project's preset, the labels, that every item is a gold record opening with its text, that no record repeats, the fixture set, the two staged states and that a re-run leaves the projects alone; test_project_policy_configuration's seed test asserts the four presets; test_development_seed keeps its people tests, its two tests on the old sample data removed with it; the required-annotators seed test runs the new steps.
+# Docs: hej/README's seed paragraph names the four projects (and counts ten Test: projects, not five), apps/hej-api/README.md says what to try in each, and docs/fe-be-local-integration-runbook.md drops its proj_1_1 / task_proj_1_1_1 examples.
 
 Done when init_data.py --reset on a fresh SQLite and a fresh PostgreSQL database creates the four projects; the run's summary lists them by governance model; and in each one a person can annotate, review and (where the posture asks) confirm or adjudicate an item through to canonical in the running app.
 
+The PR is stacked on #91 (SCRUM-127), which deletes app/api/routes/init.py, the last importer of the old steps 3 and 4.
+
 Collaboration:
-- SCRUM-123 (A3, Jingwei, Done): step 7–8's route helpers (caller, _Stager) are the way to create and stage through the routes.
+- SCRUM-123 (A3, Jingwei, Done): its route helpers (caller, _Stager) create and stage the projects; its step functions are only renumbered.
 - SCRUM-71 (I2): the casebook reads evaluation/gold too; the seed copies records, never edits the gold files.
-- SCRUM-128 (UI declutter): its Dashboard change (C4) shows these projects; no ordering needed.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000om:,W11 Finish and hand over,,2.0,,,,,,,,In Progress,22/Oct/26 1:13 AM
-Bug: the review chips overwrite a judgement reviewer's verdict,SCRUM-129,10221,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,21/Oct/26 9:28 PM,22/Oct/26 1:12 AM,22/Oct/26 12:56 AM,22/Oct/26 1:12 AM,,0,"Related to user story D3
+- SCRUM-128 (UI declutter): its Dashboard change shows these projects; no ordering needed.
+- The seeded-answer bug ticket: its PR is stacked on this one.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xlv,W11 Finish and hand over,,2.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,23/Oct/26 8:08 PM
+Bug: the review chips overwrite a judgement reviewer's verdict,SCRUM-129,10221,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,21/Oct/26 9:28 PM,24/Oct/26 11:36 PM,24/Oct/26 11:29 PM,22/Oct/26 1:12 AM,,0,"Related to user story D3
 
 FRONTEND. W11. Added 2026-10-21 (found in the UI design review).
 
@@ -41,10 +181,12 @@ Checked 22/10 on main f3dfdc1: the backend already refuses a corrected verdict o
 Collaboration:
 - SCRUM-32 (Jingwei): the correction send path this protects.
 - SCRUM-124 (Dishank): the expert's accept of a correction, where the wrong value would become canonical.
-- The UI declutter ticket edits the same file; the edits do not overlap.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000oh:,W11 Finish and hand over,,0.5,,,,,,,,Done,22/Oct/26 1:12 AM
-"Web: Remove distracting UI — confusing button styles, redundant helper text and repeated panels",SCRUM-128,10220,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,21/Oct/26 9:28 PM,22/Oct/26 1:13 AM,21/Oct/26 11:43 PM,,,0,"[https://drive.google.com/drive/folders/1tCpWLk09FDnHgSu0o7j5Sy1zvx0uIjlL?usp=drive_link|https://drive.google.com/drive/folders/1tCpWLk09FDnHgSu0o7j5Sy1zvx0uIjlL?usp=drive_link|smart-link] 
+- The UI declutter ticket edits the same file; the edits do not overlap.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xlr,W11 Finish and hand over,,0.5,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,22/Oct/26 1:12 AM
+"Web: Remove distracting UI — confusing button styles, redundant helper text and repeated panels",SCRUM-128,10220,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,21/Oct/26 9:28 PM,25/Oct/26 12:36 AM,26/Oct/26 12:31 AM,24/Oct/26 3:51 AM,,0,"
 
-{noformat}FRONTEND. W11. Added 2026-10-21 (Hanchen).
+{noformat}Related to user story K4
+
+FRONTEND. W11. Added 2026-10-21 (Hanchen).
 
 The attached design review (frontend-design-review.md, on main f3dfdc1c) found UI that gets in the way: buttons whose style says the wrong thing, helper text nobody needs, information shown several times over, and a dark mode that makes most working screens unreadable. This ticket removes it before the demonstration. It is not a redesign: layout, palette, cards and tabs stay.
 
@@ -71,8 +213,8 @@ Done when:
 Collaboration:
 - The bug ticket (review chips) edits the same file, task-item-workspace-sheet.tsx. Merge either one first, then rebase the other; the edits do not overlap.
 - PR #89 (SCRUM-91, Tim) edits project-create-form.tsx: leave B2's ""Loading live organizations"" line there to Tim, or do it after #89 merges.
-- H6 (SCRUM-108): if its screens are still open, do not remove text from task-releases-section.tsx; the report leaves it alone.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000o4:,W11 Finish and hand over,,2.0,,,,,,,,In Progress,22/Oct/26 1:13 AM
-"Organisation Management: rework the permission model, an administrator oversees and releases but does not judge",SCRUM-127,10219,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Highest,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Oct/26 5:19 PM,21/Oct/26 2:45 PM,21/Oct/26 12:24 AM,,,0,"{noformat}Related to user story G1
+- H6 (SCRUM-108): if its screens are still open, do not remove text from task-releases-section.tsx; the report leaves it alone.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xli,W11 Finish and hand over,,5.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,24/Oct/26 3:51 AM
+"Organisation Management: rework the permission model, an administrator oversees and releases but does not judge",SCRUM-127,10219,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Highest,Done,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,20/Oct/26 5:19 PM,23/Oct/26 8:07 PM,25/Oct/26 11:55 PM,23/Oct/26 8:07 PM,,0,"{noformat}Related to user story G1
 
 Added 2026-10-20 (Yi). During the demo, the client said an administrator may not have the domain expertise to judge work: they see every running project, task and item, release, and manage the organisation, but do not annotate, review or adjudicate.
 
@@ -129,7 +271,7 @@ The two differ only in MANAGE_ORGANIZATION. Neither annotates, reviews, routes d
 Relation to other work:
 - SCRUM-74 (PR #79) is merged first. Its integrity checks read the merged capabilities.
 - SCRUM-45 (PR #80) and SCRUM-91 (PR #89) gate project update, archive and creation on MANAGE_PROJECT, which both roles hold, so neither changes because of this ticket.
-- Development databases are reset after this merges, and everyone signs in again so the web reads the new actions.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000ks:xm,W11 Finish and hand over,,3.0,,,,,10046,SCRUM-18,Organisation Management,In Progress,20/Oct/26 5:19 PM
+- Development databases are reset after this merges, and everyone signs in again so the web reads the new actions.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000ks:xm,W11 Finish and hand over,,3.0,,,,,10046,SCRUM-18,Organisation Management,Done,23/Oct/26 8:07 PM
 "Dispute: An independent reviewer can settle a held disagreement, except where adjudication is mandatory",SCRUM-126,10218,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Highest,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,19/Oct/26 8:02 PM,21/Oct/26 12:25 AM,19/Oct/26 8:49 PM,20/Oct/26 2:10 PM,,0,"Related to user story G2 (criterion 3), E5
 
 BACKEND AND FRONTEND. W11. Added 2026-10-19 (Jingwei). Corrects our reading of the client's R2-8: on main every posture sends a disagreement to an adjudicator, so dual sign-off and arbitration-ready behave the same (SCRUM-107 found this: ""the flag changes no behaviour"").
@@ -147,7 +289,7 @@ Plan: specs/implementation/2026-10-19-dual-signoff-settlement-plan.md (decisions
 # The web case page shows a Settle section to someone with approval rights, or ""this posture requires adjudication"" / ""requires the expert"" where settling is refused; lists show Settled; the posture text says what each posture does on a split.
 # Evaluation: a settle step and cases (dual sign-off v2 settled by accept; a settled return; Standard's sampled split settled; arbitration-ready and Expert-gated refuse; a reviewer of the item refused; an escalation cannot be settled); baseline regenerated.
 # Docs: ADR 022, governance-model.md section 7, workflow_states.md, api_surfaces.md, db_schema_blueprint.md, domain_model.md, backend_module_map.md.",,Jingwei Lin,,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,,,,,,,,,,{},,0|i000ks:wi,"W10 Gate releases, prove them",,3.0,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,20/Oct/26 2:10 PM
-"Hardening: close the gaps no ticket covers — export figure check, CI, compose secrets and explicit-ID locking",SCRUM-125,10217,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Low,,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,14/Oct/26 11:37 PM,21/Oct/26 7:50 PM,21/Oct/26 1:21 AM,,,0,"Related to user stories H5, A1 (the CI part SCRUM-94 reopened) and A4
+"Hardening: close the gaps no ticket covers — export figure check, CI, compose secrets and explicit-ID locking",SCRUM-125,10217,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,14/Oct/26 11:37 PM,24/Oct/26 11:37 PM,22/Oct/26 6:09 PM,23/Oct/26 5:56 PM,,0,"Related to user stories H5, A1 (the CI part SCRUM-94 reopened) and A4
 
 BACKEND, CI AND INFRASTRUCTURE. Added 2026-10-14. A check of every defect in info/issues.md and every review follow-up in the specs against the board (export of 20:02) and main (5ef9202) found that all 30 numbered defects have a ticket, but the items below have none. Each is small; together they close H5 and the open SCRUM-94 review follow-ups, so nothing is left untracked when build work ends on 28 Oct.
 
@@ -166,7 +308,7 @@ BACKEND, CI AND INFRASTRUCTURE. Added 2026-10-14. A check of every defect in inf
 # Issue 1: the provider key's rotation is confirmed with the client and noted on SCRUM-84. If it cannot be confirmed by 28 Oct, record that in SCRUM-75 as an open process item.
 # Each change follows the Definition of Done: tests in the same change, docs updated in the same change (tech-stack.md → Testing for the CI job, api_surfaces.md if an export figure changes), and review by someone other than the author.
 
-*Out of scope:* splitting review_actions.py or other refactors, Alembic, frontend changes beyond what the H5 check finds.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:zk,W11 Finish and hand over,,2.0,,,,,10111,SCRUM-83,Trustworthy Foundations,In Progress,19/Oct/26 12:39 AM
+*Out of scope:* splitting review_actions.py or other refactors, Alembic, frontend changes beyond what the H5 check finds.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xl,W11 Finish and hand over,,2.0,,,,,10230,SCRUM-138,Handover & Quality Ensurance,Done,23/Oct/26 5:56 PM
 Dispute: An expert can accept a reviewer's correction as the answer,SCRUM-124,10216,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Highest,Done,dishank.aswal,712020:409b8b84-45d9-414c-a752-aea725e3302e,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,12/Oct/26 5:30 PM,18/Oct/26 11:57 PM,13/Oct/26 3:07 PM,18/Oct/26 5:40 PM,,0,"Suggest reviewer: Yi Geng/Jingwei Lin
 
 {noformat}Related to user story D3, E3
@@ -291,37 +433,36 @@ Collaboration:
 - SCRUM-70 (I2): EV-011.
 
 Definition of done: the above in the running app on an AI-assisted task, tests in the same change, docs for the changed state (workflow_states.md, api_surfaces.md), reviewed by someone other than the author.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxuz6,"W9 Trace decisions, settle on",,1.5,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,14/Oct/26 7:53 PM
-"Performance: Reads never write, and the project page counts its tasks once",SCRUM-121,10213,Task,In Progress,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Lowest,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Oct/26 10:47 PM,20/Oct/26 4:33 PM,21/Oct/26 1:21 AM,,,0,"Discarded given time contraint.
+"Performance: Reads never write, and the project and overview pages read once per organisation",SCRUM-121,10213,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Oct/26 10:47 PM,24/Oct/26 11:37 PM,26/Oct/26 4:03 AM,24/Oct/26 10:14 PM,,0,"
 
 {noformat}Related to user story A6
 
-BACKEND AND FRONTEND. W10, after SCRUM-99. A6's remainder: its criteria 3 (reading never writes) and 4 (the project page does not repeat per-task work). SCRUM-119 (PR #54) delivered the drafts read and left these two out of scope.
+BACKEND AND FRONTEND. W11. PR #98. A6's remainder: its criteria 3 (reading never writes) and 4 (pages do not repeat per-task work), and the same per-project repetition on the Dashboard and Projects pages (added 2026-10-24, after Jingwei reported the Dashboard as slow). SCRUM-119 (PR #54) delivered the drafts read and left these out of scope.
 
-Measured on the A6 perf bed (docs: perf-findings.md, origin/main df7c05a):
-- GET /tasks/{id}/task-items repairs send-back statuses on every read: 235 statements and 176 ms per call on a 200-item task with history, against 6 statements and 11 ms without the repair, and a write on every read. GET /tasks/{id}/setup goes through the same path. The repair is what flipped a reopened item back to expert send-back (SCRUM-120).
-- The project page calls getTaskSetup once per task to count the backlog (apps/hej-web/lib/project-data.ts:139), so it pays that repair once per task: 245 ms → 109 ms (−55%) with the repair removed.
-
-Where the repair is: list_task_items_with_send_back_resolution (app/services/task_item_status_resolution.py:357) runs reconcile_resubmitted_send_back_items and repair_expert_send_back_for_task, then reads the statuses back. task_service.py:854 calls it for every task-items read.
+Measured before (A6 perf bed):
+- GET /tasks/{id}/task-items and GET /tasks/{id}/setup repaired expert send-back statuses on every read: on df7c05a, 235 statements and 176 ms on a 200-item task with legacy Return history, and a write on every read.
+- The project page called getTaskSetup once per task to count its items.
+- The Dashboard and Projects pages listed each project's tasks with one request per project, and the Dashboard asked each overseen project's item status counts for Canonical Decisions, so both slowed down with the number of projects.
 
 # GET /tasks/{id}/task-items and GET /tasks/{id}/setup return stored statuses and issue no INSERT, UPDATE or DELETE. A route test counts the statements each runs and fails on any write.
-# The status repairs happen in the writes that cause them, not in reads:
-#* first, decide with SCRUM-99's owner whether expert_send_back survives once send_back becomes Return. If it doesn't, delete the repair instead of moving it, and record that in the PR;
-#* otherwise, a resubmission after an expert send-back sets the item's status in the submission transaction (today reconcile_resubmitted_send_back_items does it on the next read), and a send-back decision sets its status where it is decided (decide_escalation already calls ensure_expert_send_back_status, review_actions.py:715);
-#* SCRUM-120's reopen cutoff (PR #50) still holds: a send-back decided before the item's latest reopen never sets its status;
-#* each of those writes records its history row, as status changes do today.
-# Existing rows are repaired once, not on every read: an idempotent one-off repair, run by migrate_db_schema() on SQLite and documented for PostgreSQL dev databases (reset, SCRUM-94 rule). A second run changes nothing.
-# The project page gets every task's backlog counts in one request with the project's task list, instead of one getTaskSetup per task. The counts use the same rule as SCRUM-89's project overview (SCRUM-43's is_task_item_export_eligible and SCRUM-24's task states), so the two screens agree.
-# Delete the unused apps/hej-web/components/use-hydrated-task-items.ts (left over from A6 subtask 2).
-# Target, on the same perf bed, reported before and after in the PR (A6 criterion 5): task-items on the 200-item task with history at most 20 ms and 0 writes; the project page with 8 tasks at least 50% faster than main.
-# Tests, each failing on the old behaviour where there was one: task-items and setup issue no write; a resubmission after an expert send-back shows its new status on the very next read; a send-back decided before a reopen does not come back; the one-off repair is idempotent; the project page sends one request for its counts, whatever the number of tasks.
+# The read-time repair is deleted, not moved (decided 2026-10-23). The writes already set the status they cause (submission, review verdict, dispute decision through item_status_after_accept). The history the repair read is written only by decide_escalation, whose route answers 410 since #48. A probe that failed whenever the repair would change anything never tripped across both suites, the casebook and a fresh seed. SCRUM-120's reopen cutoff still holds.
+# Dropped: the one-off repair in migrate_db_schema(). #88 made every development database reset, so it would have nothing to repair.
+# The project page reads every task's item count in one request: the organisation's task-item-counts (from #97, all of a task's items, as Setup reports), not one getTaskSetup per task. It falls back to a task's setup only when the counts fail or don't list it.
+# The Dashboard and Projects pages read per organisation: GET /organizations/{id}/tasks (any member, as GET /projects/{id}/tasks) and GET /organizations/{id}/item-status-counts (OVERSEE, as the per-project counts). Each organisation's projects, tasks and counts are asked together. The tasks and item-count reads fall back to the per-project path if they fail; Canonical Decisions keeps SCRUM-128's rule and shows no figure if any read fails.
+# Delete the unused apps/hej-web/components/use-hydrated-task-items.ts.
+# Measured on the perf bed, before and after in the PR (main ffc42abd):
+#* task-items on the 200-item task with history: 59 → 37 ms, 0 writes. The statement count no longer grows with items or history; what is left is D7's blind-review statuses, read in batches. The 20 ms target predates those reads.
+#* the project page with 8 tasks: 119 → 49 ms (−59%).
+#* the Dashboard: 519 → 89 ms (−83%) at 51 projects, 9 requests at any number of projects (107 before).
+# Tests, each failing on the old behaviour where there was one: task-items and setup issue no write and run the same statements for 10 and 40 items; a Return and a resubmission show on the next read; a Return before a reopen does not come back; the organisation reads run the same statements for 2 and 12 projects and equal the per-project reads; the pages send one request per organisation whatever the number of projects.
 
-Out of scope: the annotate work queue request (about 520 ms on a 200-item task, #52), which now decides the Annotate page's load time; other indexes.
+Out of scope: the annotate work queue request (about 520 ms on a 200-item task, #52); the project page's ""Your work"" card, which asks each task's annotate work queue twice; decide_escalation and the item-level escalation records; the expert_send_back status (SCRUM-134).
 
 Collaboration:
-- SCRUM-99 (E3, Yi): decides expert_send_back's fate and changes the same functions in task_item_status_resolution.py. This ticket starts after it merges.
-- SCRUM-89 (J2, Tim): the project overview's counts. Agree one counting function, so the project page and the overview never disagree.
-- SCRUM-120 (D9, Done): the reopen cutoff this ticket keeps.
-- Evaluation harness (SCRUM-68/69): its item_status step reads GET task-items, which repairs today. The casebook must still pass once reads stop repairing; a case that relied on the read-time repair names the write that should have set the status.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000mr:,W11 Finish and hand over,,1.0,,,,,10111,SCRUM-83,Trustworthy Foundations,In Progress,19/Oct/26 6:35 PM
+- SCRUM-128 (Jingwei): dashboard-canonical-count and its two tests now use the organisation read; rules and assertions unchanged.
+- SCRUM-134: retires expert_send_back after this merges.
+- Evaluation harness: the casebook passes unchanged, 87/87.
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xq,W11 Finish and hand over,,2.0,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,24/Oct/26 10:14 PM
 Bug: A reopened item is flipped to expert send-back by the next read,SCRUM-120,10212,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,04/Oct/26 5:47 PM,13/Oct/26 10:45 PM,,05/Oct/26 1:20 PM,,0,"{noformat}Related to user story D9
 
 BACKEND ONLY. Found by the performance investigation; reproduced on origin/main df7c05a.
@@ -449,7 +590,7 @@ Collaboration:
 - SCRUM-110 (D9, Jingwei): lands after this one — this ticket closes the accidental reopen, SCRUM-110 adds the owner's.
 - SCRUM-99 (E3, Yi): the deciding half of issue 7, on decide_escalation. Use the same wording for the refusal.
    SCRUM-109 (D2, Parth, carried over) changes the same function; agree the merge order. SCRUM-24's changes to it (PR #41) merged on 30 Sep.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxzza,Mid-semester Break,,1.0,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,03/Oct/26 4:30 PM
-Organisation Management: Invitee accepts a pending invitation; role chosen at invitation,SCRUM-115,10175,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,26/Sep/26 10:56 PM,07/Oct/26 9:39 PM,06/Oct/26 10:14 PM,07/Oct/26 9:39 PM,,0,"{noformat}Related to user story J3
+Organisation Management: Invitee accepts a pending invitation; role chosen at invitation,SCRUM-115,10175,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,26/Sep/26 10:56 PM,07/Oct/26 9:39 PM,,07/Oct/26 9:39 PM,,0,"{noformat}Related to user story J3
 
 BACKEND AND FRONTEND
 
@@ -577,7 +718,7 @@ Collaboration:
 - SCRUM-99 (E3, Yi): Return calls reopen_task_item once this lands. Until then it sets the item back to open work directly. Agree the signature on day one.
 - SCRUM-24 (B4, PR #41, merged 30 Sep): the active-only rule and assert_task_accepts_work come from it.
 - SCRUM-114 / SCRUM-113 (PR #43, #44): the frontend part follows their merge.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxzdg,Mid-semester Break,,3.0,,,,,10041,SCRUM-13,Annotation & Human Judgement,Done,02/Oct/26 7:01 PM
-"Review: Review actions always move item status, and state cannot diverge from history",SCRUM-109,10137,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:32 AM,13/Oct/26 3:19 PM,07/Oct/26 9:36 PM,13/Oct/26 3:19 PM,,0,"{noformat}Related to user story D2
+"Review: Review actions always move item status, and state cannot diverge from history",SCRUM-109,10137,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,22/Sep/26 12:32 AM,13/Oct/26 3:19 PM,23/Oct/26 7:42 PM,13/Oct/26 3:19 PM,,0,"{noformat}Related to user story D2
 
 ONLY BACKEND
 
@@ -902,7 +1043,7 @@ onto the fixture — touches tests only and may land early in W8.
 *Not in scope*: moving production hosting, data migration of anyone's existing dev database
 (re-seed instead), PR templates, CODEOWNERS or branch protection, and Alembic itself unless
 item 5 chooses it.",,Jason Wang,Parth,712020:93390656-829d-45f1-9908-d965a5930c17,712020:31379b73-52b1-497c-adec-f657d3cf3124,,,,,,,,,{},,0|i000jr:,W7 Lock down review data,,3.0,,,,"19/Sep/26 10:16 PM;712020:31379b73-52b1-497c-adec-f657d3cf3124;Clarified with [~accountid:712020:93390656-829d-45f1-9908-d965a5930c17], to make postgreSQL default option for all deployment options and fallback as SQLite",10111,SCRUM-83,Trustworthy Foundations,Done,20/Sep/26 7:03 PM
-"Work queues: available-work list, progress and submission limit (WEB)",SCRUM-93,10121,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,16/Sep/26 1:27 AM,07/Oct/26 9:39 PM,08/Oct/26 11:23 PM,07/Oct/26 9:39 PM,,0,"{noformat}Related to user story D8
+"Work queues: available-work list, progress and submission limit (WEB)",SCRUM-93,10121,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,16/Sep/26 1:27 AM,07/Oct/26 9:39 PM,,07/Oct/26 9:39 PM,,0,"{noformat}Related to user story D8
 
 FRONTEND
 
@@ -928,7 +1069,7 @@ Every limit shown here is enforced in the API as well — a greyed-out button is
 The required count is of human submissions: the AI's annotation is not one of the 3 (client answer, 2026-09-21).
 {noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:wt,"W8 Route work, record decision",,1.5,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,07/Oct/26 9:39 PM
 Update the annotation editing page to ensure that the output results of MVP can be compatible with the existing interface of Hej.,SCRUM-92,10120,Subtask,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,,,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,14/Sep/26 1:40 PM,21/Sep/26 4:57 PM,,21/Sep/26 4:57 PM,,0,,,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i000jj:,W7 Lock down review data,,,,,,,10034,SCRUM-6,AI-Provider: Integrate labeling_ai_assistnat_mvp as an AI provider,Done,21/Sep/26 4:57 PM
-Project lifecycle: Create a project scoped to an organisation,SCRUM-91,10119,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:52 PM,20/Oct/26 11:04 PM,20/Oct/26 10:51 PM,,,0,"{noformat}Related to user story B1
+Project lifecycle: Create a project scoped to an organisation,SCRUM-91,10119,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:52 PM,24/Oct/26 9:12 PM,20/Oct/26 10:51 PM,24/Oct/26 9:12 PM,,0,"{noformat}Related to user story B1
 
 Projects hold related work — the client's example is an ""Autonomous Driving""
 project carrying several annotation and evaluation tasks. The capability
@@ -956,8 +1097,8 @@ Build the gap:
 # Tests: a caller who may create projects in two organisations can create a project in the second, and it is listed there and not in the first; the policy default follows the selected organisation, and a preset or custom values the user chose survive a switch; a project manager (task owner) who is not an administrator is offered the organisation and can create a project in it; a caller who is only a member of an organisation is not offered it and is refused by the API.
 
 Updated 2026-10-20, team decision (Hanchen). Creating a project needs manage_project, which an administrator and a project manager (task owner) both hold; create_project keeps that check. ""Those where they are an administrator"" in the 12 Oct update is withdrawn: the client's design docs give project creation to the task owner (system_design.md §9.1; the workflows doc §2), and story B1's persona is the project manager. The permission rework (SCRUM-127, PR #91) keeps this rule.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:yi,"W10 Gate releases, prove them",,1.0,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",In Progress,13/Oct/26 10:42 PM
-"Organisation Management: Invite, remove and role-manage members",SCRUM-90,10118,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:37 PM,29/Sep/26 2:25 PM,08/Oct/26 12:04 AM,29/Sep/26 2:25 PM,,0,"{noformat}Related to user story J3
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:yi,"W10 Gate releases, prove them",,1.0,,,,,10039,SCRUM-11,"Project, Policy & Task Lifecycle",Done,24/Oct/26 9:12 PM
+"Organisation Management: Invite, remove and role-manage members",SCRUM-90,10118,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:37 PM,29/Sep/26 2:25 PM,,29/Sep/26 2:25 PM,,0,"{noformat}Related to user story J3
 
 You cannot run governed review without the people who perform it. This is the
 administrator-facing capability on top of the invitation flow.
@@ -972,7 +1113,7 @@ Criterion 4 (invitee sees and accepts pending invitations) moved on 2026-09-26 t
 
 Issues 17, 18
 Blocked by SCRUM-8 until the invitation flow works.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vx,W7 Lock down review data,,2.0,,,,,10046,SCRUM-18,Organisation Management,Done,29/Sep/26 2:25 PM
-Project: Overview of status and progress,SCRUM-89,10117,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:36 PM,16/Oct/26 11:37 PM,06/Oct/26 10:26 PM,16/Oct/26 11:37 PM,,0,"{noformat}Related to user story J2
+Project: Overview of status and progress,SCRUM-89,10117,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:36 PM,16/Oct/26 11:37 PM,,16/Oct/26 11:37 PM,,0,"{noformat}Related to user story J2
 
 A starting point, not an analytics product.
 
@@ -1020,7 +1161,7 @@ Issue 7 (Critical) is partly fixed: review actions (submit_task_item_review_acti
 The requirements stand, split between the two: the refusal names its reason rather than a bare 403; administrators have no override (api_surfaces.md, ""no administrator or reviewer override""); only DISPUTE may route and only ADJUDICATE may decide; and each path has a test that fails on the old behaviour.
 
 Issue 7 closes when both tickets are Done.{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vxzzz,Mid-semester Break,,0.0,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,12/Oct/26 1:45 PM
-Task lifecycle: Create annotation and judgement tasks with a result shape,SCRUM-85,10113,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:31 PM,16/Oct/26 4:35 PM,09/Oct/26 12:27 AM,09/Oct/26 1:00 AM,,0,"{noformat}Related to user story B3
+Task lifecycle: Create annotation and judgement tasks with a result shape,SCRUM-85,10113,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 11:31 PM,16/Oct/26 4:35 PM,,09/Oct/26 1:00 AM,,0,"{noformat}Related to user story B3
 
 W9 (moved from W10 on 2026-10-01). Rewritten 2026-10-01: verify first, then close or build the gap.
 
@@ -1079,7 +1220,7 @@ Schema: Fix db setup issues,SCRUM-81,10109,Task,Done,SCRUM,CS-57,software,Jason 
 *Issue 24* (init_data.py --reset broken two ways) — the story requires reset to work repeatedly on a stock Windows terminal, which closes both the console-encoding crash and the foreign-key failure that currently leaves the database half-dropped.
 *Issue 23* (.env config silently ignored) — “configuration is actually picked up” is the acceptance criterion, so the wrong-prefix and never-read-the-file defects both have to go for this story to pass.",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i00026:,W6 Governance & data-integrity,,,,,,,10111,SCRUM-83,Trustworthy Foundations,Done,13/Sep/26 9:43 PM
 Evaluation Harness and Casebook,SCRUM-80,10108,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 3:07 AM,07/Sep/26 11:52 PM,,,,0,,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},dark_yellow,0|i000gv:,,,,,,,,,,,To Do,07/Sep/26 3:07 AM
-Evaluation8: Findings record including negative results,SCRUM-75,10103,Task,In Review,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,High,,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:06 AM,21/Oct/26 3:52 PM,21/Oct/26 3:52 PM,,,0,"{noformat}Related to user story I5
+Evaluation8: Findings record including negative results,SCRUM-75,10103,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,High,Done,Kanishka Kathait,712020:53d02d47-8757-44b7-a5a5-b57a63b98fbe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:06 AM,22/Oct/26 6:44 PM,21/Oct/26 3:52 PM,22/Oct/26 6:44 PM,,0,"{noformat}Related to user story I5
 
 DOCUMENT. W11, the last sprint. Rewritten 2026-10-01; updated 2026-10-10.
 
@@ -1101,7 +1242,7 @@ Added 2026-10-01 (coverage of deliverables):
 Added 2026-10-10 (limits of the harness itself, from SCRUM-70):
 - A skipped case never ran, so it proves nothing. The casebook counts written cases per category; record how many of each category ran at the end of W11, and which stayed skipped and why.
 - A harness case scripts every person in it. Its figures show that a protocol and its computation are right, not how real people behave. Say which figures came from scripted runs and which, if any, from people.
-{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xk,W11 Finish and hand over,,1.0,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,In Progress,19/Oct/26 12:39 AM
+{noformat}",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i000ks:xk,W11 Finish and hand over,,1.0,,,,,10108,SCRUM-80,Evaluation Harness and Casebook,Done,22/Oct/26 6:44 PM
 "Evaluation7: Integrity checks on provenance, roles and releases",SCRUM-74,10102,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,High,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,07/Sep/26 12:06 AM,21/Oct/26 12:25 AM,16/Oct/26 5:27 PM,21/Oct/26 12:25 AM,,0,"{noformat}Related to user story I5
 
 BACKEND (evaluation). W11, the last sprint. Rewritten 2026-10-01.
@@ -1292,7 +1433,7 @@ Read by SCRUM-104 (H2, the manifest's versions) and SCRUM-105 (H3, refusing supe
 Collaboration:
 - SCRUM-98 (F1), SCRUM-32 (D3), SCRUM-87 (C4), all W9: one schema order, agreed on day one; development PostgreSQL databases are reset afterwards (SCRUM-94 rule).
 - SCRUM-51 (D7): sampling reads the cross-review percentage of the policy version in force.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vxuv,"W9 Trace decisions, settle on",,3.0,,,,,10044,SCRUM-16,Provenance & Audit History,Done,19/Oct/26 1:56 PM
-Dispute: Adjudicator queue and authorization,SCRUM-52,10080,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:05 PM,13/Oct/26 10:45 PM,06/Oct/26 1:37 AM,07/Oct/26 2:53 AM,,0,"{noformat}Related to user story D8, E3
+Dispute: Adjudicator queue and authorization,SCRUM-52,10080,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:05 PM,13/Oct/26 10:45 PM,,07/Oct/26 2:53 AM,,0,"{noformat}Related to user story D8, E3
 
 BACKEND ONLY. Mid-semester break, Parth. Rewritten 2026-10-01.
 
@@ -1308,7 +1449,7 @@ Collaboration:
 - SCRUM-99 (E3, Yi): the independence helper and the dispute record; agree both on day one.
 - SCRUM-101 (E1, Yi): automatically opened disputes reach this queue like routed ones.
 - SCRUM-103 (E6, Jingwei, W10): the screens read this queue.{noformat}",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i0001b:vxzzt,Mid-semester Break,,1.0,,,,,10042,SCRUM-14,"Review, Dispute & Adjudication",Done,07/Oct/26 2:53 AM
-Review: Independent second reviewer,SCRUM-51,10079,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:03 PM,07/Oct/26 2:53 AM,06/Oct/26 1:37 AM,07/Oct/26 2:53 AM,,0,"{noformat}Related to user story D7 and E1
+Review: Independent second reviewer,SCRUM-51,10079,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Parth,712020:31379b73-52b1-497c-adec-f657d3cf3124,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 10:03 PM,07/Oct/26 2:53 AM,,07/Oct/26 2:53 AM,,0,"{noformat}Related to user story D7 and E1
 
 ONLY BACKEND
 
@@ -1449,7 +1590,7 @@ Release & Export: Align task completion and export readiness,SCRUM-43,10071,Task
 
 Stories *B6* — “Done” means the same thing everywhere I look · *H5* — Export figures agree with the rest of the platform
 Issues *19*, *27*, *14*",,Yi Geng,,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,,,,,,,,,,{},,0|i00018:i,W7 Lock down review data,,2.0,,,,,10045,SCRUM-17,Dataset Release & Export,Done,20/Sep/26 7:09 PM
-Provenance: Remove duplicate escalation audit changes,SCRUM-41,10069,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:48 PM,13/Oct/26 10:45 PM,06/Oct/26 10:12 PM,06/Oct/26 10:12 PM,,0,"Story *F4* — History tells me who really did what
+Provenance: Remove duplicate escalation audit changes,SCRUM-41,10069,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Jingwei Lin,712020:a3a41120-888a-4688-8ba9-1762665aa1c0,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,Yi Geng,712020:e5fd85d6-6a93-421a-98d0-d5e4be368d13,06/Sep/26 5:48 PM,13/Oct/26 10:45 PM,,06/Oct/26 10:12 PM,,0,"Story *F4* — History tells me who really did what
 Issues *22*
 
 {noformat}Related to user story F4
@@ -1676,7 +1817,7 @@ Provenance & Audit History,SCRUM-16,10044,Epic,To Do,SCRUM,CS-57,software,Jason 
 Annotation & Human Judgement,SCRUM-13,10041,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:21 AM,06/Sep/26 3:16 PM,,,,0,"_The client's stated #1 engineering gap: the connective layer between platform, queue and AI._",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},dark_green,0|i0002n:,,,,,,,,,,,To Do,06/Sep/26 2:21 AM
 AI Annotation Pipeline,SCRUM-12,10040,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:19 AM,06/Sep/26 3:16 PM,,,,0,_Project → policy → task → items. The client's own critical path starts here._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},blue,0|i0002f:,,,,,,,,,,,To Do,06/Sep/26 2:19 AM
 "Project, Policy & Task Lifecycle",SCRUM-11,10039,Epic,To Do,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,,,,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,06/Sep/26 2:13 AM,06/Sep/26 3:16 PM,,,,0,_Do these first. Nothing else is safe or demonstrable until they hold._,,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},purple,0|i00027:,,,,,,,,,,,To Do,06/Sep/26 2:13 AM
-Organisation management:  Invitation & acceptance,SCRUM-8,10036,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,05/Sep/26 10:44 PM,08/Oct/26 12:04 AM,08/Oct/26 12:03 AM,16/Sep/26 6:32 PM,,0,"No invitation can be accepted at all today, so a second person cannot be onboarded through the normal route. This blocks any multi-user demo.
+Organisation management:  Invitation & acceptance,SCRUM-8,10036,Task,Done,SCRUM,CS-57,software,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,,Medium,Done,Tim Chung,712020:2c5fbefd-b0d1-4404-a667-67013b327abe,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,Jason Wang,712020:93390656-829d-45f1-9908-d965a5930c17,05/Sep/26 10:44 PM,08/Oct/26 12:04 AM,,16/Sep/26 6:32 PM,,0,"No invitation can be accepted at all today, so a second person cannot be onboarded through the normal route. This blocks any multi-user demo.
 
 Story *G5* — I can actually invite someone into my organisation
 Issues *17*, *18*",,Jason Wang,,712020:93390656-829d-45f1-9908-d965a5930c17,,,,,,,,,,{},,0|i0001b:vv,W7 Lock down review data,,2.0,,,,,10046,SCRUM-18,Organisation Management,Done,16/Sep/26 6:32 PM

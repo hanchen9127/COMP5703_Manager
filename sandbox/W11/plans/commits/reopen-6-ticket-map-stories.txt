@@ -1,0 +1,27 @@
+docs: the ticket map gives the handover and cleanup tickets their stories (SCRUM-139)
+
+The board export of 2026-10-25 and story_src.csv now link a story to
+the tickets the map listed with none.
+
+- SCRUM-133, SCRUM-135 and SCRUM-136 (the handover sweep) serve K1, and
+  SCRUM-134 serves A5. Their notes keep what they were (part 1, 2 or 3
+  of the handover sweep; cleanup after the two-level disputes, #48)
+  without "No story".
+- SCRUM-128 serves K4, and its "No story" note goes: the title says what
+  it was.
+- No ticket is left without a story, so How to read the table drops the
+  rule for a ticket with no story.
+
+Checked against the board export, story_src.csv and the merged PR list:
+every row's title equals the board's summary (the deleted SCRUM-36, 39,
+58 and 62 aside), every row's PR column lists exactly the merged pull
+requests whose title names the ticket (#104 aside, which this branch
+is), and every ticket named in a merged PR title, in the tree or in a
+commit message on main has a row. Every ticket story_src.csv lists
+under a story has that story in its row, except SCRUM-49, which has no
+row because nothing in the repository names it; rows that list more
+stories than story_src.csv (SCRUM-32, 37, 46 and 99) record every story
+the ticket served.
+
+Files:
+docs/handover/ticket-map.md

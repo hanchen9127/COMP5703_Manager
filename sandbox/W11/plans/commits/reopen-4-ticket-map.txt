@@ -1,0 +1,7 @@
+docs: the ticket map lists SCRUM-139 (SCRUM-139)
+
+The handover's ticket map lists every ticket with its story and PR. It
+gains this ticket's row: the reopen's history entry, story D9, PR #104.
+
+Files:
+docs/handover/ticket-map.md

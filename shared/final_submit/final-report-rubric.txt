@@ -1,0 +1,250 @@
+Deliverables and Submission Details
+This is a group final report assignment.
+
+Attention 1: Please submit the report by only one group member per group.
+
+Attention 2: AI Statement is required for this assignment ^_^
+
+It is due on Sunday of Week 13, no later than 11.59pm. 
+
+Please submit your report through this portal, which must be in PDF format.
+
+The group final report has a maximum of 50 pages (including tables and figures, but not appendices), and the template could be found in Modules or can be downloaded hereDownload here.
+
+Your appendices should include your references, source code, and may include other ancillary data. Your references are not automatically checked, and may not be examined. References to the appendices may not be followed by the grader. All relevant information must be in the main body of the report.
+
+Please use the file format when submitting your file e.g. CSXX-X_Group_FinalReport.pdf
+
+Attention Please: 
+
+We use similarity detection software to detect potential instances of plagiarism or other forms of academic dishonesty. Similarity of any submitted assessment cannot be higher than 35%.
+Please complete and submit the AI statementDownload statement together with your report for proper acknowledging and referencing the use of AI as required by University.
+If your group does not complete the contribution statement in the report template, you won't get your final mark.
+Late submission
+In accordance with University policy, these penalties apply when written work is submitted after 11:59pm on the due date:
+
+Deduction of 5% of the maximum mark for each calendar day after the due date.
+After ten calendar days late, a mark of zero will be awarded.
+Digital tools and generative AI in assessments
+You are permitted to use generative AI tools for learning purposes, as long as you follow all University policies including:
+
+Academic Integrity Policy 2022 (pdf, 376KB)
+Acceptable Use of ICT Resources Policy 2019 (pdf, 258KB)
+Student Charter 2020 (pdf, 221KB).
+The AI in Education Canvas site contains a number of productive ways that students are using AI to improve their learning.  
+
+Acknowledging and referencing the use of AI
+You will need to include a statement in your submitted work explaining:
+
+that you have used AI tools in completing the work
+what automated writing or generative AI tools you have used
+how you have used them.
+The unapproved use of automated writing tools or generative AI, or failing to acknowledge them, in assessable work is currently considered to be a breach of academic integrity, and penalties may apply.
+
+For more in-depth information about generative AI use, you should check the AI in Education Canvas site. It includes additional guidance on how to acknowledge and reference the use of generative AI.
+
+Academic Integrity
+You are required to take part in your education in an honest and ethical manner. Failure to comply with assessment rules and University policies could result in you being investigated and penalised by the University for an academic integrity breach.
+
+We use Turnitin to help detect potential academic integrity breaches. In some cases, your instructor will permit multiple attempts for the assessment and will allow you to view the Turnitin report immediately, which you can use to help revise your submission and then resubmit. For help understanding the report, visit the Turnitin guide for students.
+
+Compliance statement
+In submitting this work, I (or we, in the case of a group submission) acknowledge that:
+
+I have read and understood the Academic Integrity Policy, and where relevant, the Research Code of Conduct, and that this assessment submission complies.
+I have complied with all rules and referencing requirements set for this assessment task, including correctly acknowledging the use of any generative AI tools or assistance from others such as copyediting or proofreading.
+The work has not previously been submitted in part or in full for assessment in another unit unless permission has been given by the unit of study coordinator.
+Engaging another person to complete part or all of the submitted work will, if detected, lead to proceedings for potential student misconduct under the University of Sydney (Student Discipline) Rule.
+You should keep copies of your assignment submission, drafts, AI outputs and research materials for one year.
+
+Group Final Report
+Criteria	Ratings	Points
+Topic Definition
+view longer description
+
+Full Marks
+Provides an insightful knowledge of information technology by discussing the implications and consequences of proposed project works in Abstract and Introduction. Able to discuss and summarise project by articulating the general background, motivation, benefits, problems and proposed solution.
+8 to >7 pts
+
+Very Good
+Provides a broad knowledge of information technology by describing the proposed project works. Explain and link implications and consequences to project motivation, benefits, problems and proposed solution.
+7 to >6 pts
+
+Good
+Provides the summary of project and states the general background, purpose, motivation, problem and proposed solution. Attempt to explain and link implications and consequences.
+6 to >4 pts
+
+Satisfactory
+Identifies the general background, purpose, motivation, problem and proposed solution. Attempt to explain and link to implications and consequences, some of which are incorrect.
+4 to >2 pts
+
+Poor
+Attempt to identify the general background, purpose, motivation, problem and solution. Attempt to explain and link to implications and consequences, most of which are incorrect.
+2 to >0 pts
+
+No Marks
+No Attempt
+0 pts
+/8 pts
+Project Background
+view longer description
+
+Full Marks
+Provides an insightful explanation of project background by discussing findings from related literature/ literature review that are significant to the project, both theoretically and practically. Clearly demonstrates understanding of project proposal by identifying, discussing and linking it to project problems, aims and objectives, questions and scope.
+12 to >10 pts
+
+Very Good
+Provides a broad explanation of project background by identifying and discussing findings that are significant to project proposal. Identifies and discusses project problems, aims and objectives, questions and scope.
+10 to >9 pts
+
+Good
+Provides brief explanation of project background, limited by findings in related literature/ literature review. Identifies project problems, aims and objectives, questions and scope.
+9 to >7 pts
+
+Satisfactory
+States project background, problems, aims and objectives, questions and scope explicitly and unambiguously.
+7 to >4 pts
+
+Poor
+Provides explanation with insufficient information that leaves reader confused.
+4 to >0 pts
+
+No Marks
+No attempt
+0 pts
+/12 pts
+Project Plan
+view longer description
+
+Full Marks
+Provides insightful and detailed information of project plan by discussing the implications and consequences in relation to selected methodologies. Identify and discuss resources required for project plan aligned with methodologies identified. Demonstrate critical knowledge of project planning by discussing and identifying project milestones/schedule and expected outcomes. Exhibit exceptional level of complexity and intricacy of project deliverables.
+10 to >8 pts
+
+Very Good
+Provides a broad explanation of project plan by identifying and discussing selected methodologies. Identifies and discusses resources, milestones and expected outcomes. Exhibit high level of complexity and intricacy of project deliverables.
+8 to >6 pts
+
+Good
+Provides brief explanation of project plan by identifying selected methodologies, resources, milestones and outcomes. Exhibit moderate level of complexity and intricacy of project deliverables.
+6 to >4 pts
+
+Satisfactory
+States project plan explicitly and unambiguously. Identifies methodologies, resources, milestones and outcomes, some of which are incorrect. Exhibit low level of complexity and intricacy of project deliverables.
+4 to >2 pts
+
+Poor
+Provides insufficient information regarding project plan. Attempt to identify methodologies, resources, milestones and outcomes, most of which are incorrect.
+2 to >0 pts
+
+No Marks
+No attempt
+0 pts
+/10 pts
+Results
+view longer description
+
+Full Marks
+Provides insightful knowledge of project results by identifying and discussing project outcomes. Demonstrate critical knowledge by interpreting results or project outcomes to answer project problems, issues or questions raised.
+20 to >18 pts
+
+Very Good
+Provides broad knowledge of project results by identifying and discussion project outcomes. Identifies links with project problems, issues or questions raised.
+18 to >15 pts
+
+Good
+Provides brief knowledge of project results by identifying project outcomes. Attempts to link to project problems issues or questions raised.
+15 to >12 pts
+
+Satisfactory
+States project results explicitly and unambiguously, where some of it are incorrect.
+12 to >7 pts
+
+Poor
+Provides insufficient information to understand results of project outcomes.
+7 to >0 pts
+
+No Marks
+No attempt
+0 pts
+/20 pts
+Discussion
+view longer description
+
+Full Marks
+Provides insightful knowledge of project outcomes by identifying and discussing the implications and significance of project results. Demonstrate critical knowledge by discussing how results findings contribute to solve project issues, aims, gaps, etc.
+20 to >18 pts
+
+Very Good
+Provides broad knowledge of project outcomes by identifying and discussing implications and significances of results. Links findings with project solutions, issues, aims, gaps, etc.
+18 to >15 pts
+
+Good
+Provides brief knowledge of project outcomes by identifying implications and significances of results. Attempts to link findings with project solutions, issues, aims, gaps, etc.
+15 to >12 pts
+
+Satisfactory
+States implications and significances explicitly and unambiguously.
+12 to >7 pts
+
+Poor
+Provides insufficient information to how outcomes has any implication and significance to project solutions, aims, gaps, etc. Leave reader confused.
+7 to >0 pts
+
+No Marks
+No attempt
+0 pts
+/20 pts
+Limitations and Future Works
+view longer description
+
+Full Marks
+Provides insightful knowledge of project by identifying and discussing the limitations and suggestions for future works. Demonstrate critical knowledge by linking limitations and future works to project specific attributes.
+20 to >18 pts
+
+Very Good
+Provides broad knowledge of project by identifying and discussing limitations and suggestions for future works. Links them to project specific attributes.
+18 to >15 pts
+
+Good
+Provides brief knowledge of project by identifying limitations and suggestions for future works. Attempts to link to project specific attributes.
+15 to >12 pts
+
+Satisfactory
+States limitations and future works explicitly and unambiguously. Some of it are incorrect.
+12 to >7 pts
+
+Poor
+Provide insufficient information to describe limitations and future works. Most of it are incorrect.
+7 to >0 pts
+
+No Marks
+No attempt
+0 pts
+/20 pts
+Reflective Practice
+view longer description
+
+Full Marks
+Clearly demonstrates insightful understanding of achievements in the report. Explicitly acknowledges the use or not use of AI. Adopts a tone in writing that is appropriate to the report’s intended viewership. Delivers well-defined structure of the report, neat and professionally presented, well-formatted bibliography with no spelling, grammar or punctuation errors.
+10 to >8 pts
+
+Very Good
+Clearly demonstrates insightful understanding of achievements in the report. Explicitly acknowledges the use or not use of AI. Ensures that each section of the report is clear and links backwards and forwards to other related sections.
+8 to >6 pts
+
+Good
+Demonstrates good understanding of achievements in the report. Explicitly acknowledges the use or not use of AI. Provides headings and subheadings that show development of discussion. Write sentences where meaning is immediately clear to the reader.
+6 to >4 pts
+
+Satisfactory
+Demonstrates basic understanding of achievements in the report. Basic acknowledgment of AI use. Provides a title page, contents page and summary. Provides correctly referenced citations in-text and in reference list. Includes illustrations that relate to content of report.
+4 to >2 pts
+
+Poor
+Limited or superficial understanding of achievements. Minimal or unclear acknowledgment of AI use. Provides report that does not consistently flow with requirements for this assignment. No evidence of care taken to edit work. Headings and subheadings do not show report structure.
+2 to >0 pts
+
+No Marks
+No attempt
+0 pts
+/10 pts

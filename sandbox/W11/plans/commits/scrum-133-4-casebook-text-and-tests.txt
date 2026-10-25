@@ -1,0 +1,24 @@
+docs(evaluation): the harness, casebook and their tests name stories and PRs (SCRUM-133)
+
+The evaluation harness, its cases, READMEs and CLI help, and the
+evaluation tests named Jira tickets 287 times. Each now names the
+story and the pull request, from docs/handover/ticket-map.md: 185 in
+apps/hej-api/evaluation, 102 in tests/test_evaluation_*.py. A ticket
+with several stories names the one its line is about; a ticket used as
+a noun names the story or the PR in its place. The epic SCRUM-80 is
+the evaluation harness and casebook, I1 to I5.
+
+Developer text names the story alone: CLI help, skip reasons, and the
+baseline note, which stays the same in baseline.json and in what
+`run --update-baseline` writes. Skip reasons wait for a story that is
+not built, so they name no PR; their assertions follow. EV-018's skip
+reads as docs/evaluation-findings.md quotes it.
+
+A ticket's own criteria were not its story's, so "SCRUM-74, criterion
+4" and "SCRUM-69, criterion 1" name the PR, and a ticket's subtasks
+name the story. Comments that still said covers holds tickets say
+stories.
+
+baseline.json keeps every verdict. Evaluation tests: 428 passed, 2
+skipped; casebook 87/87, 1 skipped, unchanged; list --coverage
+unchanged.

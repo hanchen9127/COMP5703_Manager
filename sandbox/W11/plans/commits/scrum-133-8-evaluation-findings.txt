@@ -1,0 +1,8 @@
+docs: the evaluation findings name stories and PRs (SCRUM-133)
+
+docs/evaluation-findings.md (I5, #92) named Jira tickets 46 times. Its
+references, and nothing else, now name the story and the pull request.
+Its tables' Ticket column is a PR column. Section 12's heading is "#93
+hardening follow-up", so tech-stack.md's link to it follows. The
+provider-rotation confirmation, which was to be recorded on the Jira
+ticket SCRUM-84, stays open under A4.

@@ -1,0 +1,12 @@
+docs(evaluation): the roles check's reopen comment names the reconciliation Return (SCRUM-139)
+
+I5's roles check gives an item_reopened event the ADJUDICATE action for
+any cause but the owner's. Its comment still said "an adjudication's
+Return reopens it", from the removed adjudication_return cause. The rule
+is right for the item-reconciliation Return, the only other cause, and
+the comment now says so (ADR 017). Comment only.
+
+Review of PR #104 (Yi Geng), SCRUM-139.
+
+Files:
+apps/hej-api/evaluation/harness/integrity.py

@@ -1,0 +1,44 @@
+refactor(api): remove the retired review mutation routes (SCRUM-134)
+
+Four review routes in annotations.py were kept as stubs that always
+answered 410 Gone: POST /annotations/{annotation_id}/reviews,
+PATCH /reviews/{review_id}, POST /reviews/{review_id}/submit and
+DELETE /reviews/{review_id}. They go, with LEGACY_REVIEW_MUTATION_DETAIL,
+_raise_legacy_review_mutation_retired and the status import that only
+they used. An old caller now gets 405 (or 404 for .../submit) instead of
+410.
+
+Nothing calls them. The web, the API and the casebook harness only read
+reviews, through GET /annotations/{annotation_id}/reviews and
+GET /reviews/{review_id}, and both stay unchanged. A review decision is
+still made through the review-actions route, which appends a review and
+never edits one in place.
+
+api_surfaces.md no longer lists the four routes as retired, nor calls
+the two GET routes legacy. Its sentence that review records cannot be
+edited or hard-deleted through the API stays. backend-governance-guards.md
+loses its "Retired legacy review mutations" list and the 410 error rule;
+its section now names the review-actions route.
+
+Tests:
+
+Deleted, because they tested only the four stubs
+(test_legacy_review_mutations.py, LegacyReviewMutationRetirementTests,
+4 cases):
+- test_every_legacy_mutation_is_gone_for_reviewer_and_admin
+- test_legacy_mutations_still_require_an_authenticated_user
+- test_retired_routes_are_deprecated_and_document_http_410
+- test_review_history_read_routes_remain_available
+
+The last one checked that the two GET routes are registered. The routes
+are unchanged, test_annotation_independence_privacy.py still calls both,
+and the casebook harness reads GET /annotations/{annotation_id}/reviews
+over HTTP.
+
+The suite drops by exactly these 4 cases.
+
+Files:
+apps/hej-api/app/api/routes/annotations.py
+apps/hej-api/tests/test_legacy_review_mutations.py
+docs/design/backend/api_surfaces.md
+docs/backend-governance-guards.md

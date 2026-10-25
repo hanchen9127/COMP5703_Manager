@@ -1,0 +1,203 @@
+refactor(api,web): remove the item escalation routes and what only they wrote (SCRUM-134)
+
+The item escalation flow had two registered routes that answer 410
+(POST .../task-items/{id}/escalations/route and .../decision), two
+unregistered helpers that only tests called (route_escalation and
+decide_escalation), and two reads of its table (GET /tasks/{id}/escalations
+and its detail). route_escalation is the only writer of
+TaskItemEscalationDB and of the escalation_routed audit; decide_escalation
+the only writer of escalation_decided. Since the previous commits nothing else
+reads the table, and a fresh seed holds no rows. Every route, helper,
+schema and history wording that only this flow used goes. The model and
+the table stay for the next commit.
+
+routes/review_actions.py:
+- retired_route_escalation, route_escalation, retired_decide_escalation,
+  decide_escalation, list_escalations and get_escalation_detail go, with
+  _normalize_escalation_decision,
+  _map_escalation_decision_to_task_item_status,
+  _escalation_resolution_outcome and _open_escalation, which only they
+  used.
+- POST .../annotation-disputes/{disagreement_id}/open loses the "This
+  item already has an open legacy escalation" refusal: only an
+  escalation row could trigger it.
+- TaskItemEscalationDB is no longer imported here, nor the Escalation*
+  schemas, DisputeLabelRead, DisputeReviewRead, DisputeSubmissionRead
+  or assert_may_route_dispute. The module docstring names the annotation
+  disputes in place of escalation routing.
+
+GET .../task-items/{id}/adjustment loses routed_at and routed_by, as
+Hanchen decided. They were read from the open escalation, so they were
+always null. TaskItemAdjustmentRead drops them, and so does the web type
+TaskItemAdjustmentReadBody. The workspace panel's hasOpenDispute reads
+has_open_annotation_dispute || has_open_reconciliation; with both
+legacy fields always null its result is unchanged.
+
+review_policy_enforcement.py: assert_may_route_dispute goes. Only
+route_escalation called it; opening a held split keeps its own check,
+assert_may_open_annotation_dispute, and the review action keeps
+assert_may_decide.
+
+schemas/review_actions.py: EscalationRouteRequest,
+EscalationRouteResponse, EscalationDecisionRequest,
+EscalationDecisionResponse, EscalationListItem, EscalationListResponse
+and EscalationDetailRead go, with DisputeReviewRead,
+DisputeSubmissionRead and DisputeLabelRead, which only the detail read
+used.
+
+task_audit_log_query.py and task_history_recorder.py: the
+escalation_routed and escalation_decided wording, their dispute
+grouping and their summary field lists go, as Hanchen decided. So do
+the escalation_id entry of the hidden fields and the target entry of
+the visible ones: only escalation_routed wrote either. The comment on
+the operations whose description is machine text no longer cites an
+escalation's note. Task history's open_escalations count keeps its
+name.
+
+api_surfaces.md: the escalation routes and their 410, the list and
+detail reads, and the "legacy escalation routers" exclusion go. The
+adjustment read never listed routed_at or routed_by.
+
+Why it is safe: no route reached the removed writers, the removed reads
+saw an empty table, and the removed refusal and fields could only come
+from an escalation row. Every live refusal keeps its wording. The model,
+database.py's schema helper and the NULL-verdict review handling are
+untouched.
+
+Tests:
+
+Deleted, because they tested only the removed routes, helpers or history
+wording (28 backend cases, 1 PostgreSQL-only case, 2 web cases):
+- test_dispute_posture_guards.py:
+  test_the_retired_escalation_routes_are_gone (4 postures). The module
+  docstring no longer counts the retired routes among the refused paths.
+- test_review_actions.py: EscalationDecisionStatusTests (4),
+  test_dispute_detail_includes_every_review_justification,
+  test_accepting_a_dispute_records_the_selected_annotation,
+  test_legacy_dispute_reject_can_preserve_an_ambiguous_resolution and
+  test_final_dispute_decision_requires_a_justification, with the
+  _add_open_dispute fixture.
+- test_review_justification.py:
+  test_escalating_to_dispute_needs_a_justification (2): the escalate
+  review action's blank justification stays refused by
+  test_every_review_decision_needs_a_justification[escalate].
+- test_governed_action_routes.py:
+  test_escalation_requires_dispute_capability and
+  test_escalation_decision_requires_adjudicate_capability. The escalate
+  review action's REVIEW and DISPUTE check stays
+  (test_review_escalation_requires_review_and_dispute_in_one_check), and
+  the dispute decision's ADJUDICATE check stays
+  (test_adjudication_independence.py,
+  test_no_adjudicate_capability_is_403_for_queue_and_decision).
+- test_task_audit_log_query.py:
+  test_escalation_routed_user_note_becomes_detail,
+  test_a_decided_escalation_does_not_repeat_its_decision_as_a_change,
+  test_a_routed_escalation_still_lists_no_changes,
+  test_every_field_a_summary_states_is_in_the_table's two escalation
+  cases, and three of the six cases of
+  test_a_note_shaped_like_key_value_pairs_still_shows_as_the_detail
+  (it took two escalation operations; it now takes one live one).
+- test_adjudication_independence.py:
+  test_an_expert_return_stores_returned_not_a_second_status (2), which
+  tested decide_escalation's spelling of a Return; the dispute Return
+  stores returned in
+  test_independent_capable_caller_is_offered_and_decides[return]. The
+  PostgreSQL-only
+  test_adjudication_waits_for_item_lock_and_reads_committed_participation
+  goes too: it tested decide_escalation's item lock, and the dispute
+  decision route takes no item lock before its independence check, so it
+  cannot be rebuilt without changing that route. The _legacy_escalation
+  and _legacy_decision helpers and the docstring paragraph about them go.
+- test_independent_second_review.py:
+  test_legacy_escalation_write_endpoints_are_retired and
+  test_retired_legacy_reject_cannot_close_an_incomplete_first_pass, which
+  posted to the 410 routes.
+- task-item-workspace-sheet.test.tsx: "offers no duplicate route when
+  %s identifies an open record" (routed_by, routed_at). The cases for
+  has_open_annotation_dispute and has_open_reconciliation stay, and the
+  adjustment fixtures no longer set the two fields.
+
+Rebuilt through the live flow (the escalate review action, which opens
+an annotation dispute; the dispute decision route; opening or settling a
+held split):
+- test_review_decision_refusals.py:
+  - _finalise_by_adjudication: a reviewer escalates the answer and the
+    expert accepts the dispute.
+    test_no_review_decision_reaches_an_item_finalised_by_adjudication (4)
+    still proves that every action on the finalised item is refused as
+    finalised, before any other check.
+  - test_nobody_sends_an_item_they_annotated_to_dispute (2): Dana or
+    Adam, who answered the item, may not open its held split (403, "cannot
+    send it to dispute"). Only this test covered that refusal.
+  - test_a_finalised_item_is_not_sent_to_dispute: a held split settled by
+    an independent reviewer cannot then be opened (409, "does not accept
+    disputes").
+  - test_a_reviewer_still_sends_someone_elses_item_to_dispute: an
+    independent reviewer opens the held split.
+  - test_an_item_awaiting_reconciliation_is_not_escalated (was
+    ..._not_sent_to_legacy_dispute) and
+    test_an_answer_in_dispute_is_not_escalated_again (was
+    test_an_open_annotation_dispute_is_not_legacy_routed): the adjustment
+    read reports the open reconciliation or dispute, and the escalate
+    action is refused with 409.
+  The _route, _route_refused and _escalations helpers give way to
+  _held_split, _open, _open_refused and _disputes.
+- test_review_justification.py:
+  test_a_justified_escalation_still_opens_a_dispute: the escalate action
+  with a justification opens a dispute whose trigger review records it.
+- test_history_without_repeats.py:
+  test_escalating_deciding_and_accepting_read_as_one_entry_each (was
+  test_legacy_routing_...): an escalation, a dispute Return and an
+  accept read as one entry each, no review entry repeats its action as a
+  change, and no entry shows key=value text as its detail.
+- test_project_policy_consumers.py:
+  test_every_consumer_resolves_the_same_rules: the escalation that passes
+  the escalation gate is the escalate review action, and the escalated
+  item is disputed.
+- test_task_item_reopen.py: test_independence_still_spans_every_round:
+  Dana, who answered round 1, may not escalate Carol's round-2 answer
+  (403, "You annotated this item"), and no dispute opens.
+- test_task_audit_log_query.py: test_summary_not_duplicated_in_detail
+  (was test_escalation_routed_summary_...) on a review entry;
+  test_list_for_task_attaches_external_item_ref_label on a draft
+  submission; test_a_note_a_person_wrote_still_shows_as_the_detail (3)
+  on a review entry, so the strict key=value match is now exercised;
+  test_a_note_shaped_like_key_value_pairs_still_shows_as_the_detail (3)
+  on a dispute decision entry.
+- test_independent_second_review.py:
+  test_annotation_dispute_does_not_hide_a_pending_peer (was
+  ..._or_allow_legacy_routing) and
+  test_annotation_dispute_remains_the_only_hold_when_a_peer_is_accepted
+  keep their live halves; the legacy routing attempts go.
+
+Tests that only assert the escalation table is empty, or seed it as
+model data (test_item_completion.py, test_task_delete_policy.py,
+test_evaluation_protocol_withheld.py, test_independent_second_review.py),
+stay until the table goes.
+
+The backend suite drops by exactly the 28 cases named above, from 2512
+to 2484 passed, and from 63 to 62 skipped. The casebook passes unchanged.
+The web suite passes, 1047 tests; typecheck passes; lint has no errors
+and the same 38 warnings.
+
+Files:
+apps/hej-api/app/api/routes/review_actions.py
+apps/hej-api/app/schemas/review_actions.py
+apps/hej-api/app/services/review_policy_enforcement.py
+apps/hej-api/app/services/task_audit_log_query.py
+apps/hej-api/app/services/task_history_recorder.py
+apps/hej-api/tests/test_adjudication_independence.py
+apps/hej-api/tests/test_dispute_posture_guards.py
+apps/hej-api/tests/test_governed_action_routes.py
+apps/hej-api/tests/test_history_without_repeats.py
+apps/hej-api/tests/test_independent_second_review.py
+apps/hej-api/tests/test_project_policy_consumers.py
+apps/hej-api/tests/test_review_actions.py
+apps/hej-api/tests/test_review_decision_refusals.py
+apps/hej-api/tests/test_review_justification.py
+apps/hej-api/tests/test_task_audit_log_query.py
+apps/hej-api/tests/test_task_item_reopen.py
+apps/hej-web/components/task-item-workspace-sheet.test.tsx
+apps/hej-web/components/task-item-workspace-sheet.tsx
+apps/hej-web/lib/api/review-actions.ts
+docs/design/backend/api_surfaces.md

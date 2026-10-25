@@ -1,0 +1,13 @@
+scenario,rep,user,wall_ms,requests
+home-admin,0,admin,647.9,53
+home-admin,1,admin,483.6,53
+home-admin,2,admin,483.5,53
+home-admin,3,admin,507.3,53
+home-admin,4,admin,602.7,53
+home-admin,5,admin,475.6,53
+home-ann1,0,ann1,132.1,11
+home-ann1,1,ann1,141.2,11
+home-ann1,2,ann1,127.5,11
+home-ann1,3,ann1,125.7,11
+home-ann1,4,ann1,139.2,11
+home-ann1,5,ann1,120.8,11

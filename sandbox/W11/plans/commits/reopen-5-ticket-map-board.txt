@@ -1,0 +1,21 @@
+docs: the ticket map follows the board of 2026-10-25 (SCRUM-139)
+
+The board export of 2026-10-25 and the merged pull requests moved on
+since the map was written.
+
+- SCRUM-133's PR is #100 and SCRUM-136's is #101; both have merged and
+  their titles name the ticket.
+- The three handover tickets are now titled Handover1, Handover2 and
+  Handover3 on the board, and Title says it is the board's summary on
+  2026-10-25.
+- The note on tickets left in the code: apps/hej-web and packages name
+  stories and PRs since SCRUM-136 (#101); until SCRUM-135 merges,
+  apps/hej-api still names tickets, as do the two docs.
+
+Checked against the board export and the merged PR list: every row's
+title equals the board's summary, every row's PR column lists exactly the
+merged pull requests whose title names the ticket (#104 aside, which
+this branch is), and no merged PR title names a ticket the map lacks.
+
+Files:
+docs/handover/ticket-map.md

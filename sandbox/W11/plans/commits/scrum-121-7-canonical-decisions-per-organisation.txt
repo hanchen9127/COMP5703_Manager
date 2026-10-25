@@ -1,0 +1,12 @@
+perf(api,web): the Dashboard reads its canonical decisions once per organisation (A6, SCRUM-121)
+
+The Dashboard's Canonical Decisions asked each overseen project's item
+status counts, one request per project, so the figure slowed down with
+the number of projects. GET /organizations/{id}/item-status-counts gives
+every project's counts in one grouped query, for whoever oversees the
+organisation, as the per-project read requires. The per-project read now
+uses the same query, so the two cannot drift. The Dashboard asks once per
+overseen organisation and sums only the projects it shows.
+
+The new tests count the same statements and requests for 2 and 12
+projects, and fail on a per-project read. API 2535 passed, web 1026.

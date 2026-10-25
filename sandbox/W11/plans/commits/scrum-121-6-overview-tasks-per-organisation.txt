@@ -1,0 +1,12 @@
+perf(api,web): the overview reads each organisation's tasks in one request (A6, SCRUM-121)
+
+The Dashboard and Projects pages listed each project's tasks with one
+request per project, and asked the item counts only after them, so they
+slowed down with the number of projects. GET /organizations/{id}/tasks
+returns every task in the organisation's projects in one query, with the
+access the per-project read checks: membership of the organisation.
+The overview now asks each organisation's projects, tasks and item counts
+together, and lists tasks per project only when that read fails.
+
+The new tests count the same statements and requests for 2 and 12
+projects, and fail on a per-project read. API 2532 passed, web 1024.

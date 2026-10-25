@@ -1,0 +1,54 @@
+fix(api): a reopen's history entry carries its reason, cause and superseded answers (SCRUM-139)
+
+GET /tasks/{task_id}/audit-logs returned an item_reopened entry whose
+changes held only the item's status. The F1 event stores the reopen's
+reason, cause and superseded_annotation_ids, and the history read turns
+it into a row with all three in new_values, but _build_changes keeps
+only the fixed user-visible fields and *_status, so it dropped them.
+The web's reopen detail (D9) reads exactly these three from changes, so
+since D9's web history it showed no reason, the owner's label for every
+cause and "0 earlier answers" with no Show button. Its test fed changes
+by hand, and the backend test checked only the status change. Found in
+the review of #102.
+
+task_audit_log_query.py: _OPERATION_CHANGE_FIELDS names the new_values
+fields an operation lists as changes beside the shared ones, holding
+item_reopened: reason, cause, superseded_annotation_ids. _build_changes
+takes a key that is in this set or passes _should_include_change_field,
+and still drops fields the summary states. A reconciliation Return's
+entry now reads "An expert's reconciliation returned the item to open
+work" instead of "Item reopened". adjudication_return keeps its summary
+for now.
+
+No other entry changes: the set is looked up by operation, so every
+other operation gets an empty one and the old rule alone, and
+_USER_VISIBLE_CHANGE_FIELDS is untouched. reopen_id stays out. Each new
+change has before None (old_values holds only the status), and
+HistoryChangeRead.after is Any, so the id list comes through as a list.
+
+Tests, in test_task_item_reopen.py:
+- Prove:
+  test_the_task_history_reads_a_reopens_reason_cause_and_superseded_answers:
+  the owner reopens an item with one finalised answer through the
+  route; read through list_task_audit_logs, the
+  entry's changes are status, reason, cause owner_reopen and
+  superseded_annotation_ids equal to the annotations the reopen
+  superseded, each new one with before None.
+- Prove: test_a_reconciliation_return_reads_as_one_in_the_task_history:
+  after a reopened round ends in a reconciliation, an expert's Return
+  gives an entry with cause reconciliation_return, its reason and the
+  new summary.
+- Guard: test_other_entries_keep_the_changes_they_had: in the same
+  round, both review_action entries still list only next_item_status
+  and both draft_started entries list nothing.
+On main, with only the new tests copied in, both Prove tests fail (the
+first finds only status, the second finds no reconciliation_return
+entry) and the Guard passes.
+
+api_surfaces.md: the reopen section says the reopen's history entry
+lists the three fields among its changes, and no other entry does.
+
+Files:
+apps/hej-api/app/services/task_audit_log_query.py
+apps/hej-api/tests/test_task_item_reopen.py
+docs/design/backend/api_surfaces.md

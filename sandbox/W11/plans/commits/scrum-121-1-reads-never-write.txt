@@ -1,0 +1,28 @@
+perf(api): reading a task's items never writes (A6, SCRUM-121)
+
+GET /tasks/{id}/task-items, /setup and /task-items/{id}/content listed
+the items through a repair that recomputed every expert send-back
+status from the item's Return history, wrote any change, and reported
+the result. Its queries grew with the items: 80 statements for 10 items
+with history and 260 for 40, and on the A6 perf bed 176 ms per read of
+a 200-item task.
+
+The writes that change a status already set it: a resubmission and a
+dispute decision through item_status_after_accept. The history the
+repair read, resolved item-level Return escalations and their
+escalation_decided audits, is written only by the retired item-level
+decision, whose route answers 410. With the repair made to fail
+whenever it would change anything, the API suite on SQLite and
+PostgreSQL, the casebook and a fresh seed never tripped it.
+
+list_task_items now returns the stored statuses: 5 statements for 10
+items and for 40. The repository reads the status column with the row,
+so a caller that loaded an item earlier still gets what is stored,
+without populate_existing discarding its unflushed changes. The repair
+functions are left for the next commit to delete.
+
+Tests: test_task_item_reads.py. The statement count and both no-write
+tests fail on main; the expert Return test guards the statuses the
+writes set. The reopen test in test_independent_second_review.py no
+longer waits for the repair: it holds the item from before the new
+round and reads the reopen's status.

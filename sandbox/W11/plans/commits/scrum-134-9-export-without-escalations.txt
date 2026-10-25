@@ -1,0 +1,98 @@
+refactor(api): the export takes approvals only from reviews and dispute decisions (SCRUM-134)
+
+The task export read resolved item escalations (TaskItemEscalationDB)
+beside the reviews, the annotation disputes, the reconciliations and the
+settlements. Only route_escalation writes that table, no route reaches
+it, and a fresh seed holds no rows. Every escalation branch of the
+export therefore saw nothing, and each now does what it did on an empty
+table.
+
+routes/tasks.py:
+- _authoritative_resolution loses its escalation parameter. Under the
+  canonical rule the completing accept review is the only source; when
+  none was recorded the resolution keeps the marker's own who and when,
+  as it did with no escalation. The elif branch that let an escalation
+  supply the verdict word, note, decider and time goes. The cause
+  switch drops its escalation resets; canonical_rule and
+  settlement_accept now share one branch (both clear the dispute and
+  the reconciliation, as before).
+- _escalation_naming and _expert_return_targets_candidate go, with the
+  export's handling of the legacy send_back spelling.
+- _item_release_groups loses latest_escalation and
+  decision_dispute_by_annotation: a version is superseded only by a
+  resubmission, a re-answer after a reopen or a human's rework of a
+  returned AI answer, which is what it did with no escalation. The
+  export stops building decision_dispute_by_annotation, which only that
+  check read; accepting_dispute_by_annotation is built as before.
+- _latest_resolved_escalations_by_item, _finalization_export_block and
+  the resolved-escalation query go. The unresolved item's latest
+  rejecting decision is read from reject_all reconciliations and
+  rejecting annotation disputes; the task_item_escalation source and
+  its users go.
+- Each normalized item loses its finalization key, as decided. It was
+  built only from the legacy escalation, so it was always null; neither
+  the web nor the release flow reads it, and no doc describes it.
+- The docstrings of _authoritative_resolution and _item_release_groups
+  no longer describe the escalation or the expert send-back, and the
+  adjudication queue route's docstring names the open dispute it
+  serves. TaskItemEscalationDB is no longer imported.
+
+Why it is safe: the export is byte-identical for every task with no
+escalation rows, apart from the missing finalization key. Two checks:
+- A fresh init_data.py --reset SQLite seed, exported before and after
+  the change: all 20 tasks, in the default, legacy and normalized_json
+  formats, unfiltered and filtered by each author (132 calls: 66
+  exports from the 7 tasks with eligible items, covering canonical_rule,
+  adjudication_accept, reconciliation_choose and an unresolved item
+  rejected by a dispute, and 66 identical 403 refusals). With the two
+  export timestamps masked and the old finalization key removed (33
+  occurrences, all null), the JSON files are byte-identical.
+- The full backend suite run with a plugin that sends every export call
+  (direct and through the routes) to both the HEAD export_annotations
+  and the new one on the same session: 188 calls from 77 tests, 109
+  exports and 79 refusals, all identical once the old finalization key
+  is dropped; it was null in every one. Before the tests below were
+  changed, the only differences were in the exports of the tests that
+  seed escalation rows.
+
+The escalation routes, route_escalation, decide_escalation, the schemas
+and the model stay for later commits.
+
+Tests:
+
+Deleted, because they tested only the export's reading of escalation
+rows (7 cases):
+- test_task_exports.py: test_latest_resolved_escalation_per_item,
+  test_finalization_export_block_includes_decision_note and
+  test_finalization_export_block_none_without_escalation. The class
+  that keeps the eligibility test is renamed
+  TaskExportEligibilityTests.
+- test_authoritative_export.py:
+  test_a_legacy_send_back_with_no_named_answer_exports_none (2) and
+  test_a_completing_review_wins_over_a_legacy_escalation_naming_the_same_answer
+  (2). The canonical rule's report of the completing review stays
+  covered by test_one_approved_submission_becomes_authoritative_directly
+  (verdict, justification, decider and source in both formats).
+
+Rebuilt through the live flow:
+- test_authoritative_export.py:
+  test_an_item_resolved_without_an_answer_has_no_authoritative_export
+  (2): each reviewer escalates one answer, which opens a dispute, and
+  the expert rejects both through the dispute decision route; the item
+  is unresolved and the export releases nothing. The route_escalation
+  and decide_escalation helpers go, and the module docstring names the
+  dispute Reject.
+- test_export_provenance.py:
+  test_unresolved_export_ignores_an_accepted_dispute_before_a_reject
+  (was ..._before_legacy_reject): the rejecting decision after the
+  accepted dispute is a rejecting annotation dispute, and the
+  resolution names it.
+
+The suite drops by exactly the 7 cases named above, from 2519 to 2512
+passed. The casebook passes unchanged.
+
+Files:
+apps/hej-api/app/api/routes/tasks.py
+apps/hej-api/tests/test_authoritative_export.py
+apps/hej-api/tests/test_export_provenance.py
+apps/hej-api/tests/test_task_exports.py

@@ -1,0 +1,30 @@
+refactor(web): remove the unused escalation client and item action helpers (SCRUM-134)
+
+The web kept client code for routes it never calls.
+
+listTaskEscalations and getTaskEscalationDetail read
+GET /tasks/{id}/escalations and its detail. A later commit removes those
+routes. Their types go with them: EscalationTarget,
+EscalationListItemBody, EscalationListResponseBody, EscalationDetailBody,
+DisputeReviewBody, DisputeSubmissionBody and DisputeLabelBody.
+
+approveTaskItem, rejectTaskItem, escalateTaskItem and postItemAction
+posted to /tasks/{id}/task-items/{itemId}/approve|reject|escalate. The
+API never had those routes. Their payload type, ReviewActionPayload, and
+the ReviewAction type only it used go from task-item-actions.ts. The
+task-items header no longer speaks of legacy helpers.
+
+No screen changes. No component or page imported any of these. Reviews
+still go through submitTaskItemReviewAction, and the dispute desk
+through the annotation-dispute calls. Task history keeps
+open_escalations: the API keeps that field.
+
+Tests:
+- task-items.test.ts: "does not return synthetic success for legacy item
+  action failures" tested only the three item action helpers and goes.
+- review-actions.test.ts: "loads one dispute by its escalation id" tested
+  only getTaskEscalationDetail and goes.
+
+The web suite drops by exactly these 2 cases.
+
+Files: apps/hej-web/lib/api/review-actions.ts apps/hej-web/lib/api/review-actions.test.ts apps/hej-web/lib/api/task-items.ts apps/hej-web/lib/api/task-items.test.ts apps/hej-web/lib/task-item-actions.ts

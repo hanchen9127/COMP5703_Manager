@@ -1,0 +1,29 @@
+refactor(api): remove the pre-B4 task status backfill (SCRUM-134)
+
+Before the B4 lifecycle, a task could be stored as ready, in_review or
+disputed. migrate_legacy_task_statuses folded those rows into active at
+start-up, on every dialect, before the SQLite-only early return.
+
+Nothing writes those values any more. TaskStatus holds only draft,
+active, paused and completed, and every transition goes through the
+lifecycle guards. A fresh seed holds no task in a pre-B4 status, and a
+database written before this PR is reset (init_data.py --reset). So the
+backfill never changes a row, and it goes with its call at the top of
+migrate_db_schema. The SQLite schema helpers after it stay as they are.
+
+workflow_states.md loses its "Legacy compatibility" paragraph, which
+described the backfill.
+
+Tests:
+
+Deleted, because they tested only the backfill (test_task_lifecycle.py,
+LegacyStatusBackfillTests, 2 cases):
+- test_migrate_db_schema_backfills_legacy_task_statuses
+- test_postgresql_dialect_still_runs_the_backfill
+
+The suite drops by exactly these 2 cases.
+
+Files:
+apps/hej-api/app/core/database.py
+apps/hej-api/tests/test_task_lifecycle.py
+docs/design/product/workflow_states.md

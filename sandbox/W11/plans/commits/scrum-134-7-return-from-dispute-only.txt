@@ -1,0 +1,103 @@
+refactor(api): an expert's Return is read only from the dispute's decision (SCRUM-134)
+
+An expert's Return is a dispute decision. The replacement guard, the
+item aggregate and the annotate queue read it from the dispute, as a
+round outcome of returned.
+
+They also read a second, legacy kind of Return evidence:
+TaskItemEscalationDB rows and escalation_decided audits. Only
+route_escalation and decide_escalation write those, and no route
+reaches either: both routes answer 410. A fresh seed holds none of
+them. So the legacy evidence is always empty, and it goes.
+
+task_item_status_resolution.py goes as a whole:
+current_expert_return_at, current_expert_return_at_by_submission,
+_audit_send_back_timestamps, _counts_after_reopen,
+_latest_reopen_at_by_item, the legacy draft-chain matching,
+_parse_audit_json and the constants. Nothing else imported it.
+
+Each caller now does what it did when the evidence was empty:
+- assert_submission_may_be_replaced: sent_back was always false, so
+  the second may_resubmit call and the time comparison go.
+- item_status_after_accept: a held round keeps the item disputed. The
+  branch that turned Return evidence into returned goes, and so does
+  its docstring sentence.
+- the annotate queue: rework reads may_resubmit on the round outcome
+  alone.
+
+may_resubmit loses its sent_back keyword, which only this evidence set:
+it now allows a returned or rejected round and nothing else.
+
+The audit log index comment no longer names the Return evidence
+lookups. Open item escalations still hold an item; a later commit
+removes them.
+
+Tests:
+
+Deleted, because they tested only the legacy Return evidence
+(test_independent_second_review.py, 15 cases):
+- test_legacy_adjust_return_without_audit_authorizes_only_current_unconsumed_rework (4)
+- test_legacy_submitted_draft_consumes_only_its_own_human_return_chain (4)
+- test_legacy_cross_item_draft_link_cannot_consume_another_items_return_permission (1)
+- test_ownerless_models_keep_distinct_return_permissions_and_consume_their_own_chain (2)
+- test_delayed_return_audit_does_not_move_genuine_decision_into_a_newer_submission_or_round (2)
+- test_default_return_helpers_resolve_b2_for_imported_legacy_rounds_without_sample_records (2)
+- the helpers _record_legacy_return and _two_held_answers_after_legacy_return.
+A dispute Return to an AI answer goes to a new annotator
+(test_returning_disputed_ai_to_new_annotator_creates_an_independent_base),
+and a returned answer's successor stays locked
+(test_expert_return_authorizes_each_affected_author_once_through_http).
+Live tests already cover both.
+
+Rebuilt through a dispute Return (open_annotation_dispute and
+resolve_annotation_dispute, or the dispute desk routes):
+- test_independent_second_review.py:
+  - test_expert_return_aggregate_and_reads_wait_for_every_affected_author
+    (was test_legacy_return_aggregate_..., 6 cases, now 2: the three
+    legacy evidence shapes go). It still proves that the item stays
+    returned until every returned author has resubmitted, that the
+    remaining author is offered rework, and that the list and lineage
+    reads write nothing.
+  - test_expert_return_from_a_previous_real_reopened_round_does_not_release_current_work
+    (2 cases, now 1: the delayed audit case goes). The Return, both
+    reworks, the approvals, the expert's choice and the owner's reopen
+    all go through the live flow. It still proves that an answer in the
+    reopened round cannot be replaced before its review.
+  - _partial_return_for_concurrency,
+    test_task_list_does_not_revive_old_return_after_real_owner_reopen and
+    test_task_list_returns_current_status_with_a_strongly_cached_pre_review_item
+    set up through _two_held_answers_after_expert_return. They still
+    prove that the task list returns the stored status (A6).
+- test_draft_resubmission_rules.py:
+  - test_escalated_and_returned_by_the_expert_can_be_resubmitted (was
+    test_escalated_and_sent_back_can_be_resubmitted): an escalated
+    answer returned to its author can be resubmitted as a new version.
+  - test_an_approved_co_authors_answer_is_not_unlocked_by_an_expert_return
+    and test_a_co_authors_answer_awaiting_review_is_not_unlocked_by_an_expert_return
+    (were ..._by_a_send_back): a Return of Eve's answer leaves Alice's
+    approved or pending answer locked.
+- test_task_work_queues.py:
+  - test_expert_returned_work_is_offered_to_its_author_as_rework (was
+    test_sent_back_work_is_offered_to_its_author_as_rework): the queue
+    offers the returned answer's author rework and nobody else.
+  - test_an_approved_co_authors_answer_stays_locked_by_an_expert_return
+    and test_an_unreviewed_co_authors_answer_stays_locked_by_an_expert_return
+    (were ..._by_a_send_back): the Return unlocks Charlie's row only.
+  - test_expert_return_queue_is_batched_with_cold_sessions_and_partially_consumed_chains:
+    each answer gets its own dispute Return. The queue still offers the
+    remaining author rework, keeps the replaced author's row closed, and
+    costs the same for 3 items as for 30.
+
+The suite drops by exactly the 20 cases named above. The casebook
+passes unchanged.
+
+Files:
+apps/hej-api/app/models/db_models.py
+apps/hej-api/app/services/independent_review_service.py
+apps/hej-api/app/services/review_policy_enforcement.py
+apps/hej-api/app/services/submission_rules.py
+apps/hej-api/app/services/task_item_status_resolution.py (deleted)
+apps/hej-api/app/services/task_work_queue_service.py
+apps/hej-api/tests/test_draft_resubmission_rules.py
+apps/hej-api/tests/test_independent_second_review.py
+apps/hej-api/tests/test_task_work_queues.py

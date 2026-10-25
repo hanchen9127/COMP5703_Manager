@@ -1,0 +1,87 @@
+refactor(api): drop the task_item_escalations table (SCRUM-134)
+
+Since the previous commit nothing writes or reads task_item_escalations:
+route_escalation, its only writer, is gone, and so is every read. A fresh
+seed holds no rows. The model, the table and what kept the table's
+columns up to date go with it.
+
+db_models.py: TaskItemEscalationDB goes. No relationship, backref or
+index outside the class pointed to it, so nothing else in the models
+changes, and create_all no longer creates the table.
+
+database.py:
+- migrate_db_schema loses its task_item_escalations branch, which added
+  resolution_outcome and accepted_annotation_id to an older SQLite table.
+  The rest of the SQLite schema helper is untouched.
+- reset_db drops task_item_escalations before Base.metadata.drop_all,
+  beside the two unmapped intake tables, and their comment now covers all
+  three. The metadata drop only knows mapped tables. A database written
+  before #102 still holds the table, and its foreign key to task_items
+  blocks dropping task_items while a row references it: on SQLite with
+  foreign keys on (the application engine turns them on) the drop fails
+  with "FOREIGN KEY constraint failed", and PostgreSQL refuses to drop a
+  table another table references. The decided path for such a database is
+  init_data.py --reset, so the reset must clear the table itself.
+  DROP TABLE IF EXISTS does nothing on a database that never had it.
+
+db_schema_blueprint.md: the table leaves the judgment table list, and its
+section goes. ADR 013 still names the table and the model, as the
+history of the decision.
+
+Why it is safe: nothing in the application read or wrote the table, no
+route or response named it, and no workflow or story behaviour changes.
+A database written before #102 is reset, as decided, and the reset now
+handles the leftover table.
+
+Tests:
+
+Added:
+- test_database.py:
+  test_reset_drops_the_retired_escalation_table_holding_a_row: on a
+  temporary SQLite file with foreign keys on, the current schema with
+  one task item, plus a task_item_escalations table whose row references
+  that item. reset_db succeeds, the table is gone, every mapped table is
+  back and the task item is not. Without the new drop it fails with "FOREIGN KEY
+  constraint failed".
+
+Deleted, because they tested only the table (3 cases):
+- test_database.py: test_sqlite_migration_adds_dispute_resolution_columns,
+  which tested the removed migration branch.
+- test_task_delete_policy.py: the escalation case of
+  test_delete_task_route_with_history_returns_409_not_500 and of
+  test_delete_project_route_with_history_returns_409_not_500. It seeded an
+  escalation row only to show the delete still answers 409; the task item
+  alone already blocks the delete, and the draft and prediction cases
+  stay.
+
+Checks on the table removed from tests that otherwise stay unchanged:
+- test_independent_second_review.py: seven assertions that the table is
+  empty (count() == 0, one of them on open rows), one in each of
+  test_two_distinct_reviewers_compare_ordinary_verdicts_and_preserve_flag,
+  test_round_collects_all_required_verdicts_before_approval_rework_or_disagreement,
+  test_annotation_dispute_does_not_hide_a_pending_peer,
+  test_closed_split_opens_and_resolves_one_annotation_dispute,
+  test_resolved_return_is_not_resurrected_by_peer_accept_or_author_rework,
+  test_annotation_dispute_remains_the_only_hold_when_a_peer_is_accepted and
+  test_late_submission_preserves_a_coauthors_pending_or_held_review_round.
+- test_item_completion.py:
+  test_an_annotation_dispute_does_not_block_review_of_another_submission
+  loses its open-escalation count and the _open_escalations helper.
+- test_evaluation_protocol_withheld.py: the escalation_id fill value goes;
+  no route takes that path parameter since the previous commit.
+
+The backend suite drops by 2 cases, from 2484 to 2482 passed, with 62
+skipped as before. The casebook passes unchanged. init_data.py --reset
+succeeds on a fresh SQLite database, and on a copy of it given a
+task_item_escalations table with a foreign key and one row, which the
+reset removes.
+
+Files:
+apps/hej-api/app/core/database.py
+apps/hej-api/app/models/db_models.py
+apps/hej-api/tests/test_database.py
+apps/hej-api/tests/test_evaluation_protocol_withheld.py
+apps/hej-api/tests/test_independent_second_review.py
+apps/hej-api/tests/test_item_completion.py
+apps/hej-api/tests/test_task_delete_policy.py
+docs/design/database/db_schema_blueprint.md

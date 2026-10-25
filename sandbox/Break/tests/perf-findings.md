@@ -129,7 +129,84 @@ shell also requests the annotate queue). After: the branch at `a7c3cdd`. Raw dat
   `GET task-items` between two calls: items imported together share `created_at`, and the list has no tie-break,
   so their order can change between reloads. Not SCRUM-119's; recorded as a limitation in its PR.
 
-## Limits
+## Result: SCRUM-121 (measured 2026-10-24)
+
+**The bed was rebuilt**, because the container and worktree were gone:
+- PostgreSQL 18 in a new `hej-perf-pg` (port 55432) and a new `../hej-perf` worktree.
+- `init_data.py --reset`, then `../../W11/scripts/sandbox-perf-seed-a6.py`. This is the same shape as before, with
+  two changes:
+  - a task owner creates the project and tasks (permission model of 2026-10-20);
+  - the 200-item task's 40 Returns are a reviewer's `revise`, because the expert escalation routes answer 410 since #48.
+- Before: `main` `ffc42abd` (#97). After: the branch at `a4a9cd04`.
+- 5 measured reps plus a warm-up. Load modes `a6-main` and `scrum121`, runner `../../W11/scripts/sandbox-perf-scrum121.sh`.
+- Raw data in `../../W11/tests/perf/scrum121/`.
+
+| Measure | Before | After | Target |
+| --- | --- | --- | --- |
+| Project page, 8 tasks (admin) | 118.9 ms, 13 requests | **48.5 ms (−59%)**, 6 requests | ≥ 50% faster ✅ |
+| `GET task-items` @200 with history | 59.1 ms, 26 statements, 0 writes | **37.0 ms (−37%)**, 16 statements, 0 writes | 0 writes, cost fixed in items and history ✅ (the 20 ms figure predates D7's reads, below) |
+| `GET task-items` @10 / @50 | 22.9 / 25.1 ms, 16 statements | 12.8 / 13.1 ms, 6 statements | — |
+| `GET setup` @200 | 54.0 ms, 28 statements | 39.0 ms, 18 statements | — |
+| One `task-item-counts` read (replaces 8 setups) | — | 10.0 ms, 3 statements | — |
+| Items / Annotate / Review @200 (ann1) | 118 / 141 / 145 ms | 113 / 143 / 138 ms | unchanged: the shell's critical path is elsewhere |
+
+**The read's cost no longer grows with the task's history** (Hanchen, 2026-10-24: 37 ms is good, and not a
+limitation):
+- The repair is gone, with the 10 statements it ran on every call, on every task size. Before #48 it also scaled
+  with the Return history: 235 statements at 200 items on the 2026-10-04 bed.
+- The statement count is now fixed: 5–6 on a task without answers, at any size. A task with answers adds 10, from
+  `blind_item_statuses` (D7's blind review, `tasks.py:512`), which reads annotations, reviews, policies, settlements
+  and disputes in batches, not per item. This is about 20 ms of SQL. The rest is serialising 200 items.
+- The 20 ms target was set on 2026-10-04, before D7's reads were on that path.
+
+**Why main wrote nothing either:** the repair writes only on legacy Return evidence (resolved item-level
+escalations, `escalation_decided` audits). Only the retired route wrote that evidence, and today's app can't produce
+it, as SCRUM-121's probe showed. So the old 235 statements and the write per call were costs of a seed made through
+the retired route. The no-write guarantee for that legacy state is pinned by `test_task_item_reads.py`.
+
+## The Dashboard (`/`), measured 2026-10-24 for Jingwei's report
+
+The page is not changed by SCRUM-121. Same bed, `main` `ffc42abd`, new load scenarios `home-admin` and
+`home-ann1`. Mode `pre97` replays the page before #97: one setup per task in place of the organisation counts.
+11 projects, 28 tasks, 2 organisations (alice). Raw data in `../../W11/tests/perf/home/`.
+
+| | Before #97 | `main` now |
+| --- | --- | --- |
+| admin (alice, oversees both organisations) | 484 ms, 53 requests | **191 ms (−61%)**, 27 requests |
+| ann1 (one organisation, oversees nothing) | 128 ms, 11 requests | **40 ms**, 4 requests |
+
+**What is left on `main`:** four waits in a row:
+1. organisations;
+2. each organisation's projects;
+3. each project's tasks (11 × 23 ms);
+4. the organisation counts, then the Canonical Decisions figure, which asks each overseen project's overview counts
+   (11 × 32 ms).
+
+Both per-project steps grow with the number of projects, six requests at a time. A database with many more projects
+than this bed is slower in proportion, and `next dev` adds compile time on a first visit.
+
+### Result: SCRUM-121 commits 6–7 (measured 2026-10-24)
+
+Same bed at two sizes:
+- 11 projects: `/tmp/seed.dump`;
+- 51 projects: `/tmp/seed51.dump`, which is the same bed plus `sandbox-perf-seed-a6.py --extra-projects 40`, each
+  project with two 20-item tasks in TechStart.
+
+Before: `main` `ffc42abd`, mode `a6-main`. After: the branch at `17281e33`, mode `org-batch`. Runner
+`../../W11/scripts/sandbox-perf-home.sh`; raw data in `../../W11/tests/perf/home-scale/`.
+
+| Dashboard | 11 projects, before → after | 51 projects, before → after |
+| --- | --- | --- |
+| admin (alice, both organisations) | 181 → **70 ms (−61%)**, 27 → 9 requests | 519 → **89 ms (−83%)**, 107 → 9 requests |
+| ann1 (TechStart only, no OVERSEE) | 39 → 53 ms (+14 ms), 4 → 4 requests | 230 → **54 ms (−77%)**, 44 → 4 requests |
+
+- **Targets met:**
+  - the request count no longer grows with projects (alice 9 at both sizes);
+  - at 51 projects the page is 83% faster.
+- **One small cost:** ann1 at 11 projects belongs to one organisation with one project, and pays 14 ms more. On
+  `main` its three reads after the organisations ran one after another at about 6 ms each. Now they run together, and
+  on this bed's single API process each takes about 23 ms. The trade only pays once an organisation has more than a
+  couple of projects. A deployment with several workers would cut the contention, but that was not measured.
 
 - One user at a time. Contention (H5) and concurrent users (H4) are not measured.
 - An API replay, not a browser: no rendering, CORS preflights or dev compiles. Real first visits are slower.

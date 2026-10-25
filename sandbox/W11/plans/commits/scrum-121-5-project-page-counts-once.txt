@@ -1,0 +1,10 @@
+perf(web): the project page reads every task's item count in one request (A6, SCRUM-121)
+
+The project page asked one setup read per task for its item count, so a
+project with 8 tasks sent 8 setup reads. It now reads the organisation's
+task-item-counts once, beside the task list, as the Projects and
+Organization pages do since PR #97, and counts a task from its setup only
+when the counts read fails or does not list it.
+
+The new tests count one request and no setup read for 3 and 8 tasks, and
+fail on the old code. test:web: 1018 passed.

@@ -1,0 +1,12 @@
+docs(api): record_item_reopened names the reconciliation Return (SCRUM-139)
+
+Its docstring still called the second caller "an adjudication's Return",
+the path this branch removed with adjudication_return, and said every
+reopen is of a finalised item, though the reconciliation Return reopens
+an item awaiting its expert. The merge of #103 also left "F1 (F1, #70)".
+It now names the owner's reopen of a finalised item (D9, #46) and an
+expert's item-reconciliation Return (ADR 017), and F1 (#70). Docstring
+only.
+
+Files:
+apps/hej-api/app/services/task_history_recorder.py

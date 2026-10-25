@@ -1,0 +1,18 @@
+docs(evaluation): a plan's numbered decision says it is a decision (SCRUM-133)
+
+The evaluation harness, cases and tests cite numbered decisions from
+the plans of #73, #77, #79 and #88: D1 to D18 and D4'. Beside a
+ticket they read as decisions; beside the story ids this sweep wrote
+they read as stories, and D1 to D9 are stories too. "(I3, #77, D8)"
+now reads "(I3, #77, decision D8)", and where no story or PR is near,
+the PR is named: "#73's decision D12". 71 mentions in 30 files; no
+other word changes, and lines are rewrapped only where one grew past
+its file's width. D13, beside ADR 022, keeps no PR: the plan it came
+from is not known.
+
+ticket-map.md says what "decision Dn" means, and that only #73's
+description lists its decisions by number.
+
+Story ids are left as they are, and so are E-D1, E-D2, E-D3a and
+D-026, which can't be read as stories. Evaluation tests: 428 passed;
+casebook unchanged.

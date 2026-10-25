@@ -1,0 +1,12 @@
+chore: the self-review's fixes, ADR 014 amended and the organisation reads documented (A6, SCRUM-121)
+
+ADR 014's decision 6 still required the read-side status repair and its
+concurrency tests, which this PR deletes; it now says A6 removed them.
+api_surfaces.md lists GET /organizations/{id}/tasks and
+/organizations/{id}/item-status-counts beside task-item-counts.
+
+The overview grouped tasks by project with a filter per project, so its
+cost grew with projects times tasks; it now groups them in one pass.
+One test's Return assertion could not fail, so it now checks the peer's
+rework in the queue; two docstrings no longer mention the repair; a
+project-page test that fails on the old code is labelled Prove.

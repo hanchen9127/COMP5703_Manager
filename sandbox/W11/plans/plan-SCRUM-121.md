@@ -122,6 +122,23 @@ assert the stored status. `test_task_list_returns_current_status_with_a_strongly
 (`test_independent_second_review.py:3969`) stays: if it fails because the read now returns a cached ORM status,
 the fix is `populate_existing()` in the repository's `list_by_task`, not a second read.
 
+**As built (2026-10-23):**
+- `db_store.py` `TaskItemRepository.list_by_task` also reads `TaskItemDB.status` as a column and reports it, in
+  place of `_refresh_item_statuses_from_db`. Not `populate_existing()`: the app's sessions run with
+  `autoflush=False`, so it would discard a caller's unflushed changes.
+- `tests/test_task_item_reads.py`, 4 tests. On `main`: the list runs 80 statements for 10 items with history and
+  260 for 40, and both reads write an `UPDATE`; with the change, 5 and 5, and no write. The no-write guard covers
+  task-items and setup, the two reads A6 criterion 5 names; content goes through the same `list_task_items`.
+- Through today's two-level dispute, an expert's Return stores `returned` (the answer is back with its author),
+  not `expert_send_back`. `item_status_after_accept` returns `expert_send_back` only from item-level Return
+  evidence, which the retired route alone wrote. Out of scope here.
+- `test_independent_second_review.py:3771`, renamed `test_task_list_does_not_revive_old_return_after_real_owner_reopen`:
+  sequential, through the real writes; the reader holds its copy of the item from before the new round. It fails
+  with the `db_store.py` change undone.
+- Suite: SQLite 2529 passed, 63 skipped (2525 + 4); PostgreSQL 18 2589 passed, 3 skipped (2585 + 4).
+- Pushed by Hanchen as `f785723`.
+- Message: `commits/scrum-121-1-reads-never-write.txt`.
+
 ### 2. `refactor(api): remove the send-back repair the reads no longer run (A6, SCRUM-121)`
 
 Deletion only. The suite's count drops by exactly the deleted tests.
@@ -143,14 +160,27 @@ Tests:
   - delete the tests whose subject is the repair racing writers: `:3669`, `:3848`, `:3869`, `:3934`, `:4011`.
     Check each first: an assertion about the outcome of a write, not the repair, moves to commit 1's file;
   - `:3465`: keep the loop; delete the tail that sets the status by hand and calls the reconcile;
-  - `:3771` (an old Return is not revived after an owner reopen): keep, through the route, without the
-    monkeypatched collector;
   - `:2303`, `:2321`, `:2796` call `current_expert_send_back_at` without a predecessor: assert through
     `current_expert_send_back_at_by_submission` or the annotate queue, which is what they guard;
 - `test_task_item_reopen.py:1253`: assert that the audit-only send-back before the reopen grants no Return
   (`current_expert_send_back_at_by_submission`, and the annotate queue), instead of `collect_expert_send_back_item_ids`.
 
-**Before this commit, tell Parth** which of his tests go and why.
+Parth is not told in advance (Hanchen, 2026-10-23).
+
+**As built (2026-10-23):**
+- `task_item_status_resolution.py` 662 → about 320 lines. Besides the nine functions and the alias: the helpers
+  `_resolved_send_back_decision_filter`, `_latest_resolved_escalations`, `_latest_send_back_at`,
+  `_has_resubmitted_draft_after`, `_audit_send_back_item_ids`, the constants `FINALIZED_STATUSES` and
+  `UNRESOLVED_STATUS`, and five imports. `current_expert_send_back_at` requires `predecessor`.
+- `db_models.py:294`: the audit index comment names the Return evidence lookups, not the repair.
+- `test_task_item_reopen.py:1253` (history-only send-back before a reopen) is deleted, not rewritten: a reopen
+  marks the round's answers `is_latest=False`, so `current_expert_send_back_at_by_submission` returns nothing
+  for them whatever its cutoff, and the assertion would hold vacuously.
+- `test_independent_second_review.py:2254`: with `predecessor`, the `before_submission` case grants no Return,
+  matching the 409 the same test already expected.
+- SQLite 2514 passed, 63 skipped (2529 − 15 deleted cases); PostgreSQL 18 2574 passed, 3 skipped (2589 − 15);
+  casebook 87/87, 1 skipped.
+- Message: `commits/scrum-121-2-remove-send-back-repair.txt`.
 
 ### 3. `docs: item status is written where it changes, never on read (A6, SCRUM-121)`
 
@@ -158,10 +188,20 @@ Tests:
   stored statuses; the Return, resubmission and dispute writes set them.
 - `docs/design/product/workflow_states.md:183`: the same, for the read-side Return repairs bullet.
 
+**As built (2026-10-23):** also the sentence on "Return reconciliation" in the paragraph above it
+(`api_surfaces.md:328-330`) and in `workflow_states.md:182`, and `apps/hej-api/README.md:358`, whose test index
+named the deleted `test_task_item_status_resolution`. `workflow_states.md:178` (`RETURNED` and `EXPERT_SEND_BACK`)
+is left to `../jira/jira-new-retire-expert-send-back.md`. Message: `commits/scrum-121-3-docs-reads-never-write.txt`.
+
 ### 4. `refactor(web): delete the unused use-hydrated-task-items hook (A6, SCRUM-121)`
 
 `apps/hej-web/components/use-hydrated-task-items.ts`: nothing imports it (`git grep` on `efb5900`), left over
 from SCRUM-119. #97 doesn't touch it. `npm run typecheck:web` and `lint:web` show nothing else referred to it.
+
+**As built (2026-10-23):** nothing imports it, in code or docs. `tsc --noEmit` fails on a stale local
+`.next/types/validator.ts` (three pages that no longer exist); with `.next` left out it has 0 errors. lint: 0
+errors, 45 warnings, none in the deleted file. test:web 778 passed (78 files). Message:
+`commits/scrum-121-4-delete-hydrated-hook.txt`. Commits 2 and 3 were pushed as `8a9fb310` and `ccca265a`.
 
 ### 5. `perf(web): the project page reads every task's item count in one request (A6, SCRUM-121)`
 
@@ -177,6 +217,174 @@ Tests in `lib/project-data.test.ts`:
 - if the counts read fails, each task falls back and the page still loads;
 - the counts equal setup's `item_count` for the same tasks.
 
+**As built (2026-10-24):**
+- `origin/main` (`ffc42abd`, #97) merged into the branch as `b0d9c309`, no conflicts. Not pushed yet.
+- `project-data.ts`: the counts read starts beside the project's other reads, chained on `getProject` for the
+  organisation id. A local `backlogCountOf` serves both task branches (policies aggregate, and `listTasks` when
+  that fails). There is no `readIf`: the endpoint lets any member of the organisation read it.
+- **Tests moved to `lib/project-data-loader.test.ts`**, not `project-data.test.ts`: it already mocks every read of
+  `getProjectWorkspaceView`. There are 5 new cases:
+  - **Prove** (3 and 8 tasks): one counts request, no setup read;
+  - **Prove:** the `listTasks` branch uses the same counts;
+  - **Guard:** when the counts read fails, each task falls back to its setup;
+  - **Prove:** a task the counts don't list falls back alone.
+
+  On the old code all but the failing-counts Guard fail (4 of 5). "Counts equal setup's `item_count`" is the
+  backend's contract (the endpoint's docstring, #97), not tested again on the web.
+- `lib/project-workspace-disputes.test.ts`: its organisations mock gains `listOrganizationTaskItemCounts`.
+- test:web 1018 passed (108 files). tsc is clean outside the stale `.next/types`. lint: 0 errors, 38 warnings.
+- Message: `commits/scrum-121-5-project-page-counts-once.txt`.
+
+## Commits 6–7: the Dashboard and Projects page read per organisation, not per project (added 2026-10-24)
+
+**Why.** Jingwei reported that the Dashboard (`/`) loads slowly. Measured on the perf bed
+(`../../Break/tests/perf-findings.md` → "The Dashboard"), with 11 projects:
+- **#97 already took it from 484 ms to 191 ms** for alice: one item-count read per organisation, not one setup per task.
+- **What is left grows with the number of projects.** `getProjectsOverviewData` (`lib/project-data.ts:311`) waits four
+  times in a row: organisations, then each organisation's projects, then **each project's tasks** (11 × 23 ms), then
+  the organisation counts.
+- **The Dashboard then asks each overseen project's overview counts** (`lib/dashboard-canonical-count.ts`, 11 × 32 ms)
+  for its Canonical Decisions figure.
+- The browser sends six requests at a time, so both per-project steps scale linearly with the number of projects.
+
+**Decided by Hanchen (2026-10-24):** commits 6 and 7 of #98, not a new ticket. Update SCRUM-121's description and
+the PR title to say so.
+
+**Ground rules:**
+- **Same access as the per-project reads.** `verify_user_project_access` and `verify_user_can_perform_project_action`
+  check only the project's organisation (`core/permissions.py:223`, `:556`), so an organisation-level read with the
+  same check returns exactly what the per-project reads would.
+- **Same shapes:** `TaskRead`, and `item_status_counts` as `ProjectOverviewService` builds it.
+- **Same fallback pattern as #97's counts:** if the batched read fails, the page takes the old per-project path.
+- **The per-project routes stay.** The project page, Setup and the harness use them.
+
+### 6. `perf(api,web): the overview reads each organisation's tasks in one request (A6, SCRUM-121)`
+
+**API.**
+- `GET /organizations/{org_id}/tasks` → `list[TaskRead]`: every task in the organisation's projects, ordered by
+  project and then creation.
+- Access: `verify_user_org_access`, as `GET /organizations/{org_id}/projects` does. This is what
+  `GET /projects/{id}/tasks` checks for each project.
+- `TaskRepository.list_by_organization(org_id)` (`db_store.py`, beside `list_by_project` at `:1298`): one query
+  joining `ProjectDB` on `organization_id`, mapped with `_to_model`.
+- Route beside `task-item-counts` in `routes/organizations.py:342`.
+
+**API tests**, in a new `tests/test_organization_reads.py`:
+- **Prove:** the statement count is the same for an organisation with 2 projects and with 12
+  (`before_cursor_execute`, as `test_task_item_reads.py`);
+- **Guard:** the result equals the union of `GET /projects/{id}/tasks` over the organisation's projects, same fields;
+- **Guard:** a user outside the organisation gets 403, as on the projects list.
+
+**Web.**
+- `lib/api/tasks.ts`: `listOrganizationTasks(orgId)`.
+- `getProjectsOverviewData`: per organisation, start the projects, tasks and `task-item-counts` reads **together**.
+  The counts read needs only organisation ids, so it no longer waits for the tasks either. Four waits become two:
+  organisations, then one batch per organisation.
+- If an organisation's tasks read fails, list that organisation's tasks per project as today.
+
+**Web tests** (`lib/project-data-loader.test.ts`, or a new `project-overview-data.test.ts` if the mocks differ):
+- **Prove:** 2 projects and 12 projects in one organisation make the same number of requests, with no `listTasks`;
+- **Guard:** a failing organisation tasks read falls back to `listTasks` per project and the page still loads;
+- `projectsOverviewSignature` unchanged for the same data.
+
+**As built (2026-10-24):**
+- **API:**
+  - `TaskRepository.list_by_organization` orders by project, creation and id;
+  - the route `list_organization_tasks` (`routes/organizations.py`, before `list_projects`).
+- **API tests** (`tests/test_organization_reads.py`, 4):
+  - the statement count test fails against a temporary per-project implementation (4 against 14 statements);
+  - the other three are Guards.
+- **Web:**
+  - `listOrganizationTasks` in `lib/api/tasks.ts`;
+  - `getProjectsOverviewData` starts `loadTaskItemCounts` first, then per organisation `listProjects` and
+    `listOrganizationTasks` together;
+  - `inProjectOrder` keeps the per-project order;
+  - `listTasksPerProject` is the fallback.
+- **Web tests:** a new `lib/project-overview-data.test.ts`, 6 cases. On the old code, the three Prove cases fail: one
+  tasks request at 2 and at 12 projects, and the counts asked before the tasks answer.
+- **Results:**
+  - SQLite 2532 passed, 63 skipped;
+  - casebook 87/87, 1 skipped, no regression;
+  - test:web 1024 passed (109 files);
+  - tsc clean outside `.next/types`;
+  - lint 0 errors.
+- Message: `commits/scrum-121-6-overview-tasks-per-organisation.txt`.
+
+### 7. `perf(api,web): the Dashboard reads its canonical decisions once per organisation (A6, SCRUM-121)`
+
+**API.**
+- `GET /organizations/{org_id}/item-status-counts` → `[{project_id, item_status_counts}]`, every project in the
+  organisation, a project with no items all zeros.
+- Access: `verify_user_can_perform_governed_action(org_id, OVERSEE)`, which is what the per-project route checks
+  (`routes/projects.py:376`).
+- `ProjectOverviewService.item_status_counts_by_project(org_id)`: one query grouped by `TaskDB.project_id` and
+  `TaskItemDB.status`, keeping the per-project method's 503 on an unexpected stored status. The per-project method
+  calls the shared code, so the two can't drift.
+
+**API tests** (same new file):
+- **Prove:** fixed statement count for 2 and 12 projects;
+- **Guard:** each project's entry equals `GET /projects/{id}/overview/item-status-counts`;
+- **Guard:** an annotator, who lacks OVERSEE, gets 403.
+
+**Web.**
+- `lib/api/organizations.ts`: `listOrganizationItemStatusCounts(orgId)`.
+- `loadCanonicalDecisionCount`:
+  - group the readable projects (OVERSEE, unchanged) by `organizationId`;
+  - make one request per organisation;
+  - sum `canonicalized` over those projects only;
+  - still null when any read fails: a partial sum would be wrong (SCRUM-128's rule).
+- Jingwei wrote this file (SCRUM-128, merged), so tell him when the PR is ready. This is not a scope change to an
+  open ticket of his.
+
+**Web tests** (`lib/dashboard-canonical-count.test.ts`, extend or create):
+- **Prove:** 12 overseen projects in 2 organisations make 2 requests;
+- **Guard:** a project not overseen is neither asked nor counted;
+- **Guard:** one failing organisation read gives null.
+
+**As built (2026-10-24):**
+- **API:**
+  - `ProjectOverviewService` has one grouped query, `_counts_by_project` (by project and status), which
+    `item_status_counts` (per project) and the new `item_status_counts_by_project` (per organisation, every project,
+    zeros for none) both use, with the 503 on an unexpected status;
+  - the schema `ProjectItemStatusCountsRead`;
+  - the route `list_organization_item_status_counts`, behind OVERSEE on the organisation.
+- **API tests:** `tests/test_organization_reads.py`, 3 more, 7 in all.
+  - The fixture gains a task owner in each organisation, and items with statuses.
+  - The statement count test fails against a temporary per-project loop (5 against 15).
+- **Web:**
+  - `listOrganizationItemStatusCounts` and `ApiProjectItemStatusCounts` in `lib/api/organizations.ts`;
+  - `loadCanonicalDecisionCount` reads once per overseen organisation and sums the projects it was given.
+- **Web tests:**
+  - `dashboard-canonical-count.test.ts` is rewritten onto the organisation read: the 4 old cases plus "twelve projects
+    in two organisations, two requests" and "counts only the projects given". On the old code 4 of 6 fail;
+  - `dashboard-home-read-path.test.tsx` mocks the organisation read, with its assertions unchanged.
+- **Results:**
+  - SQLite 2535 passed, 63 skipped;
+  - casebook 87/87, 1 skipped, no regression;
+  - test:web 1026 passed (109 files);
+  - tsc clean outside `.next/types`;
+  - lint 0 errors.
+- Message: `commits/scrum-121-7-canonical-decisions-per-organisation.txt`.
+
+### Validation for 6–7
+- The suites as for 1–5, plus the casebook, unchanged.
+- **Perf bed:** add a load mode `org-batch` to `page_home`:
+  - per organisation, projects, tasks and counts together, then one item-status-counts read per overseen
+    organisation;
+  - extend `sandbox-perf-seed-a6.py` with `--extra-projects 40` (each with two 20-item tasks), so the bed shows
+    the scaling.
+- Measure the Dashboard as admin and ann1 at 11 and at 51 projects, on `main` and the branch:
+  - **target:** the request count no longer grows with projects (alice: 9 requests at any size, against 27 and
+    107 today);
+  - **target:** at least 50% faster at 51 projects.
+- **Perf result (2026-10-24, `../../Break/tests/perf-findings.md` → "Result: SCRUM-121 commits 6–7"):**
+  - alice 181 → 70 ms at 11 projects, and 519 → 89 ms (−83%) at 51; 9 requests at both sizes ✅;
+  - ann1 230 → 54 ms at 51 projects;
+  - ann1 at 11 projects (one project in its organisation) is 39 → 53 ms, because three parallel reads contend on
+    the bed's single API process.
+- **Manual:** the Dashboard's Canonical Decisions and the Projects page show the same figures as on `main` for alice,
+  kevin and charlie. The Network tab shows no `/projects/{id}/tasks` or `/overview/item-status-counts` per project.
+
 ## Validation
 
 1. `npm run check` (API tests, web tests, typecheck, lint), and the API suite on PostgreSQL (CI does both).
@@ -186,6 +394,14 @@ Tests in `lib/project-data.test.ts`:
    - `GET task-items` on the 200-item task with history: target at most 20 ms and 0 writes;
    - the project page with 8 tasks (after commit 5): target at least 50% faster than `main`;
    - record before and after in the PR and in `perf-findings.md`.
+   **Result (2026-10-24, bed rebuilt; `../../Break/tests/perf-findings.md` → "Result: SCRUM-121"):**
+   - project page 118.9 → 48.5 ms (−59%), 13 → 6 requests ✅;
+   - task-items @200 59.1 → 37.0 ms, 26 → 16 statements, 0 writes. **Decided by Hanchen, 2026-10-24:** 37 ms is good,
+     and it is not a limitation. The PR states the strength instead: the statement count is fixed, whatever the items
+     and their history. What is left is D7's `blind_item_statuses` (10 batched statements, about 20 ms of SQL), which
+     came after the 20 ms target was set.
+   - The worktree `hej-perf` is left detached at `a4a9cd04`; the container `hej-perf-pg` is stopped with
+     `/tmp/seed.dump` inside.
 4. **Manual walkthrough**, two browsers, on a fresh seed:
    - an expert returns an item; the annotator's Annotate queue shows it as rework; the Items tab shows
      `expert_send_back`;
@@ -205,6 +421,36 @@ Tests in `lib/project-data.test.ts`:
   - testing: the probe's result, the perf table before and after, the casebook;
   - notes: what is out of scope.
 - If #97 is still open when commits 1 to 4 are ready, open the PR as a draft and say commit 5 follows.
+- **Opened 2026-10-23 as draft #98** (head `11a285f`, 4 commits), description in
+  `../../../reviews/W11/pr-cs57-hanchen-scrum-121-reads-never-write.md`. No reviewer requested. After commit 5:
+  update the description's Commits and Testing, add the perf bed's numbers, and mark it ready.
+
+- **2026-10-24:**
+  - **Walkthrough done** in Chrome, on the branch at `17281e3` with a fresh seed on the throwaway `hej-perf-pg`
+    (API :8000, web :3001). The PR's Testing section records it.
+  - The writes went through the API as the real users (bob returns, kevin reopens); dana's resubmission went
+    through the work panel.
+  - **Found, out of scope:** the project page's "Your work" asks each task's annotate work queue twice.
+  - **Description updated on GitHub** for commits 5–7, the perf tables and the walkthrough.
+  - **The title is not changed yet**, and the PR is still a draft.
+
+### 8. The self-review's fixes (2026-10-24, `69c7aca`)
+
+A subagent reviewed #98 at `17281e3` (`../../../reviews/W11/review-cs57-hanchen-scrum-121-pr98-self-review.md`). It
+found nothing blocking, and confirmed:
+- access parity of the organisation reads, on SQLite and PostgreSQL;
+- PostgreSQL 2,595 passed.
+
+Commit 8 holds what it raised:
+- ADR 014's decision 6 is marked as removed;
+- the two new routes are listed in `api_surfaces.md`;
+- `inProjectOrder` groups the tasks in one pass. This is nit 7(a), included by Hanchen's decision; 7(b), the two
+  fixed queries, stays;
+- the Return assertion that could not fail now checks the peer's rework in the queue;
+- two docstrings are corrected, and one test label is now Prove.
+
+Hanchen asked for this commit and push. The PR description now carries the SHA and two corrected claims: CI skips
+PostgreSQL on pull requests, and Canonical Decisions has no fallback.
 
 ## After merge
 

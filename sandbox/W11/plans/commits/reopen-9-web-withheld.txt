@@ -1,0 +1,43 @@
+fix(web): the reopen detail says when its reason and earlier answers are hidden (SCRUM-139)
+
+Since the previous commit the task history gives a reader who would not
+see a reopen on its item's timeline the item_reopened entry with its
+cause and status changes only, and details_withheld true. The reopen
+detail (D9) did not know the flag: such a reader saw the cause's label
+followed by "0 earlier answers kept as superseded versions", with no
+reason, which reads as a reopen that superseded nothing, or as a bug.
+
+task-history.ts: TaskHistoryEvent gains an optional details_withheld.
+An entry without it (an older response or fixture) reads as false.
+
+reopen-history-detail.tsx: with details_withheld true, the line under
+the entry reads the cause's label, then "The reason and the earlier
+answers are hidden until you may see this item's answers.", in the same
+small grey text as the count it replaces. No Reason line, no count and
+no "Show the superseded answers" button. Without the flag, or with it
+false, the detail is unchanged.
+
+reopen-history-detail.test.tsx: a withheld fixture in the API's shape
+(Yi's case: a reconciliation Return with changes cause and status only,
+details_withheld true).
+- Prove: says a withheld reopen's reason and earlier answers are hidden,
+  with no count and no Show button: "Returned to open work by an
+  expert's reconciliation · The reason and the earlier answers are
+  hidden until you may see this item's answers.", no "Reason:", no
+  "earlier answer(s) kept as" text, no button, and no annotation read.
+- Guard: reads an entry with details_withheld false as before: the
+  reason, "... · 1 earlier answer kept as a superseded version" and the
+  Show button, and no hidden sentence.
+- Guard: shows why the item was reopened, and reads nothing until asked
+  (an entry without the field) now also checks the hidden sentence is
+  absent.
+With the component as it was and the new tests, the Prove test fails
+(no element with that text: the line reads "0 earlier answers kept as
+superseded versions") and the other seven pass.
+
+Review of PR #104 (Yi Geng), SCRUM-139.
+
+Files:
+apps/hej-web/components/reopen-history-detail.test.tsx
+apps/hej-web/components/reopen-history-detail.tsx
+apps/hej-web/lib/api/task-history.ts

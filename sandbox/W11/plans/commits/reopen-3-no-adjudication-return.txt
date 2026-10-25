@@ -1,0 +1,61 @@
+refactor(api,web): remove the unused reopen cause adjudication_return (SCRUM-139)
+
+D9's reopen (ADR 008, #46) defined two causes for a task_item_reopens
+row: owner_reopen for the project owner, and adjudication_return for the
+Return an expert would give when deciding a dispute (E3). #48 then made
+an annotation dispute's Return route only its subject, to its author or
+a new annotator, without reopening the item. The only other caller of
+reopen_task_item is an expert's item-reconciliation Return (ADR 017),
+which writes reconciliation_return. So nothing has ever written
+adjudication_return: git log -S finds it in app code only where it was
+defined, and no seed, script or casebook case writes it. Each place that
+still read it (the history summary, the web label) was dead code, and
+REOPEN_CAUSES accepted a cause no path uses.
+
+task_item_reopen_service.py: ADJUDICATION_RETURN and its place in
+REOPEN_CAUSES go. The comment names the owner's reopen (D9) and the
+reconciliation Return (ADR 017), and says a dispute's Return does not
+reopen (#48); the docstring names the reconciliation's Return as the
+caller that checks its own preconditions.
+task_audit_log_query.py: its summary entry goes.
+db_models.py: the cause comment lists owner_reopen and
+reconciliation_return.
+reopen-history-detail.tsx: its label branch goes.
+
+No written data changes: both causes that are written keep their
+summary and label, and a row with an unknown cause would still read
+"Item reopened" and "Reopened".
+
+Tests:
+- test_task_item_reopen.py:
+  test_a_return_style_reopen_after_a_send_back_stays_open now reopens
+  with RECONCILIATION_RETURN. The rule it proves is live (a send-back
+  decided before a reopen does not apply to the round it opens, whatever
+  the cause), and the docstring names the reconciliation Return.
+- test_evaluation_integrity_roles.py: test_an_owners_reopen_needs_manage_task
+  gives its non-owner reopen the cause reconciliation_return. The check
+  still reads any cause but owner_reopen as an adjudication (ADJUDICATE),
+  so the arbitrator's Return stays allowed and only the owner's reopen
+  is found.
+- reopen-history-detail.test.tsx: "names an adjudication's Return" is
+  deleted. The previous commit's reconciliation test already proves the
+  Return's label, and its unknown-cause test proves the fallback a
+  removed cause would now get.
+
+Docs: ADR 008 gets an Amended by line in its header (decision 2 keeps
+its text); db_schema_blueprint.md lists the two causes; api_surfaces.md
+and domain_model.md name the expert's item-reconciliation Return
+instead of "an adjudication's Return".
+
+Files:
+apps/hej-api/app/models/db_models.py
+apps/hej-api/app/services/task_audit_log_query.py
+apps/hej-api/app/services/task_item_reopen_service.py
+apps/hej-api/tests/test_evaluation_integrity_roles.py
+apps/hej-api/tests/test_task_item_reopen.py
+apps/hej-web/components/reopen-history-detail.test.tsx
+apps/hej-web/components/reopen-history-detail.tsx
+docs/adr/adr008_reopening_supersedes_the_round.md
+docs/design/backend/api_surfaces.md
+docs/design/database/db_schema_blueprint.md
+docs/design/database/domain_model.md

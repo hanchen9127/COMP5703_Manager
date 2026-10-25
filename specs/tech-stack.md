@@ -202,7 +202,7 @@ From `hej/AGENTS.md`:
 | --- | --- |
 | `specs/` | This constitution (`mission.md`, `tech-stack.md`, `roadmap.md`) and dated feature specs `YYYY-MM-DD-<story-id>-<slug>/` with `plan.md`, `requirements.md`, `validation.md` — the big picture for each story, written with the `feature-spec` skill |
 | `info/` | Reference material that rarely changes: the client brief (`ProjectDescription.pdf`), the defect register (`issues.md`, 30 defects) and its fix plan (`fix-plan.md`), the client Q&A (`client-question.md`, with the client's own Round 1 and 2 answers exported in `client-qa.md`), and the course's progress submissions (`CS57_Group_Progress.pdf`, `CS57_Status_Checking_1.pdf`, `CS57_Status_Checking_2.pdf`). The story backlog itself lives in `shared/story_src.csv`; the page's **Export** can produce a Markdown copy on demand |
-| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots of the team's online Google Sheet and the Jira board, fetched by `tracking-sync download` or downloaded by hand, and possibly behind the live versions. `Jira.csv` is never edited, only replaced whole by a fresh export; `tracking-sync` refreshes the tracker's snapshot tabs and may append log rows, which Hanchen copies back into the online sheet (see *Tracking data*). `story_src.csv` is the backlog data behind `user-stories.html`, the client view: only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
+| `shared/` | Whole-team tracking. `CS-57_Contribution_Tracker.xlsx` and `Jira.csv` are snapshots of the team's online Google Sheet and the Jira board, fetched by `tracking-sync download` or downloaded by hand, and possibly behind the live versions. `Jira.csv` is never edited, only replaced whole by a fresh export; `tracking-sync` refreshes the tracker's snapshot tabs and may append log rows, which Hanchen copies back into the online sheet (see *Tracking data*). `story_src.csv` is the backlog data behind `handover-dashboard.html`, the client view (`user-stories.html` until 2026-10-26, now a redirect to it): only Hanchen manages it, locally, and it is updated after the snapshots, so it lags them. It is the one file updated here. `README.md` explains the page and the CSV format |
 | `sandbox/` | Hanchen's personal files supporting work on his own branches — never pushed to the team's `hej` repository. Development plans, manual tests, local data scripts, commit drafts and learning notes, organised by week. See [Personal sandbox](#personal-sandbox-docssandbox) |
 | `reviews/` | Code reviews of team PRs (`review-<branch>-<topic>.md`), checked against the story and verified in the running code, and prepared PR descriptions (`pr-<branch>-<topic>.md`). `reviews/plans/` keeps the early plans and commit drafts that lived in `docs/plans/` until 2026-10-14 |
 
@@ -315,9 +315,15 @@ board and the tracker.
   hand, or by `download`, which produces the same file.
 - **Downloading the snapshots** (decided 2026-09-18). `tracking-sync download` fetches both snapshots
   before a report, so they no longer depend on a manual download:
-  - **Credentials** live in `docs/.env` — `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `TRACKER_URL` —
+  - **"Update `Jira.csv`" means running `download`** (recorded 2026-10-23). It fetches the board through the
+    links and credentials in `docs/specs/.env`; Hanchen does not export by hand unless `download` fails.
+  - **Credentials** live in `docs/specs/.env` (moved from `docs/.env` on 2026-10-22; `download` still reads
+    `docs/.env` when the first is missing) — `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `TRACKER_URL`, and
+    also `CLIENT_QA_URL` and `CS57_Group_Slides` (Google Docs links) —
     outside every git repository. They are never printed, never copied into `hej/`, and the Jira token
     should carry read-only scopes, so a mistake cannot change the board.
+  - **Download only.** The file's first line says so: those links may only be downloaded from, and their
+    content is never changed online (the Jira board, the Google Sheet, the Google Slides).
   - **Jira** comes from the same all-fields CSV export the board's *Export* button produces, ordered by
     `created DESC` with a byte-order mark added, which makes it byte-identical to a manual download
     (verified 2026-09-18).
@@ -331,15 +337,17 @@ board and the tracker.
 - **Writing the tracker** (decided 2026-09-16). `apply` may write the downloaded
   `CS-57_Contribution_Tracker.xlsx`, and only these parts:
   - *Jira Statistics* — the snapshot cells regenerated from `Jira.csv`: the headline counts, workload by
-    person, waiting and dropped stories, and every row of *Every issue on the board*. The nine Owner cells
-    and every formula are left alone. The *IN SPRINT* figure and each person's in-sprint count match a
-    sprint whose name **begins with** the week token: the board renames sprints as it goes — `W7` became
-    `W7 Lock down review data` — and an exact match silently counts zero (decided 2026-09-18). The
-    week token `Break` matches the board's `Mid-semester Break` sprint (decided 2026-09-19);
+    person, waiting and dropped stories, and every row of *Every issue on the board*. A story is waiting for a
+    ticket when it has none and is neither `dropped` nor `done` in `story_src.csv` (decided 2026-10-26). The
+    nine Owner cells and every formula are left alone. The *IN SPRINT* figure and each person's in-sprint
+    count match a sprint whose name **begins with** the week token: the board renames sprints as it goes —
+    `W7` became `W7 Lock down review data` — and an exact match silently counts zero (decided 2026-09-18).
+    The week token `Break` matches the board's `Mid-semester Break` sprint (decided 2026-09-19);
   - *Lists* — each story's tickets (column P, the same as `story_src.csv`'s `scrum`), its board status
-    (column Y: `Dropped`; `Not on board` with no ticket; `Done` when every ticket is Done; `In progress`
-    when any ticket has left To Do; otherwise `To Do`), and the ticket list behind the log's dropdown
-    (column Z);
+    (column Y: `Dropped`; with no ticket, `Done` when `story_src.csv` marks the story `done` and otherwise
+    `Not on board` — decided 2026-10-26, because a story such as K2 or K3 is finished with no board work;
+    `Done` when every ticket is Done; `In progress` when any ticket has left To Do; otherwise `To Do`), and
+    the ticket list behind the log's dropdown (column Z);
   - *Contribution Log* — an existing row is never changed, reordered or deleted, and `apply` checks every
     one is byte-for-byte identical afterwards. With `--git`, it appends a row for each PR merged into
     `origin/main` that no row logs, filling only what git proves — date merged, member (the PR head
@@ -365,10 +373,12 @@ board and the tracker.
     ID, epic, priority, role, title, tickets, work bundle, board status; the work bundle is a judgement call),
     and in the *Contribution Log* the dropdown (`Lists!$K$2:$K$64`) and all 1,772 lookup ranges
     (`Lists!$K$2:$O$64`) end at row 64; row 36's title, epic and priority, typed as text earlier that day, are
-    the lookup formula again. **Not changed, by choice:** *Jira Statistics* (51 ranges), *Dashboard* (11) and
-    *Client Report* (18) still count stories over `Lists!…$3:…$61`, so they leave out B7, B8 and D9 until those
-    ranges are extended in the online sheet. Checked against a copy taken first: only those cells and rows
-    changed. **Fourth hand change, 2026-10-04** (approved by Hanchen): A6, added to `story_src.csv` the same
+    the lookup formula again. **Not changed, by choice** (on 2026-09-30): *Jira Statistics*, *Dashboard* and
+    *Client Report* counted stories over `Lists!…$3:…$61`, so they left out B7, B8 and D9. They were extended in
+    the online sheet, not here: the workbook downloaded before 2026-10-25 already ended every such range at
+    `$65` (179 in *Jira Statistics*, 11 in *Dashboard*, 18 in *Client Report*), so B7, B8, D9 and A6 are counted
+    (found on 2026-10-25, see the seventh hand change). Checked against a copy taken first: only those cells and
+    rows changed. **Fourth hand change, 2026-10-04** (approved by Hanchen): A6, added to `story_src.csv` the same
     day, is *Lists* row 65 (story ID, epic, priority, role, title, ticket SCRUM-119, work bundle *Annotation page
     & judgement*, board status), as inline strings before the existing Z65; the log's story dropdown and all 1,775
     lookup ranges now end at row 65. *Jira Statistics*, *Dashboard* and *Client Report* again unchanged, by the
@@ -379,7 +389,92 @@ board and the tracker.
     type, area, story, *What changed* and *Story complete?*. That is `No` for each one: four are unmerged, and #90 and
     #94 follow stories (H2, D3) that earlier PRs completed. As before, *Reviewed by*, *Notes / evidence* and the
     formula columns (*Week*, *Review OK?*, title, epic, priority) were left alone. Checked against a copy taken first:
-    only those cells changed;
+    only those cells changed. **Sixth hand change, 2026-10-25** (asked for by Hanchen): rows 92–99 (PRs #95–#102) had
+    only their date, week and PR number, or nothing, so each got its member, reviewer, ticket, link, work type,
+    area, story, *Defects closed* (`-`), *What changed* and *Story complete?* from GitHub: author and reviews of the
+    PR, its title, changed files and merge date. Rows 95–97 got the merge date; rows 98 and 99 (#101, #102, open
+    drafts) the date they were opened. Row 100 was added for #103 (SCRUM-135, K1, an open draft) the same way. Every
+    row from 2 to 100 was then checked so that columns A–Q hold no empty cell: *Reviewed by* was filled in rows 86,
+    88 and 90 (#89, #91, #93, merged and reviewed) and, for the open drafts in rows 98–100, with the reviewer GitHub
+    lists as requested (Yi Geng); row 90 got the title, epic and priority lookup formulas it lacked. *Story complete?*
+    was recomputed for every row by one rule: `Yes` only on the last merged PR of a story that is complete in
+    `story_src.csv`; every other row of that story, every row of an unfinished story and every unmerged PR says `No`,
+    and a row with no story says `N/A`. That moved 26 existing rows (`Yes` off the earlier PRs of a story, onto the
+    last one) and replaces the 'every merged PR of a finished story' reading used for rows 92–96 earlier that
+    day. The cached values of the *Week*, *Review OK?*, title, epic and priority formula cells in the rows filled
+    were set to what the formulas give, so a reader without a calculation engine sees them. *Notes* got one entry
+    (row 94, co-reviewer). In *Lists*, K2 and K4 (no ticket) read `Done` in column Y, because Hanchen marked them complete on
+    2026-10-25; `apply` would write `Not on board` again for a story with no ticket. Checked against copies taken
+    first: only those cells changed. **Seventh hand change, 2026-10-25** (asked for by Hanchen): the sheets other
+    than the Log were audited against `Jira.csv` (the board export of 2026-10-25 00:36, so slightly older than the
+    latest board edits), `story_src.csv`, Log rows 2–100 and git. Eight static cells changed, as inline strings: in
+    *Lists* the story titles (column O) of C4, D3, D8, F2 and D9 and the role (N) of D3, copied from `story_src.csv`,
+    which was edited after the table was filled; in *Jira Statistics*, B3 `59 committed backlog stories` → `63`;
+    in *Start Here*, the example row's reviewer (E38) `Tok Tin Chung` → `Tim Chung`, the roster name. No range
+    needed extending: every `Lists!` range outside the Log already ended at row 65, and no Log range ends before
+    row 100 (they end at 599, or 596 for *Jira Statistics*' ticket counts). *Jira Statistics* and *Lists* P and Z
+    already matched what `apply` would write. Left alone on purpose: every formula and its cached value (so the
+    cached Dashboard and Client Report numbers are stale until the workbook is recalculated on open), the Owner
+    cells, the Log, *Lists* Y of A5 (`In progress`, because SCRUM-134 is In Progress in the export, though A5 is
+    done in the CSV) and K3, and the wording and layout questions listed in Hanchen's report. Checked against a
+    copy taken first: only those cells changed, and the Log part is byte-identical. **Eighth hand change,
+    2026-10-26** (asked for by Hanchen): the tracker downloaded that day had K2 back at `Not on board` in *Lists*
+    column Y, so *Jira Statistics* read P1 21 of 23 done and all stories 61 of 63. Hanchen marked K3 complete,
+    and `story_src.csv`'s K3 `status` went `working` → `done` by hand, the only cell changed (`done` is never set
+    automatically for a story with no ticket). The *Lists* rule then changed (see above): a story with no ticket
+    reads `Done` when `story_src.csv` marks it `done`, and is no longer waiting for a ticket. `apply` wrote *Lists*
+    Y59 (K2) and Y60 (K3) `Not on board` → `Done`, and *Jira Statistics* B36 `2` → `None` and C36 `Committed
+    stories with nothing on the board: K2 K3` → `Every committed story that is not dropped or done has at least
+    one ticket on the board.` By hand, as inline strings in the cells' own styles, in *Jira Statistics*: H21
+    `... A story with no ticket cannot be done.` → `Done counts what the board says is done. A story with no
+    ticket counts as done only when the story records mark it complete.`, and B3's `docs/Jira.csv` →
+    `docs/shared/Jira.csv`. The cached values of the nine formula cells that read the two changed *Lists* cells
+    were set to what the formulas give, formulas unchanged: G19 2 → 0 and I19 18 → 20 (*Unallocated*, the
+    bundle of K2 and K3), D24 and F24 21 → 23, G24 0.913 → 1, D26 and F26 61 → 63, G26 0.968 → 1, and K33 (epic
+    K) 2 → 4. Every other formula on the tab was evaluated and its cache already matched. Checked against a copy
+    taken first: only those cells changed, and the Log part is byte-identical. **Ninth hand change, 2026-10-26**
+    (asked for by Hanchen): before submission, the PR and story counts on *Dashboard* and *Client Report* were made to
+    say what they count, the first hand change to those two tabs (`apply` still never writes them). They counted Log
+    rows, one per story a PR touched (#9 and #53 have two, #17 and #48 three), #1 (closed, not merged) included, so
+    PRS MERGED read 100 for 93 merged PRs. Formulas, each cached value set to what it gives: *Dashboard* B6
+    `COUNTA('Contribution Log'!$C$2:$C$599)` 100 → `ROUND(SUMPRODUCT((E="OK")/(COUNTIFS(G,G,E,"OK")+(E<>"OK"))),0)`
+    over the Log's `$E$2:$E$599` and `$G$2:$G$599`, the distinct PR numbers on rows reviewed by a second person, 93;
+    *Client Report* C9 `COUNTIFS` of the rows dated in the period 100 → the same distinct count, bounded by the period
+    (`$C$5`–`$C$6`), 93. Every PR the Log shows reviewed by a second person is merged; GitHub's other two merged PRs,
+    #3 and #15, merged into another PR's branch and reached main through it. *Dashboard* H6 (STORIES COMPLETE) counted
+    stories with a `Yes - story complete` row, 59 → `COUNTIF(Lists!$Y$3:$Y$65,"Done")`, 63, the basis of *Jira
+    Statistics*; A1 and A4 have no Log row of their own and K2 and K3 needed no PR. Labels, as inline strings in the
+    cells' own styles: *Dashboard* B3 `Everything here is calculated from the Contribution Log. Nothing on this tab
+    needs to be typed.` → `Everything here is calculated from the Contribution Log, except STORIES COMPLETE, which
+    counts the stories Lists marks Done, as Jira Statistics does. Nothing on this tab needs to be typed.`, C10 `PRs
+    merged` → `PR rows logged`, D10 `PRs reviewed` → `PR rows reviewed`, K10 `Share of PRs` → `Share of PR rows`, B22
+    `PRs merged per week` → `PR rows logged per week`, C39 and F39 `PRs` → `PR rows`, H40 `PRs with a named reviewer`
+    → `PR rows with a second reviewer`, H41 `PRs reviewed by their own author` → `PR rows reviewed by their own
+    author`; *Client Report* F9 and C19 `PRs` → `PR rows`, D19 `Reviews given` → `PR rows reviewed`, B11 `Stories
+    completed` → `Stories completed by a logged PR` (C11 stays bounded by the Log's dates, 59), B12 `Defect-fix PRs` →
+    `Defect-fix PR rows`, B13 `Feature PRs` → `Feature PR rows`, B14 `PRs reviewed by a second person` → `PR rows with
+    a second reviewer`. Notes in empty cells, in the style of the existing notes: *Dashboard* B7 `PRS MERGED counts
+    distinct PRs in the Log reviewed by a second person, all of them merged. GitHub shows 95 merged: #3 and #15 merged
+    into another PR's branch and reached main through it, so they have no row of their own.`, B8 `A PR row is one Log
+    row: a PR that touched several stories has a row per story, and #1 (closed, not merged) has one.`, B21 `Stories
+    completed counts only stories whose completing PR is logged against them, so TOTAL is below STORIES COMPLETE: A1
+    and A4 have no Log row of their own, and K2 and K3 needed no PR.`; *Client Report* B28 and B29, the same two notes
+    for the period, B29 adding that *Stories completed* and *Stories done* count only stories whose completing PR is
+    logged in the period. Left alone: the per-member *Stories completed* formulas, *Members who merged*, and the row
+    counts behind the relabelled figures. In the *Contribution Log*, as Hanchen approved: Q98 `... instead of Jira
+    tickets (in progress).` → `The web app's code and comments now name stories and pull requests instead of Jira
+    tickets.`; Q99 `A second status for an expert's Return is removed: ... (in progress).` → `The old item-level
+    escalation flow, left from before two-level disputes, is removed with every status it used; an expert's Return and
+    a reviewer's return now both show as Returned.`; Q100 its ` (in progress)` removed; Q101 `A reopen's history entry
+    loses its reason ...` → `A reopened item's History entry now shows its reason, who sent it back and the answers it
+    replaced, to every reader allowed to see them.`; O47 (PR #50, D9) `Yes - story complete` → `No - more work to
+    come`, because D9's last merged PR is now #104 (row 101). *Story complete?* was then recomputed for every row by
+    the sixth hand change's rule and no other row disagrees. That moved *Dashboard* H13's cache (Jingwei Lin's
+    *Stories completed*) 17 → 16. In workbook.xml `<calcPr/>` → `<calcPr fullCalcOnLoad="1"/>`. *Jira Statistics* I156
+    (`D9`) and J156 (`description`), typed online for SCRUM-139, were left alone: the board's description reads `Story
+    D9.`, which the rule does not match, so `report` proposes `D9` → `-` until the description reads `Story *D9*`.
+    Checked against a copy taken first: only those cells and workbook.xml changed, the Log part only in its five
+    cells, and every formula on *Dashboard* (252) and *Client Report* (65) evaluates to its cached value;
   - the workbook's *Jira Statistics* filter range, and recalculation on open.
 
   *Start Here*, *Dashboard* and *Client Report* are never written. Text goes in as inline strings, so the

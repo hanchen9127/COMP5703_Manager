@@ -1,0 +1,20 @@
+docs: the design docs, terminology and runbook name stories and PRs (SCRUM-133)
+
+The database and backend design docs, the product surface hierarchy,
+the terminology, the runbook, the root README and the backend-tests
+workflow comment named Jira tickets 129 times. Each now names the
+story and the pull request, from docs/handover/ticket-map.md. A ticket
+with several stories names the one its line is about; a ticket used as
+a noun ("the SCRUM-1 job tables", "SCRUM-46 refuses") names the story
+or the PR in its place. The AI batch schema's handoff table is by PR.
+
+The informal "Scrum 20" and "Scrum 50" in ADR 001, ADR 002, the
+terminology, the domain relations and the project-policies PR note,
+which the SCRUM-N search does not find, are B2 (#25) and #37.
+
+Only the references change. Claims that have gone stale since they
+were written (a progress endpoint that now exists, releases that now
+exist) are left as they were.
+
+api_surfaces.md and workflow_states.md go with SCRUM-135; tech-stack.md
+goes with the next commit, whose heading its link follows.

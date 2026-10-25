@@ -1,0 +1,19 @@
+feat(evaluation): a case may cover a story or a story criterion, A to K (SCRUM-133)
+
+A case's covers could name a defect, a Jira ticket or a story
+criterion from A to J. The next team keeps the stories, not the board,
+so covers now also takes a story (H3) and criteria from A to K (K4.1).
+Tickets are still accepted: the next commit moves each case off them.
+
+The coverage listing sorted by the text before the number, so stories
+and criteria came before the defects, and H3.2 before H3, though its
+docstring promised defects first. It now orders defects, then stories
+and criteria by letter and number with a story before its own
+criteria, then tickets. No case names a story yet, so the casebook's
+listing is unchanged byte for byte.
+
+Tests: a case covering H3, H3.2 and K4.1 loads; L1, H3., h3, H0 and
+H3.0 are refused; the listing orders defect 3, D9, D10, H3, H3.2, H10
+and then the tickets. The load test and the ordering test fail on the
+old code. Evaluation tests: 428 passed; casebook 87/87, 1 skipped,
+unchanged.

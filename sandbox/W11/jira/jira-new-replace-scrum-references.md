@@ -1,5 +1,55 @@
 # New W11 ticket — the repository names stories and PRs, not Jira tickets (2026-10-23)
 
+**Created in Jira by Hanchen, 2026-10-23 18:55, as SCRUM-133** (To Do, sprint "W11 Finish and hand over";
+`Jira.csv` of 23:44).
+
+**Split into three by Hanchen, 2026-10-23** (after #89, #91, #95 and #96 merged; #97 and #98 still open). This
+replaces the decision below that it all goes in one change:
+
+| Ticket | Scope | Blocked by | References on `efb5900` |
+| --- | --- | --- | --- |
+| **SCRUM-133** (narrowed) | `ticket-map.md`, the casebook (`apps/hej-api/evaluation`), `docs/` except the two files below, the workflow comment, the root README | nothing: no open PR touches these | 702 − 102 ≈ 600, 115 files |
+| **SCRUM-135**, backend (`jira-new-scrum-refs-backend.md`) | `apps/hej-api` except `evaluation/`; `api_surfaces.md` and `workflow_states.md`, which #97 and #98 edit; the two user-visible strings | SCRUM-133, #97, #98 | ≈ 873, 186 files |
+| **SCRUM-136**, web (`jira-new-scrum-refs-web.md`) | `apps/hej-web`, `packages` | SCRUM-133, #97 | 202, 98 files |
+
+Total now 1675 (90 more than at `d14de29`). Each ticket's Done checks its own paths; the one that merges last also
+checks that only `ticket-map.md` is left.
+
+**On the board (`Jira.csv` of 2026-10-24 00:08):** SCRUM-133 renamed "Handover: Name stories and PRs instead of
+Jira tickets in docs", description replaced (it ends in a stray second `{noformat}`); SCRUM-135 and SCRUM-136
+created with this file's descriptions; all three in W11 at 1 point each. The export carries no issue links, so the
+"blocks" links can't be checked from it.
+
+**Replace SCRUM-133's description on the board with "SCRUM-133's new
+description" below**; the original stays further down for the record.
+
+## SCRUM-133's new description
+
+Story points **2** (was 3). Links: remove the "is blocked by" links; add "blocks" to the two new tickets.
+
+```
+{noformat}Not tied to one user story: it makes every story's references readable without our Jira board. Part 1 of 3: this ticket sets the rules and the map; the backend and the web each have their own ticket, which start after this one.
+
+BACKEND (casebook) + DOCS. W11. Added 2026-10-23 (Hanchen), narrowed the same day. No open PR touches its files, so it can start now. On main at efb5900 this part holds about 600 references in 115 files.
+
+The team that takes over will most likely not get our Jira board, and will keep using the story ids (A1–K4 and on). Replace each Jira ticket with the story and the PR that built it.
+
+# One new file, docs/handover/ticket-map.md: one row per SCRUM ticket ever named in the repository, commit messages and PR titles included: ticket, title, story, PR(s). Its header says the story ids and their criteria (H3.2) are defined in the backlog handed over with the project (user-stories.html and story_src.csv), and that #N means a pull request on USYD-CS-Capstone/hej; main's history also holds arcintelligence PR merges with the same numbers. The other two tickets add any ticket they find that it lacks.
+# The rule, for all three tickets: SCRUM-N becomes its story and PR, e.g. (H3, #83). A ticket with several PRs names each (#84, #90). A ticket with no PR names its story alone. A ticket with no story (SCRUM-80, 36, 39, 58, 62) is rewritten to say what it means. Where the line already names the story ("SCRUM-45, J4 criterion 2"), only the ticket goes ("#80, J4 criterion 2"). Text a user reads names no ticket and no PR; developer text (CLI help, harness errors, the baseline note) may use the story id.
+# Casebook: COVERS accepts a story (H3) and a story criterion (H3.2), A to K, and no longer SCRUM-N. Each covers entry becomes the criterion its ticket implements, or the story where no single criterion fits. REQUIRED_COVERAGE's SCRUM-85, 116, 117 and 120 become their criteria. Update evaluation/README.md, `evaluation list --coverage` and test_evaluation_runner.py with them. baseline.json keeps every verdict; only its note changes.
+# Docs: ADRs, docs/design (except api_surfaces.md and workflow_states.md, which the backend ticket takes), evaluation-findings.md, docs/terminology, the runbook, the root README and the backend-tests workflow comment follow the rule. ADR files keep their names and numbers.
+
+Done when `git grep -E 'SCRUM-[0-9]+' -- apps/hej-api/evaluation docs .github README.md ':!docs/design/backend/api_surfaces.md' ':!docs/design/product/workflow_states.md'` on main finds only docs/handover/ticket-map.md; `python -m evaluation run --baseline evaluation/baseline.json --exact` reports every verdict unchanged; `evaluation list --coverage` lists the same protections as before, under their story names; and the backend suite passes.
+
+Collaboration:
+- SCRUM-75 (I5, Kanishka): evaluation-findings.md is her record; the sweep changes its references only.
+- The backend and web tickets: start after this merges.{noformat}
+```
+
+---
+
+## The original ticket (2026-10-23 18:55, before the split)
+
 **Decided by Hanchen (2026-10-23):**
 - Every `SCRUM-N` in code and docs becomes the **story id and the PR number**, written `#N`, with **no commit SHA**.
   The repository gains a SCRUM → story → PR table, because commit messages and PR titles keep their `SCRUM-N` and
@@ -94,7 +144,8 @@ Collaboration:
 
 ## Open points for Hanchen
 
-- **Decide on 27 Oct: the fallback if a PR is still open.** W11 ends 28 Oct. If #97 or the #95/#96 stack hasn't
-  merged by 27 Oct, either start anyway and leave their files to their owners, or move the ticket past W11.
+- **Decide on 27 Oct: the fallback if a PR is still open.** W11 ends 28 Oct. Since the split, only the backend and
+  web tickets wait (#95 and #96 have merged). If #97 or #98 hasn't merged by 27 Oct, either start anyway and leave
+  their files to their owners, or move those tickets past W11.
 - **The handover package** must then carry `user-stories.html` and `story_src.csv`, since the repository's story
   ids point there. That belongs to the handover itself, not to this ticket.

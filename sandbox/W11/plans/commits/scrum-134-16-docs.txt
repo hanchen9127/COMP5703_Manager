@@ -1,0 +1,101 @@
+docs(api,web): the design describes one way to escalate (SCRUM-134)
+
+The earlier commits removed the item escalations and every state they
+left, but the design docs, the ADRs and a few comments still described
+them: an item-level Return releasing several authors by its decision
+time, an open escalation holding the whole item, escalation rows in the
+export and the release gate, NULL verdicts and submissions without a
+sample. The one way to escalate is now the annotation dispute (#48), and
+an expert's Return is read only from its decision (adjudicate_decision
+and adjudicate_return_target). The text now says so. No code behaviour
+changes.
+
+workflow_states.md:
+- DISPUTED is a submission held by a split or an escalation: a split
+  under manual_review waits as pending_route until it is opened or
+  settled; an escalation opens its dispute at once.
+- FINALIZED -> READY is the owner's reopen only. An expert's Return
+  never reopened a finalised item in the current design.
+- The locking note describes may_resubmit on each submission's effective
+  outcome (its round, or the dispute or settlement decision over it). A
+  dispute Return releases only its subject, to its author or to a new
+  annotator, each path refusing the other; co-authors stay locked; the
+  successor inherits neither the Return nor the hold. The Return cutoff,
+  per-author release and delayed-audit rules go.
+- The blindness and resubmission notes speak of the adjudicator's Return
+  and of each submission's own outcome.
+
+api_surfaces.md:
+- The resubmission rule reads the Return from the resolved dispute on
+  that version. The per-author Return evidence, the Return cutoff and
+  the reopen/send-back evidence paragraphs go.
+- The legacy open escalation that still held the whole item, the
+  authoritative open escalation that unlocked evidence, the separate
+  escalation routing contract and the open escalation in the release
+  gate's disputed reason go.
+- The export's source_id names reviews, disputes, settlements and
+  reconciliations; the pre-migration send_back/finalize/adjust rows,
+  which were escalation decisions, go.
+- The round rule no longer counts unknown or NULL verdicts, and the
+  cross-review report counts stored samples only.
+- The annotate queue's rework flag and the open-dispute submission
+  guard are worded for disputes and settlements.
+
+db_schema_blueprint.md: cross_review_samples says every submission
+writes its row with its answer and a missing row reads as unsampled.
+
+ADRs keep their decision text. ADR 010, 011, 013 and 014 gain a dated
+note (2026-10-25, #102) in their Amended by line; ADR 010 decision 4
+notes that every review carries a verdict since #102; ADR 013 decision
+9 notes that the compatibility APIs are gone, and its Consequences
+sentence that called them temporary-but-present now says they were
+retired. ADR 003, 007, 015 and 020, which also described the escalation
+route, the item-wide hold or the gate's open escalation, gain the same
+kind of note. ADR 013's Context, comparison table and rejected
+alternative still name TaskItemEscalationDB and task_item_escalations
+as the history of the decision.
+
+governance-model.md no longer says the legacy escalation routes answer
+410. The root README's reset paragraph names the dropped
+task_item_escalations table, which --reset drops. The ticket map's
+SCRUM-134 title is "Retire the legacy item escalations and the states
+they left". The evaluation README no longer says the integrity checks
+read task history for old escalation steps.
+
+Comments and docstrings: the dispute desk page reads annotation
+disputes, review-actions.ts names them instead of escalation routing,
+review_refusal no longer mentions unknown deciding outcomes, and
+assert_submission_may_be_replaced names a settlement's redo and the
+dispute's Return.
+
+Tests: test_project_disputes.py's module docstring and one test
+docstring no longer speak of retired routes.
+test_independent_second_review.py's
+test_batch_status_rules_preserve_dual_role_authors_and_legacy_exceptions
+becomes ..._old_partial_negatives_and_finished_items: its "legacy"
+answer was a finished answer without a sample row, a state #102 retired.
+The variable and its ids are renamed; the logic is unchanged. The two
+files pass (335).
+
+Files:
+README.md
+apps/hej-api/app/services/independent_review_service.py
+apps/hej-api/app/services/submission_rules.py
+apps/hej-api/evaluation/README.md
+apps/hej-api/tests/test_independent_second_review.py
+apps/hej-api/tests/test_project_disputes.py
+apps/hej-web/app/tasks/[taskId]/dispute/page.tsx
+apps/hej-web/lib/api/review-actions.ts
+docs/adr/adr003_review_justification_always_required.md
+docs/adr/adr007_review_decisions_follow_the_review_queue.md
+docs/adr/adr010_independent_second_review.md
+docs/adr/adr011_adjudication_independence.md
+docs/adr/adr013_annotation_level_disputes.md
+docs/adr/adr014_review_and_submission_state_history.md
+docs/adr/adr015_production_history_at_decision_time.md
+docs/adr/adr020_the_release_gate_reads_recorded_decisions.md
+docs/design/backend/api_surfaces.md
+docs/design/database/db_schema_blueprint.md
+docs/design/product/workflow_states.md
+docs/handover/ticket-map.md
+docs/terminology/governance-model.md

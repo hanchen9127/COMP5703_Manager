@@ -1,0 +1,37 @@
+fix(web): the reopen detail names the reconciliation Return (SCRUM-139)
+
+A reopen's History detail (D9) named its cause with one test: the
+adjudication_return cause read "Returned to open work by an
+adjudication", and every other cause, or none, read "Reopened by the
+project owner". Now that the history read lists the cause (the previous
+commit), an expert's item-reconciliation Return, which writes
+reconciliation_return, would still read as the owner's reopen.
+
+reopen-history-detail.tsx: causeLabel names each cause.
+reconciliation_return reads "Returned to open work by an expert's
+reconciliation", owner_reopen keeps "Reopened by the project owner", and
+adjudication_return keeps its label for now. A cause the page does not
+know, or none, reads "Reopened", so a later cause is never shown as the
+owner's.
+
+reopen-history-detail.test.tsx: the shared fixture now has the shape the
+API returns since the previous commit: the cause's words as the summary
+and no detail, a negative id (the entry is read from its provenance
+event), the changes in field order with no reopen_id, and reason, cause
+and superseded_annotation_ids each with before null. The board test
+looks for that summary instead of "Item reopened".
+- Prove: names an expert's reconciliation Return, with its reason and
+  superseded answer: an entry in the same shape with cause
+  reconciliation_return, status reviewed to pending and one superseded
+  answer shows its reason, "Returned to open work by an expert's
+  reconciliation · 1 earlier answer kept as a superseded version" and
+  the Show button, and nothing about the project owner.
+- Prove: reads a reopen without a cause it knows as a plain reopen, not
+  the owner's: the same entry without its cause reads "Reopened · 1
+  earlier answer kept as a superseded version".
+With the component as it was and the new tests, both fail (no element
+with that text) and the other five pass.
+
+Files:
+apps/hej-web/components/reopen-history-detail.test.tsx
+apps/hej-web/components/reopen-history-detail.tsx

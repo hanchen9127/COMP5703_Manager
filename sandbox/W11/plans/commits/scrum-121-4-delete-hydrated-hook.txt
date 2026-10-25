@@ -1,0 +1,8 @@
+refactor(web): delete the unused use-hydrated-task-items hook (A6, SCRUM-121)
+
+useHydratedTaskItems read a task's items and then each item's drafts,
+one request per item. Nothing imports it: the task shell reads every
+item's drafts in one request since PR #54, which left it behind.
+
+typecheck:web (with the stale .next build types left out), lint:web and
+test:web are unchanged: 778 web tests pass.
