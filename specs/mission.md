@@ -113,8 +113,9 @@ PostgreSQL:
   [Defects](#defects-infoissuesmd-code-view).
 - [ ] **Findings documentation, per-member decision records, a technical report, and a live or recorded
   end-to-end demonstration.** Their stories (K1–K4) were set aside on 2026-09-14 and reopened on 2026-10-25 — see
-  [Stories Set Aside](#stories-set-aside). The findings record is SCRUM-75 (PR #92, merged 22 Oct); 22
-  ADRs are on `main`, 17 of them naming an author, but there is no per-member decision record yet (K2);
+  [Stories Set Aside](#stories-set-aside). The findings record is SCRUM-75 (PR #92, merged 22 Oct), and #105 (K1, no ticket) closed defects 1, 25 and 26 in it
+  and brought the live docs in line with `main`; 25
+  ADRs are on `main`, 20 of them naming an author, but there is no per-member decision record yet (K2);
   the technical report (K1) and the demonstration (K4) are written between 29 Oct and 1 Nov.
 
 Dataset quality must never be reduced to a single unexplained score.
@@ -142,6 +143,10 @@ the handover sweep (the tickets that replace Jira tickets with stories and PRs i
 complete: its record is the 25 ADRs in `docs/adr` and the oral defence presentation. K4 is complete: the full journey runs and the team
 is recording the demonstration; it also holds the removal of distracting UI before the demonstration.
 
+**All four are complete since 2026-10-26.** K1 by its tickets, SCRUM-133, 135 and 136 (#100, #103, #101), all Done;
+K3 by Hanchen's decision, on I5's findings record (SCRUM-75, #92). K2 and K3 have no ticket, so the tracker counts them
+done from `story_src.csv` (`tech-stack.md`, eighth hand change).
+
 **A1 and A5 were set aside with them and reopened as complete on the same day.** Both describe how the
 team works, and by then it had worked that way for weeks. Their text in `story_src.csv` now states what the team
 did and nothing more. The Risks table keeps the A1 gap: `main` is not protected.
@@ -156,7 +161,7 @@ did and nothing more. The Risks table keeps the A1 gap: `main` is not protected.
 The brief still lists findings, decision records, a technical report and a demonstration among its
 expected outcomes, so these appear under [Risks](#risks).
 
-## Progress Snapshot — W11 (2026-10-22)
+## Progress Snapshot — W11 (2026-10-26)
 
 **Basis.** Two views are kept apart (decided 2026-09-14):
 - **By epic follows `shared/story_src.csv`**, Hanchen's local, client-facing copy of the team's
@@ -187,11 +192,34 @@ Where the two views disagree, both are shown and the gap is listed under [Risks]
 
 **Every story is complete (2026-10-26).** Hanchen marked K3 complete: I5's findings record (SCRUM-75, #92) is merged.
 K2 and K3 have no ticket, so the tracker's *Lists* now reads a story with no ticket as Done when `story_src.csv`
-marks it `done` (rule in `tech-stack.md`, eighth hand change); the tracker's P1 row reads 23 of 23.
+marks it `done` (rule in `tech-stack.md`, eighth hand change); the tracker's P1 row reads 23 of 23. Its Dashboard
+and Client Report now count distinct merged PRs (93 logged; GitHub has 95, with #3 and #15 merged into another PR's
+branch) and stories done on the same basis (ninth hand change). The GitHub Pages site opens
+`shared/handover-dashboard.html`, which replaced `shared/user-stories.html` and its Connect CSV editor the same day.
 
 **Synced again on 2026-10-26** (board export of 03:37): the counts are unchanged. #104 (SCRUM-139, D9's reopen history
 entry) merged on 26 Oct, approved by Yi, so every pull request is merged and none is open. D9 is allocated to Jingwei and
 Hanchen. The board still links SCRUM-139 to no story; `docs/handover/ticket-map.md` maps it to D9.
+
+**After #105 (written as merged, 2026-10-26):** the counts are unchanged, 63 of 63. #105 (K1, Hanchen, no ticket) is the
+last pull request and, like #104, leaves none open; GitHub then shows 100 pull requests, 96 of them merged.
+- **Findings record.** Defects 1, 25 and 26 are closed in `evaluation-findings.md` v1.2. The Gemini API refused the
+  committed key with HTTP 401 on 26 Oct, so the incident is closed (§7); the check does not show when or by whom the
+  key was revoked, and the key stays in git history. Defects 25 and 26 were fixed by A2's `e0e642ac` (#2).
+- **Docs.** The docs nobody maintained (the client's March brief, the plan-era planning and PR specifications, the
+  process maps, the architecture overview and `design/ds/`: 81 files) moved unchanged into `hej/docs/archive/`. The live
+  design docs, terminology, `AGENTS.md` and the three READMEs (root, API, web) were checked against `main`, and
+  `hej/docs/README.md` maps them. `tech-stack.md` follows (hand change, 2026-10-26: its Docs Sync table, repository map
+  and the architecture-overview references).
+- **One web string, found in the demonstration recording (Jingwei).** The review panel said "Dual sign-off complete
+  (2/2)" in a Standard project too, whenever an answer drawn for a blind second review got its second approval (D7).
+  It now says "All required approvals received (2/2)", with a test. The other three findings of that recording are not
+  built: a release shows "Created by user #N" because the release read carries no name; the Exports tab lists a task's
+  live export beside each frozen release by design; and the seeded `d1-extra` item row in the API README was corrected.
+- **Tests on `main` after #105:** backend 2,495 passed and 62 skipped on SQLite (no backend code changed), web 1,051
+  passed in 110 files (one more than before, the banner test), casebook unchanged at 87 of 87 running cases.
+- **Left for the weekly sync:** #105 has no Contribution Log row yet; `story_src.csv`'s A5 criterion 4 now cites the
+  integration contract at its new path (`docs/design/backend/integration_contract.md`).
 
 **Synced on 2026-10-26** (board export of 00:11): every ticket on the board is Done, so K1, whose tickets are the handover
 sweep's SCRUM-133, 135 and 136, is complete by the rule (Hanchen, 2026-10-26); K3 is the one story in progress.
@@ -329,7 +357,7 @@ answers). Merged before the sync: #52 (D8, SCRUM-117) on 2026-10-05; #39 (I1, SC
 
 | # | Defect | Severity | Story | Status on `main` |
 | --- | --- | --- | --- | --- |
-| 1 | Live API key hardcoded in source | Medium | A4 | ✅ Closed — removed from code *(verified; every provider key in `config.py` defaults to `None`)*. The Gemini key is treated as revoked at the provider (Hanchen's decision, 2026-10-14); SCRUM-55 replaced the Gemini call, so the key is no longer used |
+| 1 | Live API key hardcoded in source | Medium | A4 | ✅ Closed — removed from code *(verified; every provider key in `config.py` defaults to `None`)*. The Gemini key was treated as revoked at the provider on 2026-10-14 (Hanchen's decision); on 2026-10-26 the Gemini API refused it with HTTP 401, so it grants no access, and the findings record (`evaluation-findings.md` §7, #105) closes the incident on that check. The check does not show when or by whom the key was revoked; the key stays in git history and must never be reused. SCRUM-55 replaced the Gemini call, so the key is no longer used |
 | 2 | Finalised annotation silently overwritten | **Critical** | D5 | ✅ Fixed *(verified 2026-09-20)* — PR #19 merged (`29d9bba`). The guard refuses draft create, update and submit on a `canonicalized` item; refused in the running app on a stale page, and `ANSWER-B-sneaky` reached neither the drafts nor the annotations table |
 | 3 | Reviewer shown the wrong annotator's work | High | D4 | ✅ Fixed *(verified 2026-09-26)* — PR #34 merged (`7c84ce9`): a review names the submission it acts on, and is refused (`409`) on an item with several when none is named; the review read names whose submission it shows and returns that submission's own review; the web panel sends the submission it shows. Which version a release carries is H4's rule (R2-2) |
 | 4 | Finalised item exports conflicting answers | **Critical** | H4 | ✅ Fixed *(verified 2026-10-22 on `fd35571`: casebook 85/85 running cases pass)* — PR #66 (SCRUM-37) merged 2026-10-16 (`9744b90`), approved by Jingwei after three rounds of requested changes. The export carries one authoritative answer per item, none for an item resolved as ambiguous, and keeps every other version as history; the per-creator export slot (`latest_annotations_by_item_and_creator`) is gone. Closed by EV-068 (one authoritative answer, and only after a choice) and EV-069 (the export carries only the chosen answer). Since #83 the release gate also refuses a finalised item with no authoritative answer (ADR 020) |
@@ -350,7 +378,7 @@ answers). Merged before the sync: #52 (D8, SCRUM-117) on 2026-10-05; #39 (I1, SC
 | 20 | AI failures produce fake annotations | High | C3 | ✅ Fixed *(verified 2026-10-14 on `5ef9202`: casebook 52/52 running cases pass)* — fabrication removed; closed by EV-002 (PR #71): a failed run leaves the person's answer as the item's only one |
 | 21, 22 | Audit actor wrong; duplicated escalation entries | Medium | F4 | ✅ Fixed *(code checked 2026-10-14 on `5ef9202`; tests not re-run)* — #22 by SCRUM-41 (PR #57, 2026-10-06), pinned by `test_history_without_repeats.py`; #21 by SCRUM-40 (PR #68, 2026-10-13): history reads each entry's stored `actor_kind` and filters to people (`task_audit_log_query.py`), pinned by `test_history_actor_kinds.py` |
 | 23, 24 | `.env` ignored; `init_data.py --reset` broken | Medium / High | A3 | ✅ Closed |
-| 25, 26 | Vacuous frontend test; misleading backend mock | Low | A2 | ✅ Closed |
+| 25, 26 | Vacuous frontend test; misleading backend mock | Low | A2 | ✅ Closed — fixed by A2's `e0e642ac` (#2); the findings record (`evaluation-findings.md`, #105) closes both, with their tests passing on `main` |
 | 27 | Impossible `"approved"` status in export rule | Low | B6 | Fixed on `main` *(verified 2026-10-01)* — `EXPORT_ELIGIBLE_TASK_ITEM_STATUSES` holds only `canonicalized`; closure check with SCRUM-105 (H3, W10) |
 | 28 | Task can never leave `draft` | High | B4 | ✅ Fixed *(verified 2026-10-01)* — PR #41 merged (`75c27f2`): `draft → active → completed` with `paused`, each step a `MANAGE_TASK` endpoint (`activate`, `pause`, `resume`, `complete`); intake closes once a task is active, and the AI first pass runs on activation |
 | 29 | Intake 409 reported as 500 | Medium | B5 | ✅ Fixed *(verified 2026-10-14 on `5ef9202`: casebook 52/52 running cases pass)* — PR #9 (2026-09-14); closed by EV-048 (PR #71) |
@@ -366,7 +394,7 @@ pull requests.
 
 | Risk | Why it matters | Mitigation owner |
 | --- | --- | --- |
-| **K1 and K3 are finished after build work ends, and review before merge is held only by agreement.** The brief expects findings, decision records, a technical report and a demonstration (K1–K4). A1 and A5 were reopened as complete on 2026-10-25, but A1 describes a practice, not a control: `main` is not protected (branch protection is not available on this repository's GitHub plan) and has taken direct commits, such as `d4d809c` on 2026-09-13. | Brief deliverables are assessed, and K2 in particular is hard to reconstruct later. The Definition of Done's independent review is enforced only socially. | K1–K4 were set aside on the board by decision (2026-09-14) and reopened on 2026-10-25. **2026-10-01:** K1, K2 and K4 — technical report, per-member decision records, demonstration — are tracked outside Jira in the team's own documents (Hanchen); build work ends on 28 Oct, leaving 29 Oct–1 Nov for them. K3's content comes from I5's findings record (SCRUM-75). See [Stories Set Aside](#stories-set-aside) |
+| **Review before merge is held only by agreement.** The brief expects findings, decision records, a technical report and a demonstration (K1–K4); all four are complete in the records since 2026-10-26. A1 and A5 were reopened as complete on 2026-10-25, but A1 describes a practice, not a control: `main` is not protected (branch protection is not available on this repository's GitHub plan) and has taken direct commits, such as `d4d809c` on 2026-09-13. | Brief deliverables are assessed, and K2 in particular is hard to reconstruct later. The Definition of Done's independent review is enforced only socially. | K1–K4 were set aside on the board by decision (2026-09-14) and reopened on 2026-10-25. **2026-10-01:** K1, K2 and K4 — technical report, per-member decision records, demonstration — are tracked outside Jira in the team's own documents (Hanchen); build work ends on 28 Oct, leaving 29 Oct–1 Nov for them. K3's content comes from I5's findings record (SCRUM-75). **2026-10-26:** K1–K4 complete (K1 by its tickets, K3 by decision). See [Stories Set Aside](#stories-set-aside) |
 | **Build work ends with W11 on 28 Oct, and nothing follows it.** W11 is the last sprint (decided 2026-10-01); the days to the project's end on 1 Nov carry no sprint. The mid-semester break is a separate week between W8 and W9, with minimal feature work. Each person carries 1.5u–3.5u a week, with no cap on the team's total, and close-out of the previous week's review queue is not counted (decided 2026-09-14). Replanned on 2026-10-01: F1 moved to W9 so the W10 release work reads its events, H4 and F4 to W9, F5 to W10; loads are W9 23.5u (owners set 2026-10-05, with SCRUM-101, 119 and 69 added and SCRUM-40 moved to W10), W10 18.5u (with G2's enforcement, SCRUM-118, split from E5) and W11 7.5u including the I5 integrity check. P0 H6 still lands only in W11 because it sits on W9–W10 work. | Carry-over beyond W11's free capacity, or a late client decision, is not built at all. | Replanning rule 2 at every weekly meeting; H6 first in W11; J1 is the first to drop |
 | ~~**One client decision still blocks P0 work.**~~ **Closed 2026-09-24:** the client's Round 2 answered F1 (R2-2: one authoritative output plus the complete history), F2, F3 and F5, so no P0 work waits on the client; D4, F3 and H4 lose their ⏳. *Kept for the record:* B4, D3 and E3 were all answered between 2026-09-15 and 2026-09-17. What remained was follow-up **F1**: with every author keeping their own version, which version does a release carry? | F1 gates D4 (SCRUM-27), F3 (SCRUM-38) and H4 (SCRUM-37) — 6u of P0 work across W8–W10 — and I4 behind them. The separable halves can still be built: per-author versions, keeping each actor's output distinct, and review addressing a named submission. Only "which one is authoritative" waits. Question 6, project-level access isolation, also remains open but blocks nothing scheduled. | Hanchen — ask F1 at the next client meeting, with F2, F3 and F5. Every blocked group in `roadmap.md` names a fallback, so a late answer does not leave a group idle |
 | **There is no work queue of any kind (D8).** By the client's decision of 2026-09-17 there is also **no assignment**: a project manager (task owner) does not hand items to named accounts. Work is self-served from role-checked queues, and the per-task annotator count limits how many people may submit on an item. | D7's sampling, E1, the E2 return-to-queue and I3 all need a queue to put work into. Independence — a reviewer never seeing their own work, a second review never returning to the first reviewer — now has to be a property of the queue query, because there is no assignee to encode it. RQ-607 ("annotators only see the minimum they need") is reinterpreted, not met by assignment. | SCRUM-48, the queue API, in W7 and SCRUM-93, the screens, in W8 — both Kanishka; the role-checked reviewer and adjudicator queues (SCRUM-52) in W9. The rescope reached Kanishka on 2026-09-17, mid-ticket. **2026-09-26:** the queue API is in review — PR #33 with Hanchen's fixes in PR #35 — and not yet on `main`. The review queue decides per submission: it never offers an item to someone who annotated it, and never offers a submission's second approval to its first approver. D7's sampling builds on that query. **2026-10-07: every D8 ticket is on `main`** — the queue API (#33, #35), the panel and the review chooser (#43, #44), resubmission rules (#52), the available-work list (#49), and the second-review and adjudicator queues (#53) |

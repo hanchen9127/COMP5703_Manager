@@ -704,6 +704,34 @@ sprint. So W11 also holds the integrity check that used to be W12's, and there i
 carry-over. What W9–W10 leaves comes first at the W10 meeting, then P0, P1, P2. Groups are formed at that
 meeting. The board holds 7u; H5's 0.5u check is in SCRUM-125 (W10) since 2026-10-14.
 
+**2026-10-26, after #105 (written as merged):**
+- **#105 is the last pull request** (K1, Hanchen, no ticket, draft until its review) and, like #104, leaves none open: 16 PRs
+  merged in W11 (22–28 Oct), 96 in all. It carries three things: the findings record closing defects 1, 25 and 26;
+  the docs nobody maintained moved unchanged into `hej/docs/archive/` with `docs/README.md` as the map; and the live
+  design docs, `AGENTS.md` and the three READMEs brought in line with `main`.
+- **One web string (D7)** rode in it: the review panel's "Dual sign-off complete (2/2)" banner, shown in a Standard
+  project too when a sampled answer got its second approval, now reads "All required approvals received (2/2)". Found in
+  Jingwei's demonstration recording, with a test that fails against the old words. The recording's other findings stay
+  as they are: a release's "Created by user #N" (the release read carries no name), and the Exports tab listing a task's
+  live export beside each frozen release (by design).
+- **Tests on `main` after #105:** backend 2,495 passed and 62 skipped, casebook 87 of 87 running cases, web 1,051 passed
+  in 110 files.
+- **Left for the weekly sync:** #105's Contribution Log row; the `d1-extra` row of the API README and A5's criterion 4
+  (`story_src.csv`, the integration contract's new path) are already corrected.
+
+**2026-10-26, checked against the board export of 04:08, the online tracker and `main` (`6951781`):**
+- **Build work is finished.** Every pull request is merged: the last, #104 (SCRUM-139), merged on 26 Oct, and none is
+  open. 15 PRs merged in W11 (22–26 Oct), 95 in all.
+- **The board holds 104 tickets, all Done**, and all 63 stories are complete in the records: K1 by its tickets, K3 by
+  Hanchen's decision on I5's findings record (#92).
+- **Tests on `main`:** backend 2,495 passed and 62 skipped on SQLite, casebook 87 of 87 running cases (88, EV-018
+  skipped), web 1,050 passed.
+- **The client view** is `shared/handover-dashboard.html`, which the GitHub Pages site opens since 26 Oct; it replaced
+  `shared/user-stories.html`.
+- **Left for the weekly sync:** SCRUM-139's board description names D9 without the pattern the sync reads, so
+  `story_src.csv` does not link it; SCRUM-47 maps to no story; `docs/handover/ticket-map.md` has no rows for
+  SCRUM-47 and SCRUM-49.
+
 **2026-10-24, checked against the board export of 00:08 and `main` (`ffc42ab`):**
 - **`main` is green** at `ffc42ab` and at the two merges before it. CI runs SQLite and the web checks on each pull
   request; PostgreSQL runs only after a merge to `main` or on demand (`.github/workflows/backend-tests.yml`).

@@ -5,8 +5,9 @@ FastAPI service. The stack below is the **inherited design** from Arc Intelligen
 and its `docs/` — we extend it, we do not replace it. Any change to a stable surface needs written
 justification agreed at review first (see `mission.md`).
 
-Authoritative detail lives in `hej/docs/design/system/architecture_overview.md`,
-`hej/docs/design/system/system_design.md`, `hej/docs/governance/repo-structure.md` and `hej/AGENTS.md`.
+Authoritative detail lives in `hej/docs/design/system/system_design.md`, `hej/docs/design/backend/backend_module_map.md`
+and `hej/AGENTS.md`; `hej/docs/README.md` maps the rest. The architecture overview and the planned repository layout
+moved into `hej/docs/archive/` with #105 (K1).
 
 ## Core
 
@@ -41,8 +42,8 @@ Authoritative detail lives in `hej/docs/design/system/architecture_overview.md`,
   - Global: Dashboard, Organizations, Projects, Admin
   - Project: Overview, Tasks, Disputes, Exports, Policies
   - Task: Overview, Setup, Items, Annotate / Judge, Review, Dispute, History, Finalized — the routes
-    under `apps/hej-web/app/tasks/[taskId]/`. `AGENTS.md` still describes an older four-tab scope
-    (Setup, Queue, Review, History)
+    under `apps/hej-web/app/tasks/[taskId]/`. Since #105 (K1) `AGENTS.md` and
+    `hej/docs/design/product/workspace_surface_hierarchy.md` describe the pages and tabs as built
 - **Workflow state authority** is `hej/docs/design/product/workflow_states.md`. Code enums currently
   differ — task items are `pending, annotated, returned, rejected, reviewed, disputed,
   expert_send_back, canonicalized` — which is a known risk (see `mission.md`).
@@ -173,15 +174,18 @@ From the backlog:
 
 ### Docs Sync
 
-From `hej/AGENTS.md`:
+The table lives in `hej/AGENTS.md` (Docs Sync) and is no longer copied here, because the planning documents it
+named moved to `hej/docs/archive/` with #105 (K1). In outline:
 
 | If you change | Update |
 | --- | --- |
-| Domain ownership | `backend_module_map.md`, `repo-structure.md` |
-| API resources, routes or boundaries | `api_surfaces.md`; `integration-contract.md` when DS-facing |
-| Workflow states or transitions | `workflow_states.md`, `demo-scenarios.md` |
+| Domain ownership | `backend_module_map.md`, `repo_module_blueprint.md` |
+| API resources, routes or boundaries | `api_surfaces.md`; `integration_contract.md` when DS-facing |
+| Workflow states or transitions | `workflow_states.md`, `task-lifecycle.md`, and the evaluation casebook where a case exercises them |
 | Data model or persistence | `domain_model.md`, `domain_model_relations.md`, `db_schema_strategy.md`, `db_schema_blueprint.md` |
-| Milestone scope, demo shape or order | `milestone-definition.md`, `task-tree.md`, `task-tree-general.md`, `minimal-working-slice.md` |
+
+Two rules came with #105: an architecture decision gets an ADR, and a change that adds, moves or retires a doc
+updates `hej/docs/README.md`.
 
 ## Repository & Documentation Map
 
@@ -190,11 +194,14 @@ From `hej/AGENTS.md`:
 | Path | Role |
 | --- | --- |
 | `AGENTS.md` | Stack, core rules, Docs Sync, commit rules for agents and people |
-| `docs/governance/` | `canon.md`, `requirements.md` (RQ ids), `repo-structure.md` |
-| `docs/design/` | `system/` architecture, `product/` workflows and states, `backend/` API surfaces and module map, `database/` domain model and schema, `ds/` dataset matrix |
-| `docs/terminology/` | Canonical vocabulary: lifecycles, queue, governance model, task schema and policy |
-| `docs/implementation/planning/` | Inherited milestone definition, risk register, demo scenarios, integration contract, team allocation |
-| `docs/team-discipline/` | `dev-workflow.md`, AI coding guidelines and project profile, `gov.md` templates (not yet adopted) |
+| `README.md`, `apps/hej-api/README.md`, `apps/hej-web/README.md` | One README per app: the root one gives the overview, the pages, the quick start and the checks (since #105, K1) |
+| `docs/README.md` | The map of the docs; a change that adds, moves or retires a doc updates it (since #105, K1) |
+| `docs/handover/` | `ticket-map.md`: each Jira ticket, its story and its pull request |
+| `docs/adr/` | The 25 architecture decision records, one decision each |
+| `docs/evaluation-findings.md` | The findings record of I2–I5, with the negative results and the defect register |
+| `docs/design/` | `system/` system design, `product/` workflows and states, `backend/` API surfaces, module map, AI integration and the integration contract, `database/` domain model and schema |
+| `docs/terminology/` | Canonical vocabulary: the governance model, the task lifecycle, task schema and policy |
+| `docs/archive/` | The client's March brief (`governance/`, `team-discipline/`), the plan-era `implementation/` planning and PR specifications, `design/processes/`, the architecture overview and `design/ds/`, kept unchanged since #105 (K1); its README says where each subject lives now |
 
 **`COMP5703_Capstone/docs/` — the team's working area: Hanchen's own git repository (`hanchen9127/COMP5703_MyRepo`, since 2026-10-14), separate from the product repo `hej`; `.env` is ignored:**
 
