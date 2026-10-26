@@ -708,7 +708,8 @@ meeting. The board holds 7u; H5's 0.5u check is in SCRUM-125 (W10) since 2026-10
 - **#105 is the last pull request** (K1, Hanchen, no ticket, draft until its review) and, like #104, leaves none open: 16 PRs
   merged in W11 (22–28 Oct), 96 in all. It carries three things: the findings record closing defects 1, 25 and 26;
   the docs nobody maintained moved unchanged into `hej/docs/archive/` with `docs/README.md` as the map; and the live
-  design docs, `AGENTS.md` and the three READMEs brought in line with `main`.
+  design docs, `AGENTS.md` and the three READMEs brought in line with `main`, plus the AI execution settings in `.env.example` and two corrected comments in
+  `routes/tasks.py` (no behaviour change).
 - **One web string (D7)** rode in it: the review panel's "Dual sign-off complete (2/2)" banner, shown in a Standard
   project too when a sampled answer got its second approval, now reads "All required approvals received (2/2)". Found in
   Jingwei's demonstration recording, with a test that fails against the old words. The recording's other findings stay

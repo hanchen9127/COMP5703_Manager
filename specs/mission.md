@@ -216,7 +216,7 @@ last pull request and, like #104, leaves none open; GitHub then shows 100 pull r
   It now says "All required approvals received (2/2)", with a test. The other three findings of that recording are not
   built: a release shows "Created by user #N" because the release read carries no name; the Exports tab lists a task's
   live export beside each frozen release by design; and the seeded `d1-extra` item row in the API README was corrected.
-- **Tests on `main` after #105:** backend 2,495 passed and 62 skipped on SQLite (no backend code changed), web 1,051
+- **Tests on `main` after #105:** backend 2,495 passed and 62 skipped on SQLite (two comments and `.env.example` changed, no behaviour), web 1,051
   passed in 110 files (one more than before, the banner test), casebook unchanged at 87 of 87 running cases.
 - **Left for the weekly sync:** #105 has no Contribution Log row yet; `story_src.csv`'s A5 criterion 4 now cites the
   integration contract at its new path (`docs/design/backend/integration_contract.md`).

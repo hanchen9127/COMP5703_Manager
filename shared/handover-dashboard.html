@@ -39,7 +39,7 @@
     web test files apps/hej-web and packages *.test.ts(x) 14 -> 110; docs/adr/adr*.md 0 -> 25;
     apps/hej-api/evaluation/ absent -> 88 case files in evaluation/cases/*.toml.
   Test results now (backend 2495 passed and 62 skipped on SQLite, web 1050 tests, casebook 87/87 pass of 88 cases,
-    1 skipped = EV-018): run on PR #104's head dd28358a, the same tree as origin/main 69517818. After #105 (written as merged): web 1051 tests in 110 files, run on #105's head cb97ca99 with its one added test; backend and casebook unchanged, as #105 changes no backend code.
+    1 skipped = EV-018): run on PR #104's head dd28358a, the same tree as origin/main 69517818. After #105 (written as merged): web 1051 tests in 110 files, run on #105's head cb97ca99 with its one added test; backend and casebook unchanged, as #105's only backend edits are two comments and .env.example.
     The skipped case EV-018: evaluation/cases/EV-018-*.toml.
   Tests at handover (ledger "Then" for backend and web tests): measured 2026-10-26 on c3f79da8 in a detached
     worktree (removed afterwards), with that commit's own lockfiles; the old code was not changed.
