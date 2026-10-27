@@ -517,7 +517,7 @@ board and the tracker.
 
 - No Alembic or other migration framework — additive SQLite migration only
 - No message broker or worker yet — decided in C2
-- No CI workflow, PR template, CODEOWNERS or branch protection in `hej`
+- No PR template or CODEOWNERS in `hej`. The one CI workflow, `.github/workflows/backend-tests.yml`, runs SQLite, PostgreSQL and web jobs; GitHub has refused its runs for billing since 25 Oct
 - Supabase, Terraform and Kubernetes folders are placeholders, unused
 - No Label Studio, no model training or fine-tuning
 - No project-scoped roles in practice — `RoleScope.PROJECT` exists but is never read

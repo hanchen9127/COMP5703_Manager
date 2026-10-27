@@ -9,7 +9,7 @@ Technical plan for each issue in `issues.md`, numbered 1–30 to match that file
 `app/core/config.py:15`:
 
 ```python
-gemini_api_key: str = "AQ.Ab8RN6IXjWaXAT0iK69qDXAetfh5BdLAxtxegws5b-jTPp2OvA"
+gemini_api_key: str = "[REDACTED: revoked; refused by the Gemini API on 2026-10-26]"
 ```
 
 This is a field *default*, not a placeholder — it is committed to the repository and tracked in git (`git ls-files` confirms), so it is in the history of every clone and every fork. It is also the value that will actually be used at runtime, because of item 23: `Settings` reads no `.env` file, so unless someone exports `HEJ_GEMINI_API_KEY` in the process environment, this baked-in key is what `GeminiPreannotator` authenticates with.

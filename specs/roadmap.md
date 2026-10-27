@@ -704,8 +704,8 @@ sprint. So W11 also holds the integrity check that used to be W12's, and there i
 carry-over. What W9–W10 leaves comes first at the W10 meeting, then P0, P1, P2. Groups are formed at that
 meeting. The board holds 7u; H5's 0.5u check is in SCRUM-125 (W10) since 2026-10-14.
 
-**2026-10-26, after #105 (written as merged):**
-- **#105 is the last pull request** (K1, Hanchen, no ticket, draft until its review) and, like #104, leaves none open: 16 PRs
+**2026-10-26, #105 merged (12:40 UTC, `6b6a3fea`):**
+- **#105 is the last pull request** (K1, Hanchen, no ticket; Yi approved it at `5a97ba55` and merged it) and, like #104, leaves none open: 16 PRs
   merged in W11 (22–28 Oct), 96 in all. It carries three things: the findings record closing defects 1, 25 and 26;
   the docs nobody maintained moved unchanged into `hej/docs/archive/` with `docs/README.md` as the map; and the live
   design docs, `AGENTS.md` and the three READMEs brought in line with `main`, plus the AI execution settings in `.env.example` and two corrected comments in
@@ -716,7 +716,8 @@ meeting. The board holds 7u; H5's 0.5u check is in SCRUM-125 (W10) since 2026-10
   as they are: a release's "Created by user #N" (the release read carries no name), and the Exports tab listing a task's
   live export beside each frozen release (by design).
 - **Tests on `main` after #105:** backend 2,495 passed and 62 skipped, casebook 87 of 87 running cases, web 1,051 passed
-  in 110 files.
+  in 110 files. GitHub's CI has been refused for billing since the merge of #104 (25 Oct), so Hanchen ran the three jobs
+  locally on `6b6a3fea`, PostgreSQL 18 included: 2,554 passed and 3 skipped. Details are in `mission.md`.
 - **Left for the weekly sync:** #105's Contribution Log row; the `d1-extra` row of the API README and A5's criterion 4
   (`story_src.csv`, the integration contract's new path) are already corrected.
 
